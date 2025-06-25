@@ -12,7 +12,9 @@
     <!-- Babel voor JSX -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     
+    <!-- XLSX voor Excel bestanden -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    
     <!-- PapaParse voor CSV -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     
@@ -603,18 +605,27 @@
                 loadData();
             }, []);
 
-            // Search filter
+            // Search filter - Updated to include ANVA data
             const searchFilter = useCallback((row, term) => {
                 if (!term) return true;
 
-                const searchFields = [
+                const basicFields = [
                     row.Naam,
                     row.Omschrijving,
                     row.Entiteitcode,
                     row.Attribuutcode,
-                    // Ook zoeken in volledige attribuutcode (entiteit + attribuut)
                     row.Entiteitcode && row.Attribuutcode ? `${row.Entiteitcode}_${row.Attribuutcode}` : null
-                ].filter(Boolean).join(' ').toLowerCase();
+                ];
+
+                // Add ANVA information if available
+                const fullCode = row.Entiteitcode && row.Attribuutcode ? `${row.Entiteitcode}_${row.Attribuutcode}` : null;
+                const anvaInfo = fullCode ? anvaData[fullCode] : null;
+                if (anvaInfo) {
+                    basicFields.push(anvaInfo.code);
+                    basicFields.push(anvaInfo.omschrijving);
+                }
+
+                const searchFields = basicFields.filter(Boolean).join(' ').toLowerCase();
 
                 if (searchMode === 'regex') {
                     try {
@@ -633,7 +644,7 @@
                 } else {
                     return searchFields.includes(term.toLowerCase());
                 }
-            }, [searchMode]);
+            }, [searchMode, anvaData]);
 
             // Filtered data
             const filteredData = useMemo(() => {
@@ -659,7 +670,6 @@
                 const entityMap = new Map();
                 filteredData.forEach(row => {
                     if (row.Entiteitcode && !entityMap.has(row.Entiteitcode)) {
-                        // Zoek de entiteit record voor de omschrijving
                         const entityRecord = data.find(r => 
                             r.Entiteitcode === row.Entiteitcode && 
                             r['Entiteit/Attribuut'] === 'E'
@@ -686,7 +696,6 @@
                 
                 let items = codelistData[selectedCodelist.codelijst];
                 
-                // Filter uit de eerste regel als deze de omschrijving van de codelijst bevat
                 items = items.filter(item => {
                     const code = String(item.code || '').trim();
                     return code !== '' && code.toLowerCase() !== 'code';
@@ -705,13 +714,11 @@
 
             const totalPages = Math.ceil(filteredData.length / ITEMS_PER_PAGE);
 
-            // Open codelist
             const openCodelist = useCallback((codelijst, naam) => {
                 setSelectedCodelist({ codelijst, naam });
                 setCodelistSearch('');
             }, []);
 
-            // Copy function
             const copyToClipboard = useCallback((text, id) => {
                 if (navigator.clipboard) {
                     navigator.clipboard.writeText(text);
@@ -727,7 +734,6 @@
                 setTimeout(() => setCopiedItem(null), 2000);
             }, []);
 
-            // Highlight text
             const highlightText = (text, term) => {
                 if (!text || !term || searchMode === 'regex') return text;
                 
@@ -828,7 +834,7 @@
                                             type="text"
                                             value={searchTerm}
                                             onChange={(e) => setSearchTerm(e.target.value)}
-                                            placeholder="Zoek op naam, omschrijving of code... (druk / voor focus)"
+                                            placeholder="Zoek op naam, omschrijving, AFD code of ANVA code... (druk / voor focus)"
                                             className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 text-lg ${
                                                 darkMode ? 'bg-gray-700 border-gray-600 text-gray-100' : ''
                                             }`}
@@ -907,6 +913,7 @@
                                             <li>Omschrijving</li>
                                             <li>Entiteitcode (bijv. OB, XA, RI)</li>
                                             <li>Attribuutcode of volledige codes (bijv. DA_VERZSOM)</li>
+                                            <li>ANVA code (bijv. 13689)</li>
                                         </ul>
                                     </div>
                                     <div className="mt-6 flex justify-center">
