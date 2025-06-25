@@ -638,9 +638,9 @@
 
             // Filtered codelist items
             const codelistItems = useMemo(() => {
-                if (!selectedCodelist || !codelistData || !codelistData.groups || !codelistData.groups[selectedCodelist.codelijst]) return [];
+                if (!selectedCodelist || !codelistData[selectedCodelist.codelijst]) return [];
                 
-                const items = codelistData.groups[selectedCodelist.codelijst];
+                const items = codelistData[selectedCodelist.codelijst];
                 if (!codelistSearch) return items;
                 
                 const searchLower = codelistSearch.toLowerCase();
@@ -908,11 +908,11 @@
                                                                         {datatypeInfo[item.Datatype].label}
                                                                     </span>
                                                                 )}
-                                                                {item.Codelijst && codelistData && codelistData.groups && codelistData.groups[item.Codelijst] && (
+                                                                {item.Codelijst && codelistData[item.Codelijst] && (
                                                                     <button
                                                                         onClick={() => openCodelist(item.Codelijst, item.Naam)}
                                                                         className="inline-flex items-center space-x-1 text-xs text-blue-600 hover:text-blue-800 underline"
-                                                                        title={`Bekijk codelijst ${item.Codelijst} (${codelistData.groups[item.Codelijst].length} items)`}
+                                                                        title={`Bekijk codelijst ${item.Codelijst} (${codelistData[item.Codelijst].length} items)`}
                                                                     >
                                                                         <BookOpen className="h-3 w-3" />
                                                                         <span>{item.Codelijst}</span>
@@ -1044,15 +1044,10 @@
                                 <div className="flex-shrink-0 p-6 border-b">
                                     <div className="flex items-start justify-between">
                                         <div>
-                                            <h2 className="text-xl font-bold">
-                                                {codelistData && codelistData.descriptions && codelistData.descriptions[selectedCodelist.codelijst] ? 
-                                                    `Codelijst: ${codelistData.descriptions[selectedCodelist.codelijst]}, ${selectedCodelist.codelijst}` :
-                                                    `Codelijst: ${selectedCodelist.codelijst}`
-                                                }
-                                            </h2>
+                                            <h2 className="text-xl font-bold">Codelijst: {selectedCodelist.codelijst}</h2>
                                             <p className="text-sm text-gray-500 mt-1">{selectedCodelist.naam}</p>
                                             <p className="text-sm text-gray-500">
-                                                {codelistItems.length} van {codelistData && codelistData.groups && codelistData.groups[selectedCodelist.codelijst] ? codelistData.groups[selectedCodelist.codelijst].length : 0} items
+                                                {codelistItems.length} van {codelistData[selectedCodelist.codelijst]?.length || 0} items
                                             </p>
                                         </div>
                                         <button
