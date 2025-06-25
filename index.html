@@ -640,7 +640,16 @@
             const codelistItems = useMemo(() => {
                 if (!selectedCodelist || !codelistData[selectedCodelist.codelijst]) return [];
                 
-                const items = codelistData[selectedCodelist.codelijst];
+                let items = codelistData[selectedCodelist.codelijst];
+                
+                // Filter uit de eerste regel als deze de omschrijving van de codelijst bevat
+                // (meestal heeft deze een lege code of "code" als code)
+                items = items.filter(item => {
+                    const code = String(item.code || '').trim();
+                    // Skip items met lege code of "code" als code (dit zijn meestal beschrijvingen)
+                    return code !== '' && code.toLowerCase() !== 'code';
+                });
+                
                 if (!codelistSearch) return items;
                 
                 const searchLower = codelistSearch.toLowerCase();
