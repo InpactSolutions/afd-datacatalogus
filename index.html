@@ -613,6 +613,122 @@
                 loadData();
             }, []);
 
+            // Natural Language Query Parser
+            const parseNaturalLanguageQuery = useCallback((query) => {
+                const lowerQuery = query.toLowerCase();
+                let filters = {
+                    type: 'all',
+                    entity: 'all',
+                    required: null,
+                    hasAnva: null,
+                    hasCodelist: null,
+                    datatype: null,
+                    isKey: null,
+                    searchTerms: []
+                };
+
+                // Type filters
+                if (lowerQuery.includes('entiteit') || lowerQuery.includes('entiteiten')) {
+                    filters.type = 'E';
+                }
+                if (lowerQuery.includes('attribuut') || lowerQuery.includes('attributen') || lowerQuery.includes('veld') || lowerQuery.includes('velden')) {
+                    filters.type = 'A';
+                }
+
+                // Required filters
+                if (lowerQuery.includes('verplicht') || lowerQuery.includes('verplichte')) {
+                    filters.required = 'J';
+                }
+                if (lowerQuery.includes('niet verplicht') || lowerQuery.includes('optioneel') || lowerQuery.includes('optionele')) {
+                    filters.required = 'N';
+                }
+
+                // ANVA filters
+                if (lowerQuery.includes('zonder anva') || lowerQuery.includes('geen anva')) {
+                    filters.hasAnva = false;
+                }
+                if (lowerQuery.includes('met anva') || lowerQuery.includes('heeft anva')) {
+                    filters.hasAnva = true;
+                }
+
+                // Codelist filters
+                if (lowerQuery.includes('zonder codelijst') || lowerQuery.includes('geen codelijst')) {
+                    filters.hasCodelist = false;
+                }
+                if (lowerQuery.includes('met codelijst') || lowerQuery.includes('heeft codelijst')) {
+                    filters.hasCodelist = true;
+                }
+
+                // Datatype filters
+                if (lowerQuery.includes('datum') || lowerQuery.includes('datumveld')) {
+                    filters.datatype = ['D1', 'D3'];
+                }
+                if (lowerQuery.includes('tekst') || lowerQuery.includes('alfanumeriek')) {
+                    filters.datatype = ['A0', 'A1', 'A2'];
+                }
+                if (lowerQuery.includes('bedrag') || lowerQuery.includes('geld')) {
+                    filters.datatype = ['B2'];
+                }
+                if (lowerQuery.includes('ja/nee') || lowerQuery.includes('boolean')) {
+                    filters.datatype = ['JN'];
+                }
+                if (lowerQuery.includes('percentage')) {
+                    filters.datatype = ['P3'];
+                }
+
+                // Key filters
+                if (lowerQuery.includes('sleutel') || lowerQuery.includes('primair') || lowerQuery.includes('vreemd')) {
+                    filters.isKey = true;
+                }
+
+                // Entity specific
+                const entityPatterns = {
+                    'da': ['da', 'dosisarchief', 'dosis'],
+                    'al': ['al', 'algemeen'],
+                    'ob': ['ob', 'object'],
+                    'ri': ['ri', 'risico'],
+                    'xa': ['xa', 'xml'],
+                    'wh': ['wh', 'warehouse']
+                };
+
+                Object.entries(entityPatterns).forEach(([code, patterns]) => {
+                    if (patterns.some(pattern => lowerQuery.includes(pattern))) {
+                        filters.entity = code.toUpperCase();
+                    }
+                });
+
+                // Extract remaining search terms
+                let remainingQuery = query;
+                const filterWords = ['verplicht', 'entiteit', 'attribuut', 'veld', 'datum', 'tekst', 'sleutel', 'anva', 'codelijst', 'zonder', 'met', 'heeft', 'geen', 'alle', 'van', 'voor', 'die', 'dat', 'zijn', 'is'];
+                filterWords.forEach(word => {
+                    remainingQuery = remainingQuery.replace(new RegExp(`\\b${word}\\b`, 'gi'), ' ');
+                });
+                
+                // Clean up and extract meaningful terms
+                const terms = remainingQuery.split(/\s+/).filter(term => 
+                    term.length > 2 && 
+                    !['van', 'voor', 'die', 'dat', 'zijn', 'is', 'een', 'de', 'het'].includes(term.toLowerCase())
+                );
+                
+                if (terms.length > 0) {
+                    filters.searchTerms = terms;
+                }
+
+                return filters;
+            }, []);
+
+            // Apply natural language filters
+            const applyNaturalLanguageFilters = useCallback((filters) => {
+                setTypeFilter(filters.type);
+                setEntityFilter(filters.entity);
+                
+                if (filters.searchTerms.length > 0) {
+                    setSearchTerm(filters.searchTerms.join(' '));
+                } else {
+                    setSearchTerm('');
+                }
+            }, []);
+
             // Enhanced search filter with natural language support
             const searchFilter = useCallback((row, term, nlFilters = null) => {
                 // Apply natural language filters if provided
