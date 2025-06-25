@@ -607,6 +607,39 @@
             const searchFilter = useCallback((row, term) => {
                 if (!term) return true;
 
+                // Basis zoekveldenr
+                const basicFields = [
+                    row.Naam,
+                    row.Omschrijving,
+                    row.Entiteitcode,
+                    row.Attribuutcode,
+                    // Ook zoeken in volledige attribuutcode (entiteit + attribuut)
+                    row.Entiteitcode && row.Attribuutcode ? `${row.Entiteitcode}_${row.Attribuutcode}` : null
+                ];
+
+                // ANVA informatie toevoegen als beschikbaar
+                const fullCode = row.Entiteitcode && row.Attribuutcode ? `${row.Entiteitcode}_${row.Attribuutcode}` : null;
+                const anvaInfo = fullCode ? anvaData[fullCode] : null;
+                if (anvaInfo) {
+                    basicFields.push(anvaInfo.code);
+                    basicFields.push(anvaInfo.omschrijving);
+                }
+
+                const searchFields = basicFields.filter(Boolean).join(' ').toLowerCase();
+
+                if (searchMode === 'regex') {
+                    try {
+                        const regex = new RegExp(term, 'i');
+                        return regex.test(searchFields);
+                    } catch {
+                        return false;
+                    }
+                } else if (searchMode === 'wildcard') {
+                    const regexPattern = term
+                        .replace(/[.*+?^${}()|[\]\\]/g, '\\            // Search filter
+            const searchFilter = useCallback((row, term) => {
+                if (!term) return true;
+
                 const searchFields = [
                     row.Naam,
                     row.Omschrijving,
@@ -633,7 +666,15 @@
                 } else {
                     return searchFields.includes(term.toLowerCase());
                 }
-            }, [searchMode]);
+            }, [searchMode]);')
+                        .replace(/\*/g, '.*')
+                        .replace(/\?/g, '.');
+                    const regex = new RegExp(regexPattern, 'i');
+                    return regex.test(searchFields);
+                } else {
+                    return searchFields.includes(term.toLowerCase());
+                }
+            }, [searchMode, anvaData]);
 
             // Filtered data
             const filteredData = useMemo(() => {
@@ -828,7 +869,7 @@
                                             type="text"
                                             value={searchTerm}
                                             onChange={(e) => setSearchTerm(e.target.value)}
-                                            placeholder="Zoek op naam, omschrijving of code... (druk / voor focus)"
+                                            placeholder="Zoek op naam, omschrijving, AFD code of ANVA code... (druk / voor focus)"
                                             className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 text-lg ${
                                                 darkMode ? 'bg-gray-700 border-gray-600 text-gray-100' : ''
                                             }`}
@@ -907,6 +948,7 @@
                                             <li>Omschrijving</li>
                                             <li>Entiteitcode (bijv. OB, XA, RI)</li>
                                             <li>Attribuutcode of volledige codes (bijv. DA_VERZSOM)</li>
+                                            <li>ANVA code (bijv. 13689)</li>
                                         </ul>
                                     </div>
                                     <div className="mt-6 flex justify-center">
