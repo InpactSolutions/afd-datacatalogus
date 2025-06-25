@@ -577,28 +577,6 @@
                     row.Naam,
                     row.Omschrijving,
                     row.Entiteitcode,
-                    row.Attribuutcode,
-                    // Ook zoeken in volledige attribuutcode (entiteit + attribuut)
-                    row.Entiteitcode && row.Attribuutcode ? `${row.Entiteitcode}_${row.Attribuutcode}` : null
-                ].filter(Boolean).join(' ').toLowerCase();
-
-                if (searchMode === 'regex') {
-                    try {
-                        const regex = new RegExp(term, 'i');
-                        return regex.test(searchFields);
-                    } catch {
-                        return false;
-                    }
-                } else if (searchMode === 'wildcard') {
-                    const regexPattern = term
-                        .replace(/[.*+?^${}()|[\]\\]/g, '\\            // Search filter
-            const searchFilter = useCallback((row, term) => {
-                if (!term) return true;
-
-                const searchFields = [
-                    row.Naam,
-                    row.Omschrijving,
-                    row.Entiteitcode,
                     row.Attribuutcode
                 ].filter(Boolean).join(' ').toLowerCase();
 
@@ -612,14 +590,6 @@
                 } else if (searchMode === 'wildcard') {
                     const regexPattern = term
                         .replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-                        .replace(/\*/g, '.*')
-                        .replace(/\?/g, '.');
-                    const regex = new RegExp(regexPattern, 'i');
-                    return regex.test(searchFields);
-                } else {
-                    return searchFields.includes(term.toLowerCase());
-                }
-            }, [searchMode]);')
                         .replace(/\*/g, '.*')
                         .replace(/\?/g, '.');
                     const regex = new RegExp(regexPattern, 'i');
@@ -648,24 +618,16 @@
                 return filtered;
             }, [data, debouncedSearchTerm, typeFilter, entityFilter, searchFilter]);
 
-            // Available entities with descriptions
+            // Available entities
             const availableEntities = useMemo(() => {
                 const entityMap = new Map();
                 filteredData.forEach(row => {
                     if (row.Entiteitcode && !entityMap.has(row.Entiteitcode)) {
-                        // Zoek de entiteit record voor de omschrijving
-                        const entityRecord = data.find(r => 
-                            r.Entiteitcode === row.Entiteitcode && 
-                            r['Entiteit/Attribuut'] === 'E'
-                        );
-                        entityMap.set(row.Entiteitcode, {
-                            code: row.Entiteitcode,
-                            naam: entityRecord ? entityRecord.Naam : row.Entiteitcode
-                        });
+                        entityMap.set(row.Entiteitcode, row.Entiteitcode);
                     }
                 });
-                return Array.from(entityMap.values()).sort((a, b) => a.code.localeCompare(b.code));
-            }, [filteredData, data]);
+                return Array.from(entityMap.keys()).sort();
+            }, [filteredData]);
 
             // Paginated data
             const paginatedData = useMemo(() => {
@@ -873,9 +835,7 @@
                                             >
                                                 <option value="all">Alle entiteiten ({availableEntities.length})</option>
                                                 {availableEntities.map(entity => (
-                                                    <option key={entity.code} value={entity.code}>
-                                                        {entity.code} - {entity.naam}
-                                                    </option>
+                                                    <option key={entity} value={entity}>{entity}</option>
                                                 ))}
                                             </select>
                                         </div>
