@@ -1,5 +1,5 @@
-// Advanced search parser
-            const parseSearchQuery = useCallback((query) => {
+// Advanced search parser - moved outside useCallback to avoid circular dependency
+            const parseSearchQuery = (query) => {
                 if (!query) return { terms: [], exclude: [], exact: [], wildcards: [], operators: [] };
                 
                 const tokens = [];
@@ -53,7 +53,7 @@
                 }
                 
                 return result;
-            }, []);
+            };
 
             // Advanced search filter
             const searchFilter = useCallback((row, term) => {
@@ -123,4 +123,4 @@
                 }
                 
                 return matches;
-            }, [anvaData, parseSearchQuery]);
+            }, [anvaData]);
