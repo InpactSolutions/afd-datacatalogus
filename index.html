@@ -12,6 +12,7 @@
     <!-- Babel voor JSX -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <!-- PapaParse voor CSV -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     
@@ -406,6 +407,7 @@
         function AFDSearchTool() {
             const [data, setData] = useState([]);
             const [codelistData, setCodelistData] = useState({});
+            const [anvaData, setAnvaData] = useState({});
             const [searchTerm, setSearchTerm] = useState('');
             const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
             const [searchMode, setSearchMode] = useState('normal');
@@ -545,6 +547,38 @@
                             console.log(`📚 Codelist loaded: ${Object.keys(codelistGroups).length} lists, ${codelistCount} total items`);
                         } catch (err) {
                             console.warn('⚠️ Codelist data not found or could not be loaded:', err.message);
+                        }
+
+                        // Load ANVA mapping data (optional)
+                        try {
+                            console.log('🔄 Attempting to load ANVA mapping data...');
+                            const anvaResponse = await window.fs.readFile('ANVA AFD.xlsx');
+                            console.log('✅ ANVA Excel loaded, parsing...');
+                            
+                            const anvaWorkbook = XLSX.read(anvaResponse, {
+                                cellStyles: true,
+                                cellFormulas: true,
+                                cellDates: true
+                            });
+                            
+                            const anvaSheet = anvaWorkbook.Sheets[anvaWorkbook.SheetNames[0]];
+                            const anvaJsonData = XLSX.utils.sheet_to_json(anvaSheet);
+                            
+                            const anvaMapping = {};
+                            anvaJsonData.forEach(row => {
+                                if (row.AFD && row.ANVA) {
+                                    anvaMapping[row.AFD] = {
+                                        code: String(row.ANVA || ''),
+                                        omschrijving: String(row['ANVA Omschrijving'] || ''),
+                                        afwijkendNietToegestaan: String(row['Afwijkend niet toegestaan'] || '')
+                                    };
+                                }
+                            });
+                            
+                            setAnvaData(anvaMapping);
+                            console.log(`📋 ANVA mapping loaded: ${Object.keys(anvaMapping).length} mappings`);
+                        } catch (err) {
+                            console.warn('⚠️ ANVA mapping data not found or could not be loaded:', err.message);
                         }
 
                         setData(cleanedData);
@@ -957,6 +991,27 @@
                                                                             </code>
                                                                         </div>
                                                                     )}
+                                                                    {(() => {
+                                                                        // ANVA code opzoeken
+                                                                        const fullCode = `${item.Entiteitcode}_${item.Attribuutcode}`;
+                                                                        const anvaInfo = anvaData[fullCode];
+                                                                        if (anvaInfo && anvaInfo.code) {
+                                                                            return (
+                                                                                <div className="flex items-center space-x-2">
+                                                                                    <span className="font-medium">ANVA:</span>
+                                                                                    <code className={`px-1 py-0.5 rounded ${darkMode ? 'bg-gray-700' : 'bg-gray-100'}`}>
+                                                                                        {anvaInfo.code}
+                                                                                    </code>
+                                                                                    {anvaInfo.afwijkendNietToegestaan === 'J' && (
+                                                                                        <span className="inline-flex items-center px-1 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">
+                                                                                            ⚠️
+                                                                                        </span>
+                                                                                    )}
+                                                                                </div>
+                                                                            );
+                                                                        }
+                                                                        return null;
+                                                                    })()}
                                                                     {item.Lengte && (
                                                                         <div className="flex items-center space-x-2">
                                                                             <span className="font-medium">Lengte:</span>
