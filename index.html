@@ -742,7 +742,18 @@
 
             // Copy full attribute info
             const copyFullAttributeInfo = useCallback((item, id) => {
-                const entiteit = item.Entiteitcode || '';
+                let entiteit = item.Entiteitcode || '';
+                
+                // Specifieke regels voor entiteit prefix
+                if (entiteit === 'WH') {
+                    // WH krijgt altijd PP/OG/ prefix
+                    entiteit = `PP/OG/${entiteit}`;
+                } else if (!['XG', 'XM', 'PP', 'AL'].includes(entiteit)) {
+                    // Alle andere entiteiten (behalve XG, XM, PP, AL) krijgen PP/ prefix
+                    entiteit = `PP/${entiteit}`;
+                }
+                // XG, XM, PP, AL blijven ongewijzigd
+                
                 const volledigAttribuut = item.Entiteitcode && item.Attribuutcode ? `${item.Entiteitcode}_${item.Attribuutcode}` : item.Entiteitcode || '';
                 const omschrijving = item.Naam || '';
                 const codelijst = item.Codelijst || '';
