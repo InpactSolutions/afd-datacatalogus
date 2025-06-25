@@ -315,4 +315,910 @@
         // SVG Icons als React componenten
         const Search = ({ className }) => (
             <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="m
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="m21 21-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+        );
+
+        const Database = ({ className }) => (
+            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <ellipse cx="12" cy="5" rx="9" ry="3"/>
+                <path d="m21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/>
+                <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
+            </svg>
+        );
+
+        const Package = ({ className }) => (
+            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path d="m7.5 4.27 9 5.15"/>
+                <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/>
+                <path d="m3.3 7 8.7 5 8.7-5"/>
+                <path d="M12 22V12"/>
+            </svg>
+        );
+
+        const Filter = ({ className }) => (
+            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <polygon points="22,3 2,3 10,12.46 10,19 14,21 14,12.46"/>
+            </svg>
+        );
+
+        const Copy = ({ className }) => (
+            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <rect width="14" height="14" x="8" y="8" rx="2" ry="2"/>
+                <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>
+            </svg>
+        );
+
+        const Check = ({ className }) => (
+            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <polyline points="20,6 9,17 4,12"/>
+            </svg>
+        );
+
+        const Sun = ({ className }) => (
+            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="5"/>
+                <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+            </svg>
+        );
+
+        const Moon = ({ className }) => (
+            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+            </svg>
+        );
+
+        const BookOpen = ({ className }) => (
+            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+                <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+            </svg>
+        );
+
+        const X = ({ className }) => (
+            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+        );
+
+        // Mock file system voor GitHub Pages
+        window.fs = {
+            readFile: async (filename, options = {}) => {
+                try {
+                    console.log(`Attempting to load: ${filename}`);
+                    const response = await fetch(filename);
+                    if (!response.ok) {
+                        throw new Error(`Bestand niet gevonden: ${filename} (Status: ${response.status})`);
+                    }
+
+            return (
+                <div className={`min-h-screen ${darkMode ? 'dark bg-gray-900 text-gray-100' : 'bg-gray-50'}`}>
+                    <div className={`${darkMode ? 'bg-gray-800 text-gray-100' : 'bg-white'} shadow-sm border-b ${darkMode ? 'border-gray-700' : ''}`}>
+                        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center space-x-3">
+                                    <Database className="h-8 w-8 text-blue-600" />
+                                    <div>
+                                        <h1 className={`text-2xl font-bold ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
+                                            AFD 1.0 Datacatalogus
+                                        </h1>
+                                        <div className="flex items-center space-x-4 text-sm text-gray-500">
+                                            <span>{stats.total.toLocaleString()} items</span>
+                                            <span>•</span>
+                                            <span>{stats.entities} entiteiten</span>
+                                            <span>•</span>
+                                            <span>{stats.attributes.toLocaleString()} attributen</span>
+                                        </div>
+                                {totalPages > 1 && (
+                                    <div className="flex items-center justify-center space-x-2 mt-6">
+                                        <button
+                                            onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                                            disabled={currentPage === 1}
+                                            className={`px-3 py-1 rounded border ${
+                                                currentPage === 1
+                                                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                                    : 'bg-white text-gray-700 hover:bg-gray-50'
+                                            }`}
+                                        >
+                                            Vorige
+                                        </button>
+                                        <span className="px-3 py-1">
+                                            {currentPage} / {totalPages}
+                                        </span>
+                                        <button
+                                            onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                                            disabled={currentPage === totalPages}
+                                            className={`px-3 py-1 rounded border ${
+                                                currentPage === totalPages
+                                                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                                    : 'bg-white text-gray-700 hover:bg-gray-50'
+                                            }`}
+                                        >
+                                            Volgende
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </div>
+
+                    {selectedCodelist && (
+                        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                            <div className={`${darkMode ? 'bg-gray-800 text-gray-100' : 'bg-white'} rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col`}>
+                                <div className="flex-shrink-0 p-6 border-b">
+                                    <div className="flex items-start justify-between">
+                                        <div>
+                                            <h2 className="text-xl font-bold">Codelijst: {selectedCodelist.codelijst}</h2>
+                                            <p className="text-sm text-gray-500 mt-1">{selectedCodelist.naam}</p>
+                                            <p className="text-sm text-gray-500">
+                                                {codelistItems.length} van {codelistData[selectedCodelist.codelijst]?.length || 0} items
+                                            </p>
+                                        </div>
+                                        <button
+                                            onClick={() => {
+                                                setSelectedCodelist(null);
+                                                setCodelistSearch('');
+                                            }}
+                                            className="p-2 hover:bg-gray-100 rounded-lg"
+                                        >
+                                            <X className="h-5 w-5" />
+                                        </button>
+                                    </div>
+                                    <div className="mt-4">
+                                        <div className="relative">
+                                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                                            <input
+                                                type="text"
+                                                value={codelistSearch}
+                                                onChange={(e) => setCodelistSearch(e.target.value)}
+                                                placeholder="Zoek in codelijst..."
+                                                className={`w-full pl-9 pr-4 py-2 border rounded-lg ${
+                                                    darkMode ? 'bg-gray-700 border-gray-600' : ''
+                                                }`}
+                                                autoFocus
+                                            />
+                                            {codelistSearch && (
+                                                <button
+                                                    onClick={() => setCodelistSearch('')}
+                                                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                                                >
+                                                    ✕
+                                                </button>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div className="flex-1 overflow-y-auto min-h-0 p-6">
+                                    {codelistItems.length === 0 ? (
+                                        <div className="text-center py-8">
+                                            <p className="text-gray-500">
+                                                {codelistSearch ? 'Geen items gevonden voor deze zoekopdracht' : 'Geen items in deze codelijst'}
+                                            </p>
+                                        </div>
+                                    ) : (
+                                        <div className="space-y-2">
+                                            {codelistItems.map((item, index) => (
+                                                <div 
+                                                    key={index}
+                                                    className={`flex items-start justify-between p-3 rounded-lg hover:shadow-sm transition-shadow ${
+                                                        darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-50 hover:bg-gray-100'
+                                                    }`}
+                                                >
+                                                    <div className="flex-1 min-w-0 pr-2">
+                                                        <div className="flex items-center space-x-2">
+                                                            <code className="font-mono text-sm font-semibold text-blue-600">
+                                                                {highlightText(String(item.code), codelistSearch)}
+                                                            </code>
+                                                            {item.actief === 'J' && (
+                                                                <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-green-100 text-green-800">
+                                                                    Actief
+                                                                </span>
+                                                            )}
+                                                            {item.actief === 'N' && (
+                                                                <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-red-100 text-red-800">
+                                                                    Inactief
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                        <p className="text-sm mt-1 text-gray-700 break-words">
+                                                            {highlightText(String(item.omschrijving), codelistSearch)}
+                                                        </p>
+                                                    </div>
+                                                    <button
+                                                        onClick={() => copyToClipboard(String(item.code), `cl-${index}`)}
+                                                        className="flex-shrink-0 p-1 hover:bg-gray-200 rounded transition-colors"
+                                                        title="Kopieer code"
+                                                    >
+                                                        {copiedItem === `cl-${index}` ? 
+                                                            <Check className="h-4 w-4 text-green-500" /> : 
+                                                            <Copy className="h-4 w-4 text-gray-400" />
+                                                        }
+                                                    </button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<AFDSearchTool />);
+    </script>
+</body>
+</html>
+                                <div className="space-y-3">
+                                    {paginatedData.map((item, index) => {
+                                        const isEntity = item['Entiteit/Attribuut'] === 'E';
+                                        const itemId = isEntity ? item.Entiteitcode : `${item.Entiteitcode}_${item.Attribuutcode}`;
+                                        
+                                        return (
+                                            <div 
+                                                key={index} 
+                                                className={`${darkMode ? 'bg-gray-800 text-gray-100' : 'bg-white'} rounded-lg shadow-sm p-4 hover:shadow-md transition-shadow`}
+                                            >
+                                                <div className="flex items-start justify-between">
+                                                    <div className="flex items-start space-x-3 flex-1">
+                                                        {isEntity ? (
+                                                            <Database className="h-5 w-5 text-blue-600 mt-1 flex-shrink-0" />
+                                                        ) : (
+                                                            <Package className="h-5 w-5 text-green-600 mt-1 flex-shrink-0" />
+                                                        )}
+                                                        <div className="flex-1 min-w-0">
+                                                            <div className="flex items-center space-x-2 flex-wrap mb-1">
+                                                                <span className="text-sm font-mono text-gray-500">
+                                                                    {itemId}
+                                                                </span>
+                                                                {item.Datatype && datatypeInfo[item.Datatype] && (
+                                                                    <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium ${datatypeInfo[item.Datatype].color} bg-gray-100`}>
+                                                                        {datatypeInfo[item.Datatype].label}
+                                                                    </span>
+                                                                )}
+                                                                {item.Codelijst && codelistData[item.Codelijst] && (
+                                                                    <button
+                                                                        onClick={() => openCodelist(item.Codelijst, item.Naam)}
+                                                                        className="inline-flex items-center space-x-1 text-xs text-blue-600 hover:text-blue-800 underline"
+                                                                        title={`Bekijk codelijst ${item.Codelijst} (${codelistData[item.Codelijst].length} items)`}
+                                                                    >
+                                                                        <BookOpen className="h-3 w-3" />
+                                                                        <span>{item.Codelijst}</span>
+                                                                    </button>
+                                                                )}
+                                                            </div>
+                                                            <h3 className={`font-semibold ${darkMode ? 'text-gray-100' : 'text-gray-900'} mb-1`}>
+                                                                {highlightText(item.Naam, searchTerm)}
+                                                            </h3>
+                                                            {item.Omschrijving && (
+                                                                <p className={`${darkMode ? 'text-gray-300' : 'text-gray-600'} text-sm mb-2`}>
+                                                                    {highlightText(item.Omschrijving, searchTerm)}
+                                                                </p>
+                                                            )}
+                                                            
+                                                            {!isEntity && (
+                                                                <div className="space-y-1 text-xs text-gray-500">
+                                                                    {item.Formaat && (
+                                                                        <div className="flex items-center space-x-2">
+                                                                            <span className="font-medium">Formaat:</span>
+                                                                            <code className={`px-1 py-0.5 rounded ${darkMode ? 'bg-gray-700' : 'bg-gray-100'}`}>
+                                                                                {item.Formaat}
+                                                                            </code>
+                                                                        </div>
+                                                                    )}
+                                                                    {(() => {
+                                                                        const fullCode = `${item.Entiteitcode}_${item.Attribuutcode}`;
+                                                                        const anvaInfo = anvaData[fullCode];
+                                                                        if (anvaInfo && anvaInfo.code) {
+                                                                            return (
+                                                                                <div className="flex items-center space-x-2">
+                                                                                    <span className="font-medium">ANVA:</span>
+                                                                                    <code className={`px-1 py-0.5 rounded ${darkMode ? 'bg-gray-700' : 'bg-gray-100'}`}>
+                                                                                        {anvaInfo.code}
+                                                                                    </code>
+                                                                                    {anvaInfo.afwijkendNietToegestaan === 'J' && (
+                                                                                        <span className="inline-flex items-center px-1 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">
+                                                                                            ⚠️
+                                                                                        </span>
+                                                                                    )}
+                                                                                </div>
+                                                                            );
+                                                                        }
+                                                                        return null;
+                                                                    })()}
+                                                                    {item.Lengte && (
+                                                                        <div className="flex items-center space-x-2">
+                                                                            <span className="font-medium">Lengte:</span>
+                                                                            <span>{item.Lengte}</span>
+                                                                        </div>
+                                                                    )}
+                                                                    {item.Decimalen && (
+                                                                        <div className="flex items-center space-x-2">
+                                                                            <span className="font-medium">Decimalen:</span>
+                                                                            <span>{item.Decimalen}</span>
+                                                                        </div>
+                                                                    )}
+                                                                    {item.Verplicht && (
+                                                                        <div className="flex items-center space-x-2">
+                                                                            <span className="font-medium">Verplicht:</span>
+                                                                            <span className={item.Verplicht === 'J' ? 'text-red-600' : 'text-green-600'}>
+                                                                                {item.Verplicht === 'J' ? 'Ja' : 'Nee'}
+                                                                            </span>
+                                                                        </div>
+                                                                    )}
+                                                                    {item.Primairesleutel && item.Primairesleutel === 'J' && (
+                                                                        <div className="flex items-center space-x-2">
+                                                                            <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-yellow-200 text-yellow-800">
+                                                                                🔑 Primaire sleutel
+                                                                            </span>
+                                                                        </div>
+                                                                    )}
+                                                                    {item.Vreemdessleutel && item.Vreemdessleutel === 'J' && (
+                                                                        <div className="flex items-center space-x-2">
+                                                                            <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                                                                                🔗 Vreemde sleutel
+                                                                            </span>
+                                                                        </div>
+                                                                    )}
+                                                                    {item.Defaultwaarde && (
+                                                                        <div className="flex items-center space-x-2">
+                                                                            <span className="font-medium">Default:</span>
+                                                                            <code className={`px-1 py-0.5 rounded ${darkMode ? 'bg-gray-700' : 'bg-gray-100'}`}>
+                                                                                {item.Defaultwaarde}
+                                                                            </code>
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex items-center space-x-1 ml-2">
+                                                        <button
+                                                            onClick={() => copyToClipboard(itemId, itemId)}
+                                                            className="p-1 hover:bg-gray-100 rounded"
+                                                            title="Kopieer code"
+                                                        >
+                                                            {copiedItem === itemId ? (
+                                                                <Check className="h-4 w-4 text-green-500" />
+                                                            ) : (
+                                                                <Copy className="h-4 w-4 text-gray-400" />
+                                                            )}
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={() => setDarkMode(!darkMode)}
+                                    className="p-2 rounded-lg hover:bg-gray-100"
+                                    title={darkMode ? 'Light mode' : 'Dark mode'}
+                                >
+                                    {darkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className={`${darkMode ? 'bg-gray-800 text-gray-100' : 'bg-white'} border-b ${darkMode ? 'border-gray-700' : ''} sticky top-0 z-10`}>
+                        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+                            <div className="space-y-4">
+                                <div className="flex gap-2">
+                                    <div className="relative flex-1">
+                                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                                        <input
+                                            ref={searchInputRef}
+                                            type="text"
+                                            value={searchTerm}
+                                            onChange={(e) => setSearchTerm(e.target.value)}
+                                            placeholder="Zoek op naam, omschrijving, AFD code of ANVA code... (druk / voor focus)"
+                                            className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 text-lg ${
+                                                darkMode ? 'bg-gray-700 border-gray-600 text-gray-100' : ''
+                                            }`}
+                                        />
+                                        {searchTerm && (
+                                            <button
+                                                onClick={() => setSearchTerm('')}
+                                                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                                            >
+                                                ✕
+                                            </button>
+                                        )}
+                                    </div>
+                                    <select
+                                        value={searchMode}
+                                        onChange={(e) => setSearchMode(e.target.value)}
+                                        className={`px-3 py-2 border rounded-lg ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : ''}`}
+                                        title="Zoek modus"
+                                    >
+                                        <option value="normal">Normaal</option>
+                                        <option value="wildcard">Wildcard (* ?)</option>
+                                        <option value="regex">Regex</option>
+                                    </select>
+                                </div>
+                                <div className="flex flex-wrap gap-4">
+                                    <div className="flex items-center space-x-2">
+                                        <Filter className="h-5 w-5 text-gray-400" />
+                                        <select
+                                            value={typeFilter}
+                                            onChange={(e) => setTypeFilter(e.target.value)}
+                                            className={`border rounded-lg px-3 py-2 ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : ''}`}
+                                        >
+                                            <option value="all">Alle types</option>
+                                            <option value="E">Alleen entiteiten</option>
+                                            <option value="A">Alleen attributen</option>
+                                        </select>
+                                    </div>
+                                    {availableEntities.length > 0 && (
+                                        <div className="flex items-center space-x-2">
+                                            <Database className="h-5 w-5 text-gray-400" />
+                                            <select
+                                                value={entityFilter}
+                                                onChange={(e) => setEntityFilter(e.target.value)}
+                                                className={`border rounded-lg px-3 py-2 ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : ''}`}
+                                            >
+                                                <option value="all">Alle entiteiten ({availableEntities.length})</option>
+                                                {availableEntities.map(entity => (
+                                                    <option key={entity.code} value={entity.code}>
+                                                        {entity.code} - {entity.naam}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+                        {!searchTerm && typeFilter === 'all' && entityFilter === 'all' ? (
+                            <div className="text-center py-12">
+                                <div className={`${darkMode ? 'bg-gray-800 text-gray-100' : 'bg-white'} rounded-lg shadow-sm p-12 max-w-2xl mx-auto`}>
+                                    <Search className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                                    <h2 className="text-2xl font-semibold text-gray-700 mb-2">
+                                        Begin met zoeken
+                                    </h2>
+                                    <p className="text-gray-500 mb-6">
+                                        Gebruik de zoekbalk hierboven om te zoeken in de AFD 1.0 datacatalogus met {stats.total.toLocaleString()} items
+                                    </p>
+                                    <div className="space-y-2 text-sm text-gray-500">
+                                        <p>Je kunt zoeken op:</p>
+                                        <ul className="list-disc list-inside space-y-1">
+                                            <li>Naam van een entiteit of attribuut</li>
+                                            <li>Omschrijving</li>
+                                            <li>Entiteitcode (bijv. OB, XA, RI)</li>
+                                            <li>Attribuutcode of volledige codes (bijv. DA_VERZSOM)</li>
+                                            <li>ANVA code (bijv. 13689)</li>
+                                        </ul>
+                                    </div>
+                                    <div className="mt-6 flex justify-center">
+                                        <kbd className="px-3 py-1 bg-gray-200 rounded text-sm">
+                                            Druk op / om te beginnen met typen
+                                        </kbd>
+                                    </div>
+                                </div>
+                            </div>
+                        ) : filteredData.length === 0 ? (
+                            <div className="text-center py-12">
+                                <p className="text-gray-500 text-lg">Geen resultaten gevonden</p>
+                                <p className="text-gray-400 mt-2">Probeer een andere zoekterm of pas de filters aan</p>
+                            </div>
+                        ) : (
+                            <div>
+                                <div className="flex justify-between items-center mb-4">
+                                    <p className="text-gray-600">
+                                        {filteredData.length} {filteredData.length === 1 ? "resultaat" : "resultaten"}
+                                    </p>
+                                    {totalPages > 1 && (
+                                        <p className="text-sm text-gray-500">
+                                            Pagina {currentPage} van {totalPages}
+                                        </p>
+                                    )}
+                                </div>
+                    
+                    if (options.encoding === 'utf8') {
+                        const text = await response.text();
+                        console.log(`Successfully loaded: ${filename} (${text.length} characters)`);
+                        return text;
+                    }
+                    
+                    const arrayBuffer = await response.arrayBuffer();
+                    return new Uint8Array(arrayBuffer);
+                } catch (error) {
+                    console.error('Error reading file:', filename, error);
+                    throw error;
+                }
+            }
+        };
+
+        function AFDSearchTool() {
+            const [data, setData] = useState([]);
+            const [codelistData, setCodelistData] = useState({});
+            const [anvaData, setAnvaData] = useState({});
+            const [searchTerm, setSearchTerm] = useState('');
+            const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
+            const [searchMode, setSearchMode] = useState('normal');
+            const [typeFilter, setTypeFilter] = useState('all');
+            const [entityFilter, setEntityFilter] = useState('all');
+            const [loading, setLoading] = useState(true);
+            const [error, setError] = useState(null);
+            const [stats, setStats] = useState({ total: 0, entities: 0, attributes: 0 });
+            const [darkMode, setDarkMode] = useState(false);
+            const [copiedItem, setCopiedItem] = useState(null);
+            const [currentPage, setCurrentPage] = useState(1);
+            const [selectedCodelist, setSelectedCodelist] = useState(null);
+            const [codelistSearch, setCodelistSearch] = useState('');
+            const searchInputRef = useRef(null);
+            
+            const ITEMS_PER_PAGE = 25;
+
+            // Datatype info
+            const datatypeInfo = {
+                'JN': { label: 'Ja/Nee', color: 'text-blue-600' },
+                'A0': { label: 'Alfanumeriek', color: 'text-green-600' },
+                'A1': { label: 'Alfanumeriek', color: 'text-green-600' },
+                'A2': { label: 'Alfanumeriek', color: 'text-green-600' },
+                'D1': { label: 'Datum', color: 'text-purple-600' },
+                'D3': { label: 'Datum', color: 'text-purple-600' },
+                'B2': { label: 'Bedrag', color: 'text-yellow-600' },
+                'T1': { label: 'Tijd', color: 'text-indigo-600' },
+                'P3': { label: 'Percentage', color: 'text-orange-600' },
+                'ME': { label: 'Memo', color: 'text-gray-600' }
+            };
+
+            // Debounce search term
+            useEffect(() => {
+                const timer = setTimeout(() => {
+                    setDebouncedSearchTerm(searchTerm);
+                    setCurrentPage(1);
+                }, 300);
+                return () => clearTimeout(timer);
+            }, [searchTerm]);
+
+            // Reset page when filters change
+            useEffect(() => {
+                setCurrentPage(1);
+            }, [typeFilter, entityFilter]);
+
+            // Keyboard shortcuts
+            useEffect(() => {
+                const handleKeyDown = (e) => {
+                    if (e.key === '/' && !e.ctrlKey && !e.metaKey) {
+                        e.preventDefault();
+                        searchInputRef.current?.focus();
+                    }
+                    if (e.key === 'Escape' && document.activeElement === searchInputRef.current) {
+                        setSearchTerm('');
+                    }
+                };
+                document.addEventListener('keydown', handleKeyDown);
+                return () => document.removeEventListener('keydown', handleKeyDown);
+            }, []);
+
+            // Load preferences
+            useEffect(() => {
+                try {
+                    const savedDarkMode = localStorage.getItem('afd-darkmode') === 'true';
+                    setDarkMode(savedDarkMode);
+                } catch (e) {
+                    console.warn('LocalStorage not available');
+                }
+            }, []);
+
+            // Save preferences
+            useEffect(() => {
+                try {
+                    localStorage.setItem('afd-darkmode', darkMode);
+                    document.documentElement.classList.toggle('dark', darkMode);
+                } catch (e) {
+                    console.warn('LocalStorage not available');
+                }
+            }, [darkMode]);
+
+            // Load data
+            useEffect(() => {
+                const loadData = async () => {
+                    try {
+                        console.log('🔄 Starting to load AFD data...');
+                        const csvContent = await window.fs.readFile('data.csv', { encoding: 'utf8' });
+                        console.log('✅ CSV loaded successfully, parsing...');
+                        
+                        const parsed = Papa.parse(csvContent, {
+                            header: true,
+                            dynamicTyping: true,
+                            skipEmptyLines: true,
+                            delimitersToGuess: [',', '\t', '|', ';']
+                        });
+
+                        console.log(`📊 Parsed ${parsed.data.length} rows`);
+
+                        const cleanedData = parsed.data.map(row => {
+                            const cleanRow = {};
+                            Object.keys(row).forEach(key => {
+                                cleanRow[key.trim()] = row[key];
+                            });
+                            return cleanRow;
+                        });
+
+                        // Load codelist data (optional)
+                        try {
+                            console.log('🔄 Attempting to load codelist data...');
+                            const codelistContent = await window.fs.readFile('Codelist.afm.csv', { encoding: 'utf8' });
+                            console.log('✅ Codelist loaded, parsing...');
+                            
+                            const parsedCodelist = Papa.parse(codelistContent, {
+                                header: false,
+                                dynamicTyping: true,
+                                skipEmptyLines: true,
+                                delimiter: ';'
+                            });
+
+                            const codelistGroups = {};
+                            let codelistCount = 0;
+                            parsedCodelist.data.slice(1).forEach(row => {
+                                const [codelijst, code, omschrijving, actief] = row;
+                                if (codelijst) {
+                                    if (!codelistGroups[codelijst]) {
+                                        codelistGroups[codelijst] = [];
+                                    }
+                                    codelistGroups[codelijst].push({
+                                        code: String(code || ''),
+                                        omschrijving: String(omschrijving || ''),
+                                        actief: String(actief || '')
+                                    });
+                                    codelistCount++;
+                                }
+                            });
+
+                            setCodelistData(codelistGroups);
+                            console.log(`📚 Codelist loaded: ${Object.keys(codelistGroups).length} lists, ${codelistCount} total items`);
+                        } catch (err) {
+                            console.warn('⚠️ Codelist data not found or could not be loaded:', err.message);
+                        }
+
+                        // Load ANVA mapping data (optional)
+                        try {
+                            console.log('🔄 Attempting to load ANVA mapping data...');
+                            const anvaResponse = await window.fs.readFile('ANVA AFD.xlsx');
+                            console.log('✅ ANVA Excel loaded, parsing...');
+                            
+                            const anvaWorkbook = XLSX.read(anvaResponse, {
+                                cellStyles: true,
+                                cellFormulas: true,
+                                cellDates: true
+                            });
+                            
+                            const anvaSheet = anvaWorkbook.Sheets[anvaWorkbook.SheetNames[0]];
+                            const anvaJsonData = XLSX.utils.sheet_to_json(anvaSheet);
+                            
+                            const anvaMapping = {};
+                            anvaJsonData.forEach(row => {
+                                if (row.AFD && row.ANVA) {
+                                    anvaMapping[row.AFD] = {
+                                        code: String(row.ANVA || ''),
+                                        omschrijving: String(row['ANVA Omschrijving'] || ''),
+                                        afwijkendNietToegestaan: String(row['Afwijkend niet toegestaan'] || '')
+                                    };
+                                }
+                            });
+                            
+                            setAnvaData(anvaMapping);
+                            console.log(`📋 ANVA mapping loaded: ${Object.keys(anvaMapping).length} mappings`);
+                        } catch (err) {
+                            console.warn('⚠️ ANVA mapping data not found or could not be loaded:', err.message);
+                        }
+
+                        setData(cleanedData);
+                        
+                        const entities = cleanedData.filter(row => row['Entiteit/Attribuut'] === 'E').length;
+                        const attributes = cleanedData.filter(row => row['Entiteit/Attribuut'] === 'A').length;
+                        setStats({
+                            total: cleanedData.length,
+                            entities,
+                            attributes
+                        });
+                        
+                        console.log(`🎉 Data loaded: ${cleanedData.length} total, ${entities} entities, ${attributes} attributes`);
+                        setLoading(false);
+                    } catch (err) {
+                        console.error('❌ Error loading data:', err);
+                        setError(err.message);
+                        setLoading(false);
+                    }
+                };
+
+                loadData();
+            }, []);
+
+            // Search filter
+            const searchFilter = useCallback((row, term) => {
+                if (!term) return true;
+
+                const basicFields = [
+                    row.Naam,
+                    row.Omschrijving,
+                    row.Entiteitcode,
+                    row.Attribuutcode,
+                    row.Entiteitcode && row.Attribuutcode ? `${row.Entiteitcode}_${row.Attribuutcode}` : null
+                ];
+
+                const fullCode = row.Entiteitcode && row.Attribuutcode ? `${row.Entiteitcode}_${row.Attribuutcode}` : null;
+                const anvaInfo = fullCode ? anvaData[fullCode] : null;
+                if (anvaInfo) {
+                    basicFields.push(anvaInfo.code);
+                    basicFields.push(anvaInfo.omschrijving);
+                }
+
+                const searchFields = basicFields.filter(Boolean).join(' ').toLowerCase();
+
+                if (searchMode === 'regex') {
+                    try {
+                        const regex = new RegExp(term, 'i');
+                        return regex.test(searchFields);
+                    } catch {
+                        return false;
+                    }
+                } else if (searchMode === 'wildcard') {
+                    const regexPattern = term
+                        .replace(/[.*+?^${}()|[\]\\]/g, '\\        const Moon = ({ className }) => (
+            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLin')
+                        .replace(/\*/g, '.*')
+                        .replace(/\?/g, '.');
+                    const regex = new RegExp(regexPattern, 'i');
+                    return regex.test(searchFields);
+                } else {
+                    return searchFields.includes(term.toLowerCase());
+                }
+            }, [searchMode, anvaData]);
+
+            // Filtered data
+            const filteredData = useMemo(() => {
+                let filtered = data;
+
+                if (typeFilter !== 'all') {
+                    filtered = filtered.filter(row => row['Entiteit/Attribuut'] === typeFilter);
+                }
+
+                if (debouncedSearchTerm) {
+                    filtered = filtered.filter(row => searchFilter(row, debouncedSearchTerm));
+                }
+
+                if (entityFilter !== 'all') {
+                    filtered = filtered.filter(row => row.Entiteitcode === entityFilter);
+                }
+
+                return filtered;
+            }, [data, debouncedSearchTerm, typeFilter, entityFilter, searchFilter]);
+
+            // Available entities with descriptions
+            const availableEntities = useMemo(() => {
+                const entityMap = new Map();
+                filteredData.forEach(row => {
+                    if (row.Entiteitcode && !entityMap.has(row.Entiteitcode)) {
+                        const entityRecord = data.find(r => 
+                            r.Entiteitcode === row.Entiteitcode && 
+                            r['Entiteit/Attribuut'] === 'E'
+                        );
+                        entityMap.set(row.Entiteitcode, {
+                            code: row.Entiteitcode,
+                            naam: entityRecord ? entityRecord.Naam : row.Entiteitcode
+                        });
+                    }
+                });
+                return Array.from(entityMap.values()).sort((a, b) => a.code.localeCompare(b.code));
+            }, [filteredData, data]);
+
+            // Paginated data
+            const paginatedData = useMemo(() => {
+                const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+                const endIndex = startIndex + ITEMS_PER_PAGE;
+                return filteredData.slice(startIndex, endIndex);
+            }, [filteredData, currentPage]);
+
+            // Filtered codelist items
+            const codelistItems = useMemo(() => {
+                if (!selectedCodelist || !codelistData[selectedCodelist.codelijst]) return [];
+                
+                let items = codelistData[selectedCodelist.codelijst];
+                
+                items = items.filter(item => {
+                    const code = String(item.code || '').trim();
+                    return code !== '' && code.toLowerCase() !== 'code';
+                });
+                
+                if (!codelistSearch) return items;
+                
+                const searchLower = codelistSearch.toLowerCase();
+                return items.filter(item => {
+                    const code = String(item.code || '').toLowerCase();
+                    const omschrijving = String(item.omschrijving || '').toLowerCase();
+                    
+                    return code.includes(searchLower) || omschrijving.includes(searchLower);
+                });
+            }, [selectedCodelist, codelistData, codelistSearch]);
+
+            const totalPages = Math.ceil(filteredData.length / ITEMS_PER_PAGE);
+
+            const openCodelist = useCallback((codelijst, naam) => {
+                setSelectedCodelist({ codelijst, naam });
+                setCodelistSearch('');
+            }, []);
+
+            const copyToClipboard = useCallback((text, id) => {
+                if (navigator.clipboard) {
+                    navigator.clipboard.writeText(text);
+                } else {
+                    const textArea = document.createElement('textarea');
+                    textArea.value = text;
+                    document.body.appendChild(textArea);
+                    textArea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textArea);
+                }
+                setCopiedItem(id);
+                setTimeout(() => setCopiedItem(null), 2000);
+            }, []);
+
+            const highlightText = (text, term) => {
+                if (!text || !term || searchMode === 'regex') return text;
+                
+                const parts = text.split(new RegExp(`(${term})`, 'gi'));
+                return parts.map((part, i) => 
+                    part.toLowerCase() === term.toLowerCase() 
+                        ? <mark key={i}>{part}</mark>
+                        : part
+                );
+            };
+
+            if (loading) {
+                return (
+                    <div className={`flex items-center justify-center h-screen ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
+                        <div className="text-center">
+                            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
+                            <p className={`mt-4 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                                AFD datacatalogus laden...
+                            </p>
+                        </div>
+                    </div>
+                );
+            }
+
+            if (error) {
+                return (
+                    <div className={`flex items-center justify-center h-screen ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
+                        <div className="text-center max-w-lg mx-auto p-6">
+                            <div className="text-red-600 mb-4">
+                                <div className="text-6xl mb-4">⚠️</div>
+                                <h2 className="text-xl font-bold mb-2">Fout bij laden</h2>
+                                <p className="text-sm mb-4">{error}</p>
+                            </div>
+                            <div className="text-sm text-gray-600 space-y-2">
+                                <p><strong>Controleer het volgende:</strong></p>
+                                <ul className="list-disc list-inside space-y-1 text-left">
+                                    <li>Het bestand <code>data.csv</code> staat in de root van je repository</li>
+                                    <li>Het bestand heeft exact de naam <code>data.csv</code> (let op hoofdletters)</li>
+                                    <li>Het CSV bestand is geldig en UTF-8 encoded</li>
+                                    <li>GitHub Pages is correct ingesteld</li>
+                                </ul>
+                                <p className="mt-4">
+                                    <strong>Test:</strong> <a 
+                                        href="data.csv" 
+                                        target="_blank" 
+                                        className="text-blue-600 underline"
+                                    >
+                                        Probeer data.csv direct te openen
+                                    </a>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
