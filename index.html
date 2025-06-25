@@ -980,7 +980,7 @@
                                         </p>
                                     )}
                                 </div>
-                                <div className="space-y-4">
+                                <div className="space-y-3">
                                     {paginatedData.map((item, index) => {
                                         const isEntity = item['Entiteit/Attribuut'] === 'E';
                                         const itemId = isEntity ? item.Entiteitcode : `${item.Entiteitcode}_${item.Attribuutcode}`;
@@ -988,181 +988,150 @@
                                         return (
                                             <div 
                                                 key={index} 
-                                                className={`${darkMode ? 'bg-gray-800 text-gray-100' : 'bg-white'} rounded-lg shadow-sm border ${darkMode ? 'border-gray-700' : 'border-gray-200'} hover:shadow-md transition-all duration-200`}
+                                                className={`${darkMode ? 'bg-gray-800 text-gray-100' : 'bg-white'} rounded-lg shadow-sm p-4 hover:shadow-md transition-shadow`}
                                             >
-                                                {/* Header Section */}
-                                                <div className="p-4 pb-3">
-                                                    <div className="flex items-start justify-between">
-                                                        <div className="flex items-start space-x-3 flex-1 min-w-0">
-                                                            {isEntity ? (
-                                                                <Database className="h-5 w-5 text-blue-600 mt-1 flex-shrink-0" />
-                                                            ) : (
-                                                                <Package className="h-5 w-5 text-green-600 mt-1 flex-shrink-0" />
-                                                            )}
-                                                            <div className="flex-1 min-w-0">
-                                                                {/* Code and badges */}
-                                                                <div className="flex items-center space-x-3 mb-2">
-                                                                    <span className={`text-sm font-mono font-medium px-2 py-1 rounded ${darkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-700'}`}>
-                                                                        {itemId}
+                                                <div className="flex items-start justify-between">
+                                                    <div className="flex items-start space-x-3 flex-1">
+                                                        {isEntity ? (
+                                                            <Database className="h-5 w-5 text-blue-600 mt-1 flex-shrink-0" />
+                                                        ) : (
+                                                            <Package className="h-5 w-5 text-green-600 mt-1 flex-shrink-0" />
+                                                        )}
+                                                        <div className="flex-1 min-w-0">
+                                                            <div className="flex items-center space-x-2 flex-wrap mb-1">
+                                                                <span className="text-sm font-mono text-gray-500">
+                                                                    {itemId}
+                                                                </span>
+                                                                {item.Datatype && datatypeInfo[item.Datatype] && (
+                                                                    <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium ${datatypeInfo[item.Datatype].color} bg-gray-100`}>
+                                                                        {datatypeInfo[item.Datatype].label}
                                                                     </span>
-                                                                    <div className="flex items-center space-x-2 flex-wrap">
-                                                                        {item.Datatype && datatypeInfo[item.Datatype] && (
-                                                                            <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${datatypeInfo[item.Datatype].color} ${darkMode ? 'bg-gray-700' : 'bg-gray-100'}`}>
-                                                                                {datatypeInfo[item.Datatype].label}
-                                                                            </span>
-                                                                        )}
-                                                                        {item.Codelijst && codelistData[item.Codelijst] && (
-                                                                            <button
-                                                                                onClick={() => openCodelist(item.Codelijst, item.Naam)}
-                                                                                className="inline-flex items-center space-x-1 px-2 py-1 text-xs text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 rounded-full transition-colors"
-                                                                                title={`Bekijk codelijst ${item.Codelijst} (${codelistData[item.Codelijst].length} items)`}
-                                                                            >
-                                                                                <BookOpen className="h-3 w-3" />
-                                                                                <span>{item.Codelijst}</span>
-                                                                            </button>
-                                                                        )}
-                                                                    </div>
-                                                                </div>
-                                                                {/* Title */}
-                                                                <h3 className={`text-lg font-semibold ${darkMode ? 'text-gray-100' : 'text-gray-900'} mb-1 leading-tight`}>
-                                                                    {highlightText(item.Naam, searchTerm)}
-                                                                </h3>
-                                                            </div>
-                                                        </div>
-                                                        {/* Action buttons */}
-                                                        <div className="flex items-center space-x-2 ml-4 flex-shrink-0">
-                                                            <button
-                                                                onClick={() => copyToClipboard(itemId, itemId)}
-                                                                className={`p-2 rounded-lg transition-colors ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'}`}
-                                                                title="Kopieer code"
-                                                            >
-                                                                {copiedItem === itemId ? (
-                                                                    <Check className="h-4 w-4 text-green-500" />
-                                                                ) : (
-                                                                    <Copy className="h-4 w-4 text-gray-400" />
                                                                 )}
-                                                            </button>
-                                                            {!isEntity && (
-                                                                <button
-                                                                    onClick={() => copyFullAttributeInfo(item, `full-${itemId}`)}
-                                                                    className={`p-2 rounded-lg transition-colors ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'}`}
-                                                                    title="Kopieer volledige attribuut info (Entiteit, Code, Omschrijving, Codelijst)"
-                                                                >
-                                                                    {copiedItem === `full-${itemId}` ? (
-                                                                        <Check className="h-4 w-4 text-green-500" />
-                                                                    ) : (
-                                                                        <ClipboardList className="h-4 w-4 text-gray-400" />
-                                                                    )}
-                                                                </button>
+                                                                {item.Codelijst && codelistData[item.Codelijst] && (
+                                                                    <button
+                                                                        onClick={() => openCodelist(item.Codelijst, item.Naam)}
+                                                                        className="inline-flex items-center space-x-1 text-xs text-blue-600 hover:text-blue-800 underline"
+                                                                        title={`Bekijk codelijst ${item.Codelijst} (${codelistData[item.Codelijst].length} items)`}
+                                                                    >
+                                                                        <BookOpen className="h-3 w-3" />
+                                                                        <span>{item.Codelijst}</span>
+                                                                    </button>
+                                                                )}
+                                                            </div>
+                                                            <h3 className={`font-semibold ${darkMode ? 'text-gray-100' : 'text-gray-900'} mb-1`}>
+                                                                {highlightText(item.Naam, searchTerm)}
+                                                            </h3>
+                                                            {item.Omschrijving && (
+                                                                <p className={`${darkMode ? 'text-gray-300' : 'text-gray-600'} text-sm mb-2`}>
+                                                                    {highlightText(item.Omschrijving, searchTerm)}
+                                                                </p>
                                                             )}
-                                                        </div>
-                                                    </div>
-                                                </div>
-
-                                                {/* Description Section */}
-                                                {item.Omschrijving && (
-                                                    <div className={`px-4 pb-3 border-t ${darkMode ? 'border-gray-700' : 'border-gray-100'}`}>
-                                                        <div className="pt-3">
-                                                            <p className={`${darkMode ? 'text-gray-300' : 'text-gray-600'} leading-relaxed`}>
-                                                                {highlightText(item.Omschrijving, searchTerm)}
-                                                            </p>
-                                                        </div>
-                                                    </div>
-                                                )}
-                                                
-                                                {/* Technical Details Section */}
-                                                {!isEntity && (
-                                                    <div className={`px-4 pb-4 border-t ${darkMode ? 'border-gray-700' : 'border-gray-100'}`}>
-                                                        <div className="pt-3">
-                                                            <h4 className={`text-xs font-medium uppercase tracking-wider mb-3 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                                                                Technische Details
-                                                            </h4>
-                                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                                                {/* Basic Technical Info */}
-                                                                <div className="space-y-2">
+                                                            
+                                                            {/* Extra attribuut informatie */}
+                                                            {!isEntity && (
+                                                                <div className="space-y-1 text-xs text-gray-500">
                                                                     {item.Formaat && (
-                                                                        <div className="flex items-center justify-between">
-                                                                            <span className="text-xs font-medium text-gray-500">Formaat:</span>
-                                                                            <code className={`text-xs px-2 py-1 rounded ${darkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-700'}`}>
+                                                                        <div className="flex items-center space-x-2">
+                                                                            <span className="font-medium">Formaat:</span>
+                                                                            <code className={`px-1 py-0.5 rounded ${darkMode ? 'bg-gray-700' : 'bg-gray-100'}`}>
                                                                                 {item.Formaat}
                                                                             </code>
                                                                         </div>
                                                                     )}
                                                                     {(() => {
+                                                                        // ANVA code opzoeken
                                                                         const fullCode = `${item.Entiteitcode}_${item.Attribuutcode}`;
                                                                         const anvaInfo = anvaData[fullCode];
                                                                         if (anvaInfo && anvaInfo.code) {
                                                                             return (
-                                                                                <div className="flex items-center justify-between">
-                                                                                    <span className="text-xs font-medium text-gray-500">ANVA:</span>
-                                                                                    <div className="flex items-center space-x-1">
-                                                                                        <code className={`text-xs px-2 py-1 rounded ${darkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-700'}`}>
-                                                                                            {anvaInfo.code}
-                                                                                        </code>
-                                                                                        {anvaInfo.afwijkendNietToegestaan === 'J' && (
-                                                                                            <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800" title="Afwijkend niet toegestaan">
-                                                                                                ⚠️
-                                                                                            </span>
-                                                                                        )}
-                                                                                    </div>
+                                                                                <div className="flex items-center space-x-2">
+                                                                                    <span className="font-medium">ANVA:</span>
+                                                                                    <code className={`px-1 py-0.5 rounded ${darkMode ? 'bg-gray-700' : 'bg-gray-100'}`}>
+                                                                                        {anvaInfo.code}
+                                                                                    </code>
+                                                                                    {anvaInfo.afwijkendNietToegestaan === 'J' && (
+                                                                                        <span className="inline-flex items-center px-1 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">
+                                                                                            ⚠️
+                                                                                        </span>
+                                                                                    )}
                                                                                 </div>
                                                                             );
                                                                         }
                                                                         return null;
                                                                     })()}
                                                                     {item.Lengte && (
-                                                                        <div className="flex items-center justify-between">
-                                                                            <span className="text-xs font-medium text-gray-500">Lengte:</span>
-                                                                            <span className="text-xs text-gray-700">{item.Lengte}</span>
+                                                                        <div className="flex items-center space-x-2">
+                                                                            <span className="font-medium">Lengte:</span>
+                                                                            <span>{item.Lengte}</span>
                                                                         </div>
                                                                     )}
                                                                     {item.Decimalen && (
-                                                                        <div className="flex items-center justify-between">
-                                                                            <span className="text-xs font-medium text-gray-500">Decimalen:</span>
-                                                                            <span className="text-xs text-gray-700">{item.Decimalen}</span>
+                                                                        <div className="flex items-center space-x-2">
+                                                                            <span className="font-medium">Decimalen:</span>
+                                                                            <span>{item.Decimalen}</span>
                                                                         </div>
                                                                     )}
-                                                                </div>
-
-                                                                {/* Status & Special Properties */}
-                                                                <div className="space-y-2">
                                                                     {item.Verplicht && (
-                                                                        <div className="flex items-center justify-between">
-                                                                            <span className="text-xs font-medium text-gray-500">Verplicht:</span>
-                                                                            <span className={`text-xs font-medium ${item.Verplicht === 'J' ? 'text-red-600' : 'text-green-600'}`}>
+                                                                        <div className="flex items-center space-x-2">
+                                                                            <span className="font-medium">Verplicht:</span>
+                                                                            <span className={item.Verplicht === 'J' ? 'text-red-600' : 'text-green-600'}>
                                                                                 {item.Verplicht === 'J' ? 'Ja' : 'Nee'}
                                                                             </span>
                                                                         </div>
                                                                     )}
+                                                                    {item.Primairesleutel && item.Primairesleutel === 'J' && (
+                                                                        <div className="flex items-center space-x-2">
+                                                                            <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-yellow-200 text-yellow-800">
+                                                                                🔑 Primaire sleutel
+                                                                            </span>
+                                                                        </div>
+                                                                    )}
+                                                                    {item.Vreemdessleutel && item.Vreemdessleutel === 'J' && (
+                                                                        <div className="flex items-center space-x-2">
+                                                                            <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                                                                                🔗 Vreemde sleutel
+                                                                            </span>
+                                                                        </div>
+                                                                    )}
                                                                     {item.Defaultwaarde && (
-                                                                        <div className="flex items-center justify-between">
-                                                                            <span className="text-xs font-medium text-gray-500">Default:</span>
-                                                                            <code className={`text-xs px-2 py-1 rounded ${darkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-700'}`}>
+                                                                        <div className="flex items-center space-x-2">
+                                                                            <span className="font-medium">Default:</span>
+                                                                            <code className={`px-1 py-0.5 rounded ${darkMode ? 'bg-gray-700' : 'bg-gray-100'}`}>
                                                                                 {item.Defaultwaarde}
                                                                             </code>
                                                                         </div>
                                                                     )}
-                                                                    {(item.Primairesleutel === 'J' || item.Vreemdessleutel === 'J') && (
-                                                                        <div className="pt-1">
-                                                                            <div className="flex flex-wrap gap-1">
-                                                                                {item.Primairesleutel === 'J' && (
-                                                                                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                                                                                        🔑 Primaire sleutel
-                                                                                    </span>
-                                                                                )}
-                                                                                {item.Vreemdessleutel === 'J' && (
-                                                                                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                                                                        🔗 Vreemde sleutel
-                                                                                    </span>
-                                                                                )}
-                                                                            </div>
-                                                                        </div>
-                                                                    )}
                                                                 </div>
-                                                            </div>
+                                                            )}
                                                         </div>
                                                     </div>
-                                                )}
+                                                    <div className="flex items-center space-x-1 ml-2">
+                                                        <button
+                                                            onClick={() => copyToClipboard(itemId, itemId)}
+                                                            className="p-1 hover:bg-gray-100 rounded"
+                                                            title="Kopieer code"
+                                                        >
+                                                            {copiedItem === itemId ? (
+                                                                <Check className="h-4 w-4 text-green-500" />
+                                                            ) : (
+                                                                <Copy className="h-4 w-4 text-gray-400" />
+                                                            )}
+                                                        </button>
+                                                        {!isEntity && (
+                                                            <button
+                                                                onClick={() => copyFullAttributeInfo(item, `full-${itemId}`)}
+                                                                className="p-1 hover:bg-gray-100 rounded"
+                                                                title="Kopieer volledige attribuut info (Entiteit, Code, Omschrijving, Codelijst)"
+                                                            >
+                                                                {copiedItem === `full-${itemId}` ? (
+                                                                    <Check className="h-4 w-4 text-green-500" />
+                                                                ) : (
+                                                                    <ClipboardList className="h-4 w-4 text-gray-400" />
+                                                                )}
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                </div>
                                             </div>
                                         );
                                     })}
