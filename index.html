@@ -644,6 +644,8 @@
                 );
             }, [selectedCodelist, codelistData, codelistSearch]);
 
+            const totalPages = Math.ceil(filteredData.length / ITEMS_PER_PAGE);
+
             // Filtered codelist items
             const filteredCodelistItems = useMemo(() => {
                 if (!selectedCodelist || !codelistData[selectedCodelist.codelijst]) return [];
@@ -657,8 +659,6 @@
                     item.omschrijving.toLowerCase().includes(searchLower)
                 );
             }, [selectedCodelist, codelistData, codelistSearch]);
-
-            const totalPages = Math.ceil(filteredData.length / ITEMS_PER_PAGE);
 
             // Open codelist
             const openCodelist = useCallback((codelijst, naam) => {
