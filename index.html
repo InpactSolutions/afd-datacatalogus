@@ -359,6 +359,12 @@
             </svg>
         );
 
+        const Moon = ({ className }) => (
+            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+            </svg>
+        );
+
         const BookOpen = ({ className }) => (
             <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
@@ -631,7 +637,7 @@
             }, [filteredData, currentPage]);
 
             // Filtered codelist items
-            const filteredCodelistItems = useMemo(() => {
+            const codelistItems = useMemo(() => {
                 if (!selectedCodelist || !codelistData[selectedCodelist.codelijst]) return [];
                 
                 const items = codelistData[selectedCodelist.codelijst];
@@ -645,20 +651,6 @@
             }, [selectedCodelist, codelistData, codelistSearch]);
 
             const totalPages = Math.ceil(filteredData.length / ITEMS_PER_PAGE);
-
-            // Filtered codelist items
-            const filteredCodelistItems = useMemo(() => {
-                if (!selectedCodelist || !codelistData[selectedCodelist.codelijst]) return [];
-                
-                const items = codelistData[selectedCodelist.codelijst];
-                if (!codelistSearch) return items;
-                
-                const searchLower = codelistSearch.toLowerCase();
-                return items.filter(item => 
-                    item.code.toLowerCase().includes(searchLower) ||
-                    item.omschrijving.toLowerCase().includes(searchLower)
-                );
-            }, [selectedCodelist, codelistData, codelistSearch]);
 
             // Open codelist
             const openCodelist = useCallback((codelijst, naam) => {
@@ -996,7 +988,7 @@
                                             <h2 className="text-xl font-bold">Codelijst: {selectedCodelist.codelijst}</h2>
                                             <p className="text-sm text-gray-500 mt-1">{selectedCodelist.naam}</p>
                                             <p className="text-sm text-gray-500">
-                                                {filteredCodelistItems.length} van {codelistData[selectedCodelist.codelijst]?.length || 0} items
+                                                {codelistItems.length} van {codelistData[selectedCodelist.codelijst]?.length || 0} items
                                             </p>
                                         </div>
                                         <button
@@ -1035,7 +1027,7 @@
                                 </div>
                                 
                                 <div className="flex-1 overflow-y-auto min-h-0 p-6">
-                                    {filteredCodelistItems.length === 0 ? (
+                                    {codelistItems.length === 0 ? (
                                         <div className="text-center py-8">
                                             <p className="text-gray-500">
                                                 {codelistSearch ? 'Geen items gevonden voor deze zoekopdracht' : 'Geen items in deze codelijst'}
@@ -1043,7 +1035,7 @@
                                         </div>
                                     ) : (
                                         <div className="space-y-2">
-                                            {filteredCodelistItems.map((item, index) => (
+                                            {codelistItems.map((item, index) => (
                                                 <div 
                                                     key={index}
                                                     className={`flex items-start justify-between p-3 rounded-lg hover:shadow-sm transition-shadow ${
