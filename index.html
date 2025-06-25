@@ -1173,12 +1173,14 @@
                     {/* Codelist Modal */}
                     {selectedCodelist && (
                         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                            <div className={`${darkMode ? 'bg-gray-800 text-gray-100' : 'bg-white'} rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col`}>
-                                <div className="flex-shrink-0 p-6 border-b">
+                            <div className={`${darkMode ? 'bg-gray-800 text-gray-100' : 'bg-white'} rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col`}>
+                                <div className="flex-shrink-0 p-6 border-b ${darkMode ? 'border-gray-700' : 'border-gray-200'}">
                                     <div className="flex items-start justify-between">
-                                        <div>
-                                            <h2 className="text-xl font-bold">Codelijst: {selectedCodelist.codelijst}</h2>
-                                            <p className="text-sm text-gray-500 mt-1">{selectedCodelist.naam}</p>
+                                        <div className="flex-1 min-w-0">
+                                            <h2 className={`text-xl font-bold ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
+                                                Codelijst: {selectedCodelist.codelijst}
+                                            </h2>
+                                            <p className="text-sm text-gray-500 mt-1 truncate">{selectedCodelist.naam}</p>
                                             <p className="text-sm text-gray-500">
                                                 {codelistItems.length} van {codelistData[selectedCodelist.codelijst]?.length || 0} items
                                             </p>
@@ -1188,22 +1190,22 @@
                                                 setSelectedCodelist(null);
                                                 setCodelistSearch('');
                                             }}
-                                            className="p-2 hover:bg-gray-100 rounded-lg"
+                                            className={`ml-4 p-2 rounded-lg flex-shrink-0 ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'}`}
                                         >
                                             <X className="h-5 w-5" />
                                         </button>
                                     </div>
                                     <div className="mt-4">
                                         <div className="relative">
-                                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
                                             <input
                                                 type="text"
                                                 value={codelistSearch}
                                                 onChange={(e) => setCodelistSearch(e.target.value)}
                                                 placeholder="Zoek in codelijst..."
-                                                className={`w-full pl-9 pr-4 py-2 border rounded-lg ${
-                                                    darkMode ? 'bg-gray-700 border-gray-600' : ''
-                                                }`}
+                                                className={`w-full pl-10 pr-10 py-2 border rounded-lg ${
+                                                    darkMode ? 'bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
+                                                } focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
                                                 autoFocus
                                             />
                                             {codelistSearch && (
@@ -1211,14 +1213,14 @@
                                                     onClick={() => setCodelistSearch('')}
                                                     className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
                                                 >
-                                                    ✕
+                                                    <X className="h-4 w-4" />
                                                 </button>
                                             )}
                                         </div>
                                     </div>
                                 </div>
                                 
-                                <div className="flex-1 overflow-y-auto min-h-0 p-6">
+                                <div className="flex-1 overflow-y-auto min-h-0 p-4">
                                     {codelistItems.length === 0 ? (
                                         <div className="text-center py-8">
                                             <p className="text-gray-500">
@@ -1234,9 +1236,11 @@
                                                         darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-50 hover:bg-gray-100'
                                                     }`}
                                                 >
-                                                    <div className="flex-1 min-w-0 pr-2">
-                                                        <div className="flex items-center space-x-2">
-                                                            <code className="font-mono text-sm font-semibold text-blue-600">
+                                                    <div className="flex-1 min-w-0 pr-3">
+                                                        <div className="flex items-center space-x-2 mb-1">
+                                                            <code className={`font-mono text-sm font-semibold px-2 py-1 rounded ${
+                                                                darkMode ? 'bg-gray-800 text-blue-400' : 'bg-blue-50 text-blue-600'
+                                                            }`}>
                                                                 {highlightText(String(item.code), codelistSearch)}
                                                             </code>
                                                             {item.actief === 'J' && (
@@ -1250,13 +1254,15 @@
                                                                 </span>
                                                             )}
                                                         </div>
-                                                        <p className="text-sm mt-1 text-gray-700 break-words">
+                                                        <p className={`text-sm break-words ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
                                                             {highlightText(String(item.omschrijving), codelistSearch)}
                                                         </p>
                                                     </div>
                                                     <button
                                                         onClick={() => copyToClipboard(String(item.code), `cl-${index}`)}
-                                                        className="flex-shrink-0 p-1 hover:bg-gray-200 rounded transition-colors"
+                                                        className={`flex-shrink-0 p-2 rounded transition-colors ${
+                                                            darkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-200'
+                                                        }`}
                                                         title="Kopieer code"
                                                     >
                                                         {copiedItem === `cl-${index}` ? 
