@@ -4,23 +4,284 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AFD 1.0 Datacatalogus</title>
-    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- React -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel voor JSX -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide-react/0.263.1/lucide-react.min.js"></script>
+    
+    <!-- PapaParse voor CSV -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-        }
-    </script>
+    
+    <!-- Inline CSS styling (geen externe dependencies) -->
     <style>
-        .line-clamp-2 {
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #374151;
+        }
+
+        .bg-gray-50 { background-color: #f9fafb; }
+        .bg-white { background-color: #ffffff; }
+        .bg-gray-100 { background-color: #f3f4f6; }
+        .bg-gray-200 { background-color: #e5e7eb; }
+        .bg-gray-700 { background-color: #374151; }
+        .bg-gray-800 { background-color: #1f2937; }
+        .bg-gray-900 { background-color: #111827; }
+        .bg-blue-500 { background-color: #3b82f6; }
+        .bg-blue-100 { background-color: #dbeafe; }
+        .bg-green-100 { background-color: #dcfce7; }
+        .bg-yellow-200 { background-color: #fef08a; }
+        .bg-yellow-800 { background-color: #92400e; }
+        .bg-red-600 { background-color: #dc2626; }
+
+        .text-white { color: #ffffff; }
+        .text-gray-100 { color: #f3f4f6; }
+        .text-gray-300 { color: #d1d5db; }
+        .text-gray-400 { color: #9ca3af; }
+        .text-gray-500 { color: #6b7280; }
+        .text-gray-600 { color: #4b5563; }
+        .text-gray-700 { color: #374151; }
+        .text-gray-900 { color: #111827; }
+        .text-blue-600 { color: #2563eb; }
+        .text-blue-800 { color: #1e40af; }
+        .text-green-600 { color: #16a34a; }
+        .text-green-500 { color: #22c55e; }
+        .text-purple-600 { color: #9333ea; }
+        .text-yellow-600 { color: #ca8a04; }
+        .text-indigo-600 { color: #4f46e5; }
+        .text-orange-600 { color: #ea580c; }
+        .text-red-600 { color: #dc2626; }
+
+        .border { border: 1px solid #e5e7eb; }
+        .border-gray-200 { border-color: #e5e7eb; }
+        .border-gray-600 { border-color: #4b5563; }
+        .border-gray-700 { border-color: #374151; }
+        .border-b { border-bottom: 1px solid #e5e7eb; }
+
+        .rounded { border-radius: 0.25rem; }
+        .rounded-lg { border-radius: 0.5rem; }
+        .rounded-full { border-radius: 9999px; }
+
+        .shadow-sm { box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); }
+        .shadow-md { box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+        .shadow-xl { box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); }
+
+        .p-1 { padding: 0.25rem; }
+        .p-2 { padding: 0.5rem; }
+        .p-4 { padding: 1rem; }
+        .p-6 { padding: 1.5rem; }
+        .p-12 { padding: 3rem; }
+        .px-1 { padding-left: 0.25rem; padding-right: 0.25rem; }
+        .px-2 { padding-left: 0.5rem; padding-right: 0.5rem; }
+        .px-3 { padding-left: 0.75rem; padding-right: 0.75rem; }
+        .px-4 { padding-left: 1rem; padding-right: 1rem; }
+        .py-1 { padding-top: 0.25rem; padding-bottom: 0.25rem; }
+        .py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
+        .py-3 { padding-top: 0.75rem; padding-bottom: 0.75rem; }
+        .py-4 { padding-top: 1rem; padding-bottom: 1rem; }
+        .py-6 { padding-top: 1.5rem; padding-bottom: 1.5rem; }
+        .py-12 { padding-top: 3rem; padding-bottom: 3rem; }
+        .pl-10 { padding-left: 2.5rem; }
+        .pr-4 { padding-right: 1rem; }
+        .mt-1 { margin-top: 0.25rem; }
+        .mt-2 { margin-top: 0.5rem; }
+        .mt-4 { margin-top: 1rem; }
+        .mt-6 { margin-top: 1.5rem; }
+        .mb-1 { margin-bottom: 0.25rem; }
+        .mb-2 { margin-bottom: 0.5rem; }
+        .mb-4 { margin-bottom: 1rem; }
+        .mb-6 { margin-bottom: 1.5rem; }
+        .ml-2 { margin-left: 0.5rem; }
+        .mx-auto { margin-left: auto; margin-right: auto; }
+
+        .w-full { width: 100%; }
+        .h-4 { height: 1rem; }
+        .h-5 { height: 1.25rem; }
+        .h-8 { height: 2rem; }
+        .h-12 { height: 3rem; }
+        .h-16 { height: 4rem; }
+        .h-screen { height: 100vh; }
+        .min-h-screen { min-height: 100vh; }
+        .max-w-2xl { max-width: 42rem; }
+        .max-w-7xl { max-width: 80rem; }
+        .max-w-lg { max-width: 32rem; }
+
+        .flex { display: flex; }
+        .inline-flex { display: inline-flex; }
+        .items-center { align-items: center; }
+        .items-start { align-items: flex-start; }
+        .justify-center { justify-content: center; }
+        .justify-between { justify-content: space-between; }
+        .flex-1 { flex: 1 1 0%; }
+        .flex-shrink-0 { flex-shrink: 0; }
+        .flex-wrap { flex-wrap: wrap; }
+
+        .space-x-1 > * + * { margin-left: 0.25rem; }
+        .space-x-2 > * + * { margin-left: 0.5rem; }
+        .space-x-3 > * + * { margin-left: 0.75rem; }
+        .space-x-4 > * + * { margin-left: 1rem; }
+        .space-y-1 > * + * { margin-top: 0.25rem; }
+        .space-y-2 > * + * { margin-top: 0.5rem; }
+        .space-y-3 > * + * { margin-top: 0.75rem; }
+        .space-y-4 > * + * { margin-top: 1rem; }
+
+        .gap-2 { gap: 0.5rem; }
+        .gap-3 { gap: 0.75rem; }
+        .gap-4 { gap: 1rem; }
+
+        .text-xs { font-size: 0.75rem; }
+        .text-sm { font-size: 0.875rem; }
+        .text-lg { font-size: 1.125rem; }
+        .text-xl { font-size: 1.25rem; }
+        .text-2xl { font-size: 1.5rem; }
+        .text-6xl { font-size: 3.75rem; }
+
+        .font-mono { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; }
+        .font-medium { font-weight: 500; }
+        .font-semibold { font-weight: 600; }
+        .font-bold { font-weight: 700; }
+
+        .text-center { text-align: center; }
+        .text-left { text-align: left; }
+
+        .list-disc { list-style-type: disc; }
+        .list-inside { list-style-position: inside; }
+
+        .underline { text-decoration: underline; }
+
+        .cursor-not-allowed { cursor: not-allowed; }
+
+        .transform { transform: translateZ(0); }
+        .translate-y-1\/2 { transform: translateY(-50%); }
+
+        .absolute { position: absolute; }
+        .relative { position: relative; }
+        .sticky { position: sticky; }
+        .top-0 { top: 0; }
+        .top-1\/2 { top: 50%; }
+        .left-3 { left: 0.75rem; }
+        .right-3 { right: 0.75rem; }
+
+        .z-10 { z-index: 10; }
+
+        .overflow-hidden { overflow: hidden; }
+        .min-w-0 { min-width: 0; }
+
+        .transition-shadow { transition: box-shadow 0.15s ease-in-out; }
+
+        .hover\:bg-gray-50:hover { background-color: #f9fafb; }
+        .hover\:bg-gray-100:hover { background-color: #f3f4f6; }
+        .hover\:bg-gray-700:hover { background-color: #374151; }
+        .hover\:text-gray-600:hover { color: #4b5563; }
+        .hover\:text-blue-800:hover { color: #1e40af; }
+        .hover\:shadow-md:hover { box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+
+        .focus\:ring-2:focus { 
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5); 
+        }
+        .focus\:border-transparent:focus { border-color: transparent; }
+
+        .disabled\:bg-gray-100:disabled { background-color: #f3f4f6; }
+        .disabled\:text-gray-400:disabled { color: #9ca3af; }
+        .disabled\:cursor-not-allowed:disabled { cursor: not-allowed; }
+
+        .animate-spin {
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Dark mode styles */
+        .dark .bg-gray-50 { background-color: #111827; }
+        .dark .bg-white { background-color: #1f2937; }
+        .dark .bg-gray-100 { background-color: #374151; }
+        .dark .bg-gray-700 { background-color: #4b5563; }
+        .dark .bg-gray-800 { background-color: #1f2937; }
+        .dark .bg-gray-900 { background-color: #111827; }
+        .dark .text-gray-100 { color: #f3f4f6; }
+        .dark .text-gray-300 { color: #d1d5db; }
+        .dark .text-gray-400 { color: #9ca3af; }
+        .dark .text-gray-500 { color: #6b7280; }
+        .dark .border-gray-600 { border-color: #4b5563; }
+        .dark .border-gray-700 { border-color: #374151; }
+        .dark .placeholder-gray-400::placeholder { color: #9ca3af; }
+        .dark .hover\:bg-gray-700:hover { background-color: #374151; }
+        .dark .bg-yellow-800 { background-color: #92400e; }
+
+        /* Input styling */
+        input, select {
+            appearance: none;
+            background-color: white;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            padding: 0.5rem 0.75rem;
+            font-size: 1rem;
+            line-height: 1.5;
+            color: #111827;
+        }
+
+        .dark input, .dark select {
+            background-color: #374151;
+            border-color: #4b5563;
+            color: #f3f4f6;
+        }
+
+        button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-family: inherit;
+        }
+
+        button:disabled {
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        /* Mark styling */
+        mark {
+            background-color: #fef08a;
+            padding: 0.125rem;
+            border-radius: 0.125rem;
+        }
+
+        .dark mark {
+            background-color: #92400e;
+            color: #fef3c7;
+        }
+
+        /* Code styling */
+        code {
+            font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+            font-size: 0.875rem;
+            background-color: #f3f4f6;
+            padding: 0.125rem 0.25rem;
+            border-radius: 0.25rem;
+        }
+
+        .dark code {
+            background-color: #374151;
+        }
+
+        /* Responsive */
+        @media (min-width: 640px) {
+            .sm\:px-6 { padding-left: 1.5rem; padding-right: 1.5rem; }
+        }
+
+        @media (min-width: 1024px) {
+            .lg\:px-8 { padding-left: 2rem; padding-right: 2rem; }
         }
     </style>
 </head>
@@ -29,23 +290,77 @@
 
     <script type="text/babel">
         const { useState, useEffect, useMemo, useCallback, useRef } = React;
-        const { 
-            Search, Filter, ChevronRight, Database, Code, FileText, Hash, Type, Calendar, 
-            ToggleLeft, Package, Copy, Check, Sun, Moon, Grid, List, Info, Clock,
-            Star, Link2, Home, ChevronDown, X, Settings, HelpCircle, BookOpen
-        } = lucideReact;
+
+        // SVG Icons als React componenten
+        const Search = ({ className }) => (
+            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="m21 21-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+        );
+
+        const Database = ({ className }) => (
+            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <ellipse cx="12" cy="5" rx="9" ry="3"/>
+                <path d="m21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/>
+                <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
+            </svg>
+        );
+
+        const Package = ({ className }) => (
+            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path d="m7.5 4.27 9 5.15"/>
+                <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/>
+                <path d="m3.3 7 8.7 5 8.7-5"/>
+                <path d="M12 22V12"/>
+            </svg>
+        );
+
+        const Filter = ({ className }) => (
+            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <polygon points="22,3 2,3 10,12.46 10,19 14,21 14,12.46"/>
+            </svg>
+        );
+
+        const Copy = ({ className }) => (
+            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <rect width="14" height="14" x="8" y="8" rx="2" ry="2"/>
+                <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>
+            </svg>
+        );
+
+        const Check = ({ className }) => (
+            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <polyline points="20,6 9,17 4,12"/>
+            </svg>
+        );
+
+        const Sun = ({ className }) => (
+            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="5"/>
+                <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+            </svg>
+        );
+
+        const Moon = ({ className }) => (
+            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+            </svg>
+        );
 
         // Mock file system voor GitHub Pages
         window.fs = {
             readFile: async (filename, options = {}) => {
                 try {
+                    console.log(`Attempting to load: ${filename}`);
                     const response = await fetch(filename);
                     if (!response.ok) {
-                        throw new Error(`Bestand niet gevonden: ${filename}`);
+                        throw new Error(`Bestand niet gevonden: ${filename} (Status: ${response.status})`);
                     }
                     
                     if (options.encoding === 'utf8') {
-                        return await response.text();
+                        const text = await response.text();
+                        console.log(`Successfully loaded: ${filename} (${text.length} characters)`);
+                        return text;
                     }
                     
                     const arrayBuffer = await response.arrayBuffer();
@@ -67,7 +382,6 @@
             const [loading, setLoading] = useState(true);
             const [error, setError] = useState(null);
             const [stats, setStats] = useState({ total: 0, entities: 0, attributes: 0 });
-            const [viewMode, setViewMode] = useState('expanded');
             const [darkMode, setDarkMode] = useState(false);
             const [copiedItem, setCopiedItem] = useState(null);
             const [currentPage, setCurrentPage] = useState(1);
@@ -77,16 +391,16 @@
 
             // Datatype info
             const datatypeInfo = {
-                'JN': { label: 'Ja/Nee', icon: ToggleLeft, color: 'text-blue-600' },
-                'A0': { label: 'Alfanumeriek', icon: Type, color: 'text-green-600' },
-                'A1': { label: 'Alfanumeriek', icon: Type, color: 'text-green-600' },
-                'A2': { label: 'Alfanumeriek', icon: Type, color: 'text-green-600' },
-                'D1': { label: 'Datum', icon: Calendar, color: 'text-purple-600' },
-                'D3': { label: 'Datum', icon: Calendar, color: 'text-purple-600' },
-                'B2': { label: 'Bedrag', icon: Hash, color: 'text-yellow-600' },
-                'T1': { label: 'Tijd', icon: Calendar, color: 'text-indigo-600' },
-                'P3': { label: 'Percentage', icon: Hash, color: 'text-orange-600' },
-                'ME': { label: 'Memo', icon: FileText, color: 'text-gray-600' }
+                'JN': { label: 'Ja/Nee', color: 'text-blue-600' },
+                'A0': { label: 'Alfanumeriek', color: 'text-green-600' },
+                'A1': { label: 'Alfanumeriek', color: 'text-green-600' },
+                'A2': { label: 'Alfanumeriek', color: 'text-green-600' },
+                'D1': { label: 'Datum', color: 'text-purple-600' },
+                'D3': { label: 'Datum', color: 'text-purple-600' },
+                'B2': { label: 'Bedrag', color: 'text-yellow-600' },
+                'T1': { label: 'Tijd', color: 'text-indigo-600' },
+                'P3': { label: 'Percentage', color: 'text-orange-600' },
+                'ME': { label: 'Memo', color: 'text-gray-600' }
             };
 
             // Debounce search term
@@ -142,7 +456,9 @@
             useEffect(() => {
                 const loadData = async () => {
                     try {
+                        console.log('🔄 Starting to load AFD data...');
                         const csvContent = await window.fs.readFile('data.csv', { encoding: 'utf8' });
+                        console.log('✅ CSV loaded successfully, parsing...');
                         
                         const parsed = Papa.parse(csvContent, {
                             header: true,
@@ -150,6 +466,8 @@
                             skipEmptyLines: true,
                             delimitersToGuess: [',', '\t', '|', ';']
                         });
+
+                        console.log(`📊 Parsed ${parsed.data.length} rows`);
 
                         const cleanedData = parsed.data.map(row => {
                             const cleanRow = {};
@@ -169,9 +487,11 @@
                             attributes
                         });
                         
+                        console.log(`🎉 Data loaded: ${cleanedData.length} total, ${entities} entities, ${attributes} attributes`);
                         setLoading(false);
                     } catch (err) {
-                        setError('Fout bij het laden van data: ' + err.message);
+                        console.error('❌ Error loading data:', err);
+                        setError(err.message);
                         setLoading(false);
                     }
                 };
@@ -271,254 +591,298 @@
                 const parts = text.split(new RegExp(`(${term})`, 'gi'));
                 return parts.map((part, i) => 
                     part.toLowerCase() === term.toLowerCase() 
-                        ? React.createElement('mark', { key: i, className: "bg-yellow-200 dark:bg-yellow-800 px-0.5 rounded" }, part)
+                        ? <mark key={i}>{part}</mark>
                         : part
                 );
             };
 
             if (loading) {
-                return React.createElement('div', { 
-                    className: `flex items-center justify-center h-screen ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}` 
-                }, 
-                    React.createElement('div', { className: "text-center" },
-                        React.createElement('div', { className: "animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto" }),
-                        React.createElement('p', { 
-                            className: `mt-4 ${darkMode ? 'text-gray-300' : 'text-gray-600'}` 
-                        }, "AFD datacatalogus laden...")
-                    )
+                return (
+                    <div className={`flex items-center justify-center h-screen ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
+                        <div className="text-center">
+                            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
+                            <p className={`mt-4 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                                AFD datacatalogus laden...
+                            </p>
+                        </div>
+                    </div>
                 );
             }
 
             if (error) {
-                return React.createElement('div', { 
-                    className: `flex items-center justify-center h-screen ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}` 
-                }, 
-                    React.createElement('div', { className: "text-center max-w-lg mx-auto p-6" },
-                        React.createElement('div', { className: "text-red-600 mb-4" },
-                            React.createElement('div', { className: "text-6xl mb-4" }, "⚠️"),
-                            React.createElement('h2', { className: "text-xl font-bold mb-2" }, "Fout bij laden"),
-                            React.createElement('p', { className: "text-sm" }, error)
-                        ),
-                        React.createElement('div', { className: "text-sm text-gray-600 dark:text-gray-400 mt-6 space-y-2" },
-                            React.createElement('p', null, "Controleer of de volgende bestanden aanwezig zijn:"),
-                            React.createElement('ul', { className: "list-disc list-inside space-y-1" },
-                                React.createElement('li', null, "data.csv - Je AFD data"),
-                                React.createElement('li', null, "Codelist.afm.csv - Je codelijst (optioneel)")
-                            ),
-                            React.createElement('p', { className: "mt-4 font-semibold" }, "Bestanden moeten in de root van je repository staan!")
-                        )
-                    )
+                return (
+                    <div className={`flex items-center justify-center h-screen ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
+                        <div className="text-center max-w-lg mx-auto p-6">
+                            <div className="text-red-600 mb-4">
+                                <div className="text-6xl mb-4">⚠️</div>
+                                <h2 className="text-xl font-bold mb-2">Fout bij laden</h2>
+                                <p className="text-sm mb-4">{error}</p>
+                            </div>
+                            <div className="text-sm text-gray-600 space-y-2">
+                                <p><strong>Controleer het volgende:</strong></p>
+                                <ul className="list-disc list-inside space-y-1 text-left">
+                                    <li>Het bestand <code>data.csv</code> staat in de root van je repository</li>
+                                    <li>Het bestand heeft exact de naam <code>data.csv</code> (let op hoofdletters)</li>
+                                    <li>Het CSV bestand is geldig en UTF-8 encoded</li>
+                                    <li>GitHub Pages is correct ingesteld</li>
+                                </ul>
+                                <p className="mt-4">
+                                    <strong>Test:</strong> <a 
+                                        href="data.csv" 
+                                        target="_blank" 
+                                        className="text-blue-600 underline"
+                                    >
+                                        Probeer data.csv direct te openen
+                                    </a>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
                 );
             }
 
-            const containerClass = darkMode ? 'dark bg-gray-900 text-gray-100' : 'bg-gray-50';
-            const cardClass = darkMode ? 'bg-gray-800 text-gray-100' : 'bg-white';
+            return (
+                <div className={`min-h-screen ${darkMode ? 'dark bg-gray-900 text-gray-100' : 'bg-gray-50'}`}>
+                    {/* Header */}
+                    <div className={`${darkMode ? 'bg-gray-800 text-gray-100' : 'bg-white'} shadow-sm border-b ${darkMode ? 'border-gray-700' : ''}`}>
+                        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center space-x-3">
+                                    <Database className="h-8 w-8 text-blue-600" />
+                                    <div>
+                                        <h1 className={`text-2xl font-bold ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
+                                            AFD 1.0 Datacatalogus
+                                        </h1>
+                                        <div className="flex items-center space-x-4 text-sm text-gray-500">
+                                            <span>{stats.total.toLocaleString()} items</span>
+                                            <span>•</span>
+                                            <span>{stats.entities} entiteiten</span>
+                                            <span>•</span>
+                                            <span>{stats.attributes.toLocaleString()} attributen</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={() => setDarkMode(!darkMode)}
+                                    className="p-2 rounded-lg hover:bg-gray-100"
+                                    title={darkMode ? 'Light mode' : 'Dark mode'}
+                                >
+                                    {darkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
 
-            return React.createElement('div', { className: `min-h-screen ${containerClass}` },
-                // Header
-                React.createElement('div', { className: `${cardClass} shadow-sm border-b ${darkMode ? 'border-gray-700' : ''}` },
-                    React.createElement('div', { className: "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4" },
-                        React.createElement('div', { className: "flex items-center justify-between" },
-                            React.createElement('div', { className: "flex items-center space-x-3" },
-                                React.createElement(Database, { className: "h-8 w-8 text-blue-600" }),
-                                React.createElement('div', null,
-                                    React.createElement('h1', { 
-                                        className: `text-2xl font-bold ${darkMode ? 'text-gray-100' : 'text-gray-900'}` 
-                                    }, "AFD 1.0 Datacatalogus"),
-                                    React.createElement('div', { className: "flex items-center space-x-4 text-sm text-gray-500 dark:text-gray-400" },
-                                        React.createElement('span', null, stats.total.toLocaleString() + ' items'),
-                                        React.createElement('span', null, '•'),
-                                        React.createElement('span', null, stats.entities + ' entiteiten'),
-                                        React.createElement('span', null, '•'),
-                                        React.createElement('span', null, stats.attributes.toLocaleString() + ' attributen')
-                                    )
-                                )
-                            ),
-                            React.createElement('button', {
-                                onClick: () => setDarkMode(!darkMode),
-                                className: "p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700",
-                                title: darkMode ? 'Light mode' : 'Dark mode'
-                            }, darkMode ? React.createElement(Sun, { className: "h-5 w-5" }) : React.createElement(Moon, { className: "h-5 w-5" }))
-                        )
-                    )
-                ),
+                    {/* Search section */}
+                    <div className={`${darkMode ? 'bg-gray-800 text-gray-100' : 'bg-white'} border-b ${darkMode ? 'border-gray-700' : ''} sticky top-0 z-10`}>
+                        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+                            <div className="space-y-4">
+                                <div className="flex gap-2">
+                                    <div className="relative flex-1">
+                                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                                        <input
+                                            ref={searchInputRef}
+                                            type="text"
+                                            value={searchTerm}
+                                            onChange={(e) => setSearchTerm(e.target.value)}
+                                            placeholder="Zoek op naam, omschrijving of code... (druk / voor focus)"
+                                            className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 text-lg ${
+                                                darkMode ? 'bg-gray-700 border-gray-600 text-gray-100' : ''
+                                            }`}
+                                        />
+                                        {searchTerm && (
+                                            <button
+                                                onClick={() => setSearchTerm('')}
+                                                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                                            >
+                                                ✕
+                                            </button>
+                                        )}
+                                    </div>
+                                    <select
+                                        value={searchMode}
+                                        onChange={(e) => setSearchMode(e.target.value)}
+                                        className={`px-3 py-2 border rounded-lg ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : ''}`}
+                                        title="Zoek modus"
+                                    >
+                                        <option value="normal">Normaal</option>
+                                        <option value="wildcard">Wildcard (* ?)</option>
+                                        <option value="regex">Regex</option>
+                                    </select>
+                                </div>
+                                <div className="flex flex-wrap gap-4">
+                                    <div className="flex items-center space-x-2">
+                                        <Filter className="h-5 w-5 text-gray-400" />
+                                        <select
+                                            value={typeFilter}
+                                            onChange={(e) => setTypeFilter(e.target.value)}
+                                            className={`border rounded-lg px-3 py-2 ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : ''}`}
+                                        >
+                                            <option value="all">Alle types</option>
+                                            <option value="E">Alleen entiteiten</option>
+                                            <option value="A">Alleen attributen</option>
+                                        </select>
+                                    </div>
+                                    {availableEntities.length > 0 && (
+                                        <div className="flex items-center space-x-2">
+                                            <Database className="h-5 w-5 text-gray-400" />
+                                            <select
+                                                value={entityFilter}
+                                                onChange={(e) => setEntityFilter(e.target.value)}
+                                                className={`border rounded-lg px-3 py-2 ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : ''}`}
+                                            >
+                                                <option value="all">Alle entiteiten ({availableEntities.length})</option>
+                                                {availableEntities.map(entity => (
+                                                    <option key={entity} value={entity}>{entity}</option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
-                // Search section
-                React.createElement('div', { className: `${cardClass} border-b ${darkMode ? 'border-gray-700' : ''} sticky top-0 z-10` },
-                    React.createElement('div', { className: "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4" },
-                        React.createElement('div', { className: "space-y-4" },
-                            React.createElement('div', { className: "flex gap-2" },
-                                React.createElement('div', { className: "relative flex-1" },
-                                    React.createElement(Search, { className: "absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" }),
-                                    React.createElement('input', {
-                                        ref: searchInputRef,
-                                        type: "text",
-                                        value: searchTerm,
-                                        onChange: (e) => setSearchTerm(e.target.value),
-                                        placeholder: "Zoek op naam, omschrijving of code... (druk / voor focus)",
-                                        className: `w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg ${
-                                            darkMode ? 'bg-gray-700 border-gray-600 text-gray-100' : ''
-                                        }`
-                                    }),
-                                    searchTerm && React.createElement('button', {
-                                        onClick: () => setSearchTerm(''),
-                                        className: "absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                                    }, "✕")
-                                ),
-                                React.createElement('select', {
-                                    value: searchMode,
-                                    onChange: (e) => setSearchMode(e.target.value),
-                                    className: `px-3 py-2 border rounded-lg ${darkMode ? 'bg-gray-700 border-gray-600' : ''}`,
-                                    title: "Zoek modus"
-                                },
-                                    React.createElement('option', { value: "normal" }, "Normaal"),
-                                    React.createElement('option', { value: "wildcard" }, "Wildcard (* ?)"),
-                                    React.createElement('option', { value: "regex" }, "Regex")
-                                )
-                            ),
-                            React.createElement('div', { className: "flex flex-wrap gap-4" },
-                                React.createElement('div', { className: "flex items-center space-x-2" },
-                                    React.createElement(Filter, { className: "h-5 w-5 text-gray-400" }),
-                                    React.createElement('select', {
-                                        value: typeFilter,
-                                        onChange: (e) => setTypeFilter(e.target.value),
-                                        className: `border rounded-lg px-3 py-2 ${darkMode ? 'bg-gray-700 border-gray-600' : ''}`
-                                    },
-                                        React.createElement('option', { value: "all" }, "Alle types"),
-                                        React.createElement('option', { value: "E" }, "Alleen entiteiten"),
-                                        React.createElement('option', { value: "A" }, "Alleen attributen")
-                                    )
-                                ),
-                                availableEntities.length > 0 && React.createElement('div', { className: "flex items-center space-x-2" },
-                                    React.createElement(Database, { className: "h-5 w-5 text-gray-400" }),
-                                    React.createElement('select', {
-                                        value: entityFilter,
-                                        onChange: (e) => setEntityFilter(e.target.value),
-                                        className: `border rounded-lg px-3 py-2 ${darkMode ? 'bg-gray-700 border-gray-600' : ''}`
-                                    },
-                                        React.createElement('option', { value: "all" }, `Alle entiteiten (${availableEntities.length})`),
-                                        availableEntities.map(entity => 
-                                            React.createElement('option', { key: entity, value: entity }, entity)
-                                        )
-                                    )
-                                )
-                            )
-                        )
-                    )
-                ),
-
-                // Results
-                React.createElement('div', { className: "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6" },
-                    !searchTerm && typeFilter === 'all' && entityFilter === 'all' ?
-                        React.createElement('div', { className: "text-center py-12" },
-                            React.createElement('div', { className: `${cardClass} rounded-lg shadow-sm p-12 max-w-2xl mx-auto` },
-                                React.createElement(Search, { className: "h-16 w-16 text-gray-400 mx-auto mb-4" }),
-                                React.createElement('h2', { className: "text-2xl font-semibold text-gray-700 dark:text-gray-300 mb-2" }, "Begin met zoeken"),
-                                React.createElement('p', { className: "text-gray-500 dark:text-gray-400 mb-6" }, 
-                                    "Gebruik de zoekbalk hierboven om te zoeken in de AFD 1.0 datacatalogus met " + stats.total.toLocaleString() + " items"
-                                ),
-                                React.createElement('div', { className: "space-y-2 text-sm text-gray-500 dark:text-gray-400" },
-                                    React.createElement('p', null, "Je kunt zoeken op:"),
-                                    React.createElement('ul', { className: "list-disc list-inside space-y-1" },
-                                        React.createElement('li', null, "Naam van een entiteit of attribuut"),
-                                        React.createElement('li', null, "Omschrijving"),
-                                        React.createElement('li', null, "Entiteitcode (bijv. OB, XA, RI)"),
-                                        React.createElement('li', null, "Attribuutcode")
-                                    )
-                                ),
-                                React.createElement('div', { className: "mt-6 flex justify-center" },
-                                    React.createElement('kbd', { className: "px-3 py-1 bg-gray-200 dark:bg-gray-700 rounded text-sm" }, "Druk op / om te beginnen met typen")
-                                )
-                            )
-                        ) :
-                        filteredData.length === 0 ?
-                            React.createElement('div', { className: "text-center py-12" },
-                                React.createElement('p', { className: "text-gray-500 dark:text-gray-400 text-lg" }, "Geen resultaten gevonden"),
-                                React.createElement('p', { className: "text-gray-400 dark:text-gray-500 mt-2" }, "Probeer een andere zoekterm of pas de filters aan")
-                            ) :
-                            React.createElement('div', null,
-                                React.createElement('div', { className: "flex justify-between items-center mb-4" },
-                                    React.createElement('p', { className: "text-gray-600 dark:text-gray-400" }, 
-                                        filteredData.length + (filteredData.length === 1 ? " resultaat" : " resultaten")
-                                    ),
-                                    totalPages > 1 && React.createElement('p', { className: "text-sm text-gray-500" }, 
-                                        `Pagina ${currentPage} van ${totalPages}`
-                                    )
-                                ),
-                                React.createElement('div', { className: "space-y-3" },
-                                    paginatedData.map((item, index) => {
+                    {/* Results */}
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+                        {!searchTerm && typeFilter === 'all' && entityFilter === 'all' ? (
+                            <div className="text-center py-12">
+                                <div className={`${darkMode ? 'bg-gray-800 text-gray-100' : 'bg-white'} rounded-lg shadow-sm p-12 max-w-2xl mx-auto`}>
+                                    <Search className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                                    <h2 className="text-2xl font-semibold text-gray-700 mb-2">
+                                        Begin met zoeken
+                                    </h2>
+                                    <p className="text-gray-500 mb-6">
+                                        Gebruik de zoekbalk hierboven om te zoeken in de AFD 1.0 datacatalogus met {stats.total.toLocaleString()} items
+                                    </p>
+                                    <div className="space-y-2 text-sm text-gray-500">
+                                        <p>Je kunt zoeken op:</p>
+                                        <ul className="list-disc list-inside space-y-1">
+                                            <li>Naam van een entiteit of attribuut</li>
+                                            <li>Omschrijving</li>
+                                            <li>Entiteitcode (bijv. OB, XA, RI)</li>
+                                            <li>Attribuutcode</li>
+                                        </ul>
+                                    </div>
+                                    <div className="mt-6 flex justify-center">
+                                        <kbd className="px-3 py-1 bg-gray-200 rounded text-sm">
+                                            Druk op / om te beginnen met typen
+                                        </kbd>
+                                    </div>
+                                </div>
+                            </div>
+                        ) : filteredData.length === 0 ? (
+                            <div className="text-center py-12">
+                                <p className="text-gray-500 text-lg">Geen resultaten gevonden</p>
+                                <p className="text-gray-400 mt-2">Probeer een andere zoekterm of pas de filters aan</p>
+                            </div>
+                        ) : (
+                            <div>
+                                <div className="flex justify-between items-center mb-4">
+                                    <p className="text-gray-600">
+                                        {filteredData.length} {filteredData.length === 1 ? "resultaat" : "resultaten"}
+                                    </p>
+                                    {totalPages > 1 && (
+                                        <p className="text-sm text-gray-500">
+                                            Pagina {currentPage} van {totalPages}
+                                        </p>
+                                    )}
+                                </div>
+                                <div className="space-y-3">
+                                    {paginatedData.map((item, index) => {
                                         const isEntity = item['Entiteit/Attribuut'] === 'E';
                                         const itemId = isEntity ? item.Entiteitcode : `${item.Entiteitcode}_${item.Attribuutcode}`;
                                         
-                                        return React.createElement('div', { 
-                                            key: index, 
-                                            className: `${cardClass} rounded-lg shadow-sm p-4 hover:shadow-md transition-shadow` 
-                                        },
-                                            React.createElement('div', { className: "flex items-start justify-between" },
-                                                React.createElement('div', { className: "flex items-start space-x-3 flex-1" },
-                                                    isEntity ? 
-                                                        React.createElement(Database, { className: "h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" }) :
-                                                        React.createElement(Package, { className: "h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" }),
-                                                    React.createElement('div', { className: "flex-1 min-w-0" },
-                                                        React.createElement('div', { className: "flex items-center space-x-2 flex-wrap mb-1" },
-                                                            React.createElement('span', { className: "text-sm font-mono text-gray-500 dark:text-gray-400" }, itemId),
-                                                            item.Datatype && datatypeInfo[item.Datatype] && 
-                                                                React.createElement('span', { className: `inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${datatypeInfo[item.Datatype].color} bg-gray-100 dark:bg-gray-700` }, 
-                                                                    datatypeInfo[item.Datatype].label
-                                                                )
-                                                        ),
-                                                        React.createElement('h3', { className: "font-semibold text-gray-900 dark:text-gray-100 mb-1" }, 
-                                                            highlightText(item.Naam, searchTerm)
-                                                        ),
-                                                        item.Omschrijving && React.createElement('p', { className: "text-gray-600 dark:text-gray-300 text-sm" }, 
-                                                            highlightText(item.Omschrijving, searchTerm)
-                                                        )
-                                                    )
-                                                ),
-                                                React.createElement('div', { className: "flex items-center space-x-1 ml-2" },
-                                                    React.createElement('button', {
-                                                        onClick: () => copyToClipboard(itemId, itemId),
-                                                        className: "p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded",
-                                                        title: "Kopieer code"
-                                                    },
-                                                        copiedItem === itemId ? 
-                                                            React.createElement(Check, { className: "h-4 w-4 text-green-500" }) : 
-                                                            React.createElement(Copy, { className: "h-4 w-4 text-gray-400" })
-                                                    )
-                                                )
-                                            )
+                                        return (
+                                            <div 
+                                                key={index} 
+                                                className={`${darkMode ? 'bg-gray-800 text-gray-100' : 'bg-white'} rounded-lg shadow-sm p-4 hover:shadow-md transition-shadow`}
+                                            >
+                                                <div className="flex items-start justify-between">
+                                                    <div className="flex items-start space-x-3 flex-1">
+                                                        {isEntity ? (
+                                                            <Database className="h-5 w-5 text-blue-600 mt-1 flex-shrink-0" />
+                                                        ) : (
+                                                            <Package className="h-5 w-5 text-green-600 mt-1 flex-shrink-0" />
+                                                        )}
+                                                        <div className="flex-1 min-w-0">
+                                                            <div className="flex items-center space-x-2 flex-wrap mb-1">
+                                                                <span className="text-sm font-mono text-gray-500">
+                                                                    {itemId}
+                                                                </span>
+                                                                {item.Datatype && datatypeInfo[item.Datatype] && (
+                                                                    <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium ${datatypeInfo[item.Datatype].color} bg-gray-100`}>
+                                                                        {datatypeInfo[item.Datatype].label}
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                            <h3 className={`font-semibold ${darkMode ? 'text-gray-100' : 'text-gray-900'} mb-1`}>
+                                                                {highlightText(item.Naam, searchTerm)}
+                                                            </h3>
+                                                            {item.Omschrijving && (
+                                                                <p className={`${darkMode ? 'text-gray-300' : 'text-gray-600'} text-sm`}>
+                                                                    {highlightText(item.Omschrijving, searchTerm)}
+                                                                </p>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex items-center space-x-1 ml-2">
+                                                        <button
+                                                            onClick={() => copyToClipboard(itemId, itemId)}
+                                                            className="p-1 hover:bg-gray-100 rounded"
+                                                            title="Kopieer code"
+                                                        >
+                                                            {copiedItem === itemId ? (
+                                                                <Check className="h-4 w-4 text-green-500" />
+                                                            ) : (
+                                                                <Copy className="h-4 w-4 text-gray-400" />
+                                                            )}
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
                                         );
-                                    })
-                                ),
-                                // Pagination
-                                totalPages > 1 && React.createElement('div', { className: "flex items-center justify-center space-x-2 mt-6" },
-                                    React.createElement('button', {
-                                        onClick: () => setCurrentPage(prev => Math.max(1, prev - 1)),
-                                        disabled: currentPage === 1,
-                                        className: `px-3 py-1 rounded ${
-                                            currentPage === 1
-                                                ? 'bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-gray-700'
-                                                : 'bg-white text-gray-700 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
-                                        } border dark:border-gray-600`
-                                    }, "Vorige"),
-                                    React.createElement('span', { className: "px-3 py-1" }, `${currentPage} / ${totalPages}`),
-                                    React.createElement('button', {
-                                        onClick: () => setCurrentPage(prev => Math.min(totalPages, prev + 1)),
-                                        disabled: currentPage === totalPages,
-                                        className: `px-3 py-1 rounded ${
-                                            currentPage === totalPages
-                                                ? 'bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-gray-700'
-                                                : 'bg-white text-gray-700 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
-                                        } border dark:border-gray-600`
-                                    }, "Volgende")
-                                )
-                            )
-                )
+                                    })}
+                                </div>
+                                {/* Pagination */}
+                                {totalPages > 1 && (
+                                    <div className="flex items-center justify-center space-x-2 mt-6">
+                                        <button
+                                            onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                                            disabled={currentPage === 1}
+                                            className={`px-3 py-1 rounded border ${
+                                                currentPage === 1
+                                                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                                    : 'bg-white text-gray-700 hover:bg-gray-50'
+                                            }`}
+                                        >
+                                            Vorige
+                                        </button>
+                                        <span className="px-3 py-1">
+                                            {currentPage} / {totalPages}
+                                        </span>
+                                        <button
+                                            onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                                            disabled={currentPage === totalPages}
+                                            className={`px-3 py-1 rounded border ${
+                                                currentPage === totalPages
+                                                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                                    : 'bg-white text-gray-700 hover:bg-gray-50'
+                                            }`}
+                                        >
+                                            Volgende
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </div>
+                </div>
             );
         }
 
         const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(React.createElement(AFDSearchTool));
+        root.render(<AFDSearchTool />);
     </script>
 </body>
 </html>
