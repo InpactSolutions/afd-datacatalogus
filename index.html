@@ -381,9 +381,9 @@
             </svg>
         );
 
-        const Sparkles = ({ className }) => (
+        const ClipboardList = ({ className }) => (
             <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3l1.5 1.5L5 6l-1.5-1.5L5 3zM19 3l1.5 1.5L19 6l-1.5-1.5L19 3zM12 1l2 2-2 2-2-2 2-2zM12 23l2-2-2-2-2 2 2 2zM19 19l1.5 1.5L19 22l-1.5-1.5L19 19zM5 19l1.5 1.5L5 22l-1.5-1.5L5 19z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
             </svg>
         );
 
@@ -428,9 +428,6 @@
             const [currentPage, setCurrentPage] = useState(1);
             const [selectedCodelist, setSelectedCodelist] = useState(null);
             const [codelistSearch, setCodelistSearch] = useState('');
-            const [isNaturalLanguageMode, setIsNaturalLanguageMode] = useState(false);
-            const [aiQuery, setAiQuery] = useState('');
-            const [parsedQuery, setParsedQuery] = useState(null);
             const searchInputRef = useRef(null);
             
             const ITEMS_PER_PAGE = 25;
@@ -613,158 +610,8 @@
                 loadData();
             }, []);
 
-            // Natural Language Query Parser
-            const parseNaturalLanguageQuery = useCallback((query) => {
-                const lowerQuery = query.toLowerCase();
-                let filters = {
-                    type: 'all',
-                    entity: 'all',
-                    required: null,
-                    hasAnva: null,
-                    hasCodelist: null,
-                    datatype: null,
-                    isKey: null,
-                    searchTerms: []
-                };
-
-                // Type filters
-                if (lowerQuery.includes('entiteit') || lowerQuery.includes('entiteiten')) {
-                    filters.type = 'E';
-                }
-                if (lowerQuery.includes('attribuut') || lowerQuery.includes('attributen') || lowerQuery.includes('veld') || lowerQuery.includes('velden')) {
-                    filters.type = 'A';
-                }
-
-                // Required filters
-                if (lowerQuery.includes('verplicht') || lowerQuery.includes('verplichte')) {
-                    filters.required = 'J';
-                }
-                if (lowerQuery.includes('niet verplicht') || lowerQuery.includes('optioneel') || lowerQuery.includes('optionele')) {
-                    filters.required = 'N';
-                }
-
-                // ANVA filters
-                if (lowerQuery.includes('zonder anva') || lowerQuery.includes('geen anva')) {
-                    filters.hasAnva = false;
-                }
-                if (lowerQuery.includes('met anva') || lowerQuery.includes('heeft anva')) {
-                    filters.hasAnva = true;
-                }
-
-                // Codelist filters
-                if (lowerQuery.includes('zonder codelijst') || lowerQuery.includes('geen codelijst')) {
-                    filters.hasCodelist = false;
-                }
-                if (lowerQuery.includes('met codelijst') || lowerQuery.includes('heeft codelijst')) {
-                    filters.hasCodelist = true;
-                }
-
-                // Datatype filters
-                if (lowerQuery.includes('datum') || lowerQuery.includes('datumveld')) {
-                    filters.datatype = ['D1', 'D3'];
-                }
-                if (lowerQuery.includes('tekst') || lowerQuery.includes('alfanumeriek')) {
-                    filters.datatype = ['A0', 'A1', 'A2'];
-                }
-                if (lowerQuery.includes('bedrag') || lowerQuery.includes('geld')) {
-                    filters.datatype = ['B2'];
-                }
-                if (lowerQuery.includes('ja/nee') || lowerQuery.includes('boolean')) {
-                    filters.datatype = ['JN'];
-                }
-                if (lowerQuery.includes('percentage')) {
-                    filters.datatype = ['P3'];
-                }
-
-                // Key filters
-                if (lowerQuery.includes('sleutel') || lowerQuery.includes('primair') || lowerQuery.includes('vreemd')) {
-                    filters.isKey = true;
-                }
-
-                // Entity specific
-                const entityPatterns = {
-                    'da': ['da', 'dosisarchief', 'dosis'],
-                    'al': ['al', 'algemeen'],
-                    'ob': ['ob', 'object'],
-                    'ri': ['ri', 'risico'],
-                    'xa': ['xa', 'xml'],
-                    'wh': ['wh', 'warehouse']
-                };
-
-                Object.entries(entityPatterns).forEach(([code, patterns]) => {
-                    if (patterns.some(pattern => lowerQuery.includes(pattern))) {
-                        filters.entity = code.toUpperCase();
-                    }
-                });
-
-                // Extract remaining search terms
-                let remainingQuery = query;
-                const filterWords = ['verplicht', 'entiteit', 'attribuut', 'veld', 'datum', 'tekst', 'sleutel', 'anva', 'codelijst', 'zonder', 'met', 'heeft', 'geen', 'alle', 'van', 'voor', 'die', 'dat', 'zijn', 'is'];
-                filterWords.forEach(word => {
-                    remainingQuery = remainingQuery.replace(new RegExp(`\\b${word}\\b`, 'gi'), ' ');
-                });
-                
-                // Clean up and extract meaningful terms
-                const terms = remainingQuery.split(/\s+/).filter(term => 
-                    term.length > 2 && 
-                    !['van', 'voor', 'die', 'dat', 'zijn', 'is', 'een', 'de', 'het'].includes(term.toLowerCase())
-                );
-                
-                if (terms.length > 0) {
-                    filters.searchTerms = terms;
-                }
-
-                return filters;
-            }, []);
-
-            // Apply natural language filters
-            const applyNaturalLanguageFilters = useCallback((filters) => {
-                setTypeFilter(filters.type);
-                setEntityFilter(filters.entity);
-                
-                if (filters.searchTerms.length > 0) {
-                    setSearchTerm(filters.searchTerms.join(' '));
-                } else {
-                    setSearchTerm('');
-                }
-            }, []);
-
-            // Enhanced search filter with natural language support
-            const searchFilter = useCallback((row, term, nlFilters = null) => {
-                // Apply natural language filters if provided
-                if (nlFilters) {
-                    // Required filter
-                    if (nlFilters.required !== null && row.Verplicht !== nlFilters.required) {
-                        return false;
-                    }
-
-                    // ANVA filter
-                    const fullCode = `${row.Entiteitcode}_${row.Attribuutcode}`;
-                    const hasAnva = anvaData[fullCode] && anvaData[fullCode].code;
-                    if (nlFilters.hasAnva !== null) {
-                        if (nlFilters.hasAnva && !hasAnva) return false;
-                        if (!nlFilters.hasAnva && hasAnva) return false;
-                    }
-
-                    // Codelist filter
-                    const hasCodelist = !!row.Codelijst;
-                    if (nlFilters.hasCodelist !== null) {
-                        if (nlFilters.hasCodelist && !hasCodelist) return false;
-                        if (!nlFilters.hasCodelist && hasCodelist) return false;
-                    }
-
-                    // Datatype filter
-                    if (nlFilters.datatype && !nlFilters.datatype.includes(row.Datatype)) {
-                        return false;
-                    }
-
-                    // Key filter
-                    if (nlFilters.isKey && !(row.Primairesleutel === 'J' || row.Vreemdessleutel === 'J')) {
-                        return false;
-                    }
-                }
-
-                // Regular search
+            // Search filter - simplified to normal search only
+            const searchFilter = useCallback((row, term) => {
                 if (!term) return true;
 
                 const basicFields = [
@@ -787,7 +634,7 @@
                 return searchFields.includes(term.toLowerCase());
             }, [anvaData]);
 
-            // Filtered data with natural language support
+            // Filtered data
             const filteredData = useMemo(() => {
                 let filtered = data;
 
@@ -795,19 +642,16 @@
                     filtered = filtered.filter(row => row['Entiteit/Attribuut'] === typeFilter);
                 }
 
+                if (debouncedSearchTerm) {
+                    filtered = filtered.filter(row => searchFilter(row, debouncedSearchTerm));
+                }
+
                 if (entityFilter !== 'all') {
                     filtered = filtered.filter(row => row.Entiteitcode === entityFilter);
                 }
 
-                if (debouncedSearchTerm) {
-                    filtered = filtered.filter(row => searchFilter(row, debouncedSearchTerm, parsedQuery));
-                } else if (parsedQuery) {
-                    // Apply only natural language filters without search term
-                    filtered = filtered.filter(row => searchFilter(row, '', parsedQuery));
-                }
-
                 return filtered;
-            }, [data, debouncedSearchTerm, typeFilter, entityFilter, searchFilter, parsedQuery]);
+            }, [data, debouncedSearchTerm, typeFilter, entityFilter, searchFilter]);
 
             // Available entities with descriptions
             const availableEntities = useMemo(() => {
@@ -1004,143 +848,27 @@
                     <div className={`${darkMode ? 'bg-gray-800 text-gray-100' : 'bg-white'} border-b ${darkMode ? 'border-gray-700' : ''} sticky top-0 z-10`}>
                         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
                             <div className="space-y-4">
-                                {/* AI Search Toggle */}
-                                <div className="flex items-center justify-between">
-                                    <div className="flex items-center space-x-3">
-                                        <button
-                                            onClick={() => {
-                                                setIsNaturalLanguageMode(!isNaturalLanguageMode);
-                                                setAiQuery('');
-                                                setParsedQuery(null);
-                                                setSearchTerm('');
-                                                setTypeFilter('all');
-                                                setEntityFilter('all');
-                                            }}
-                                            className={`inline-flex items-center space-x-2 px-3 py-2 rounded-lg border transition-colors ${
-                                                isNaturalLanguageMode 
-                                                    ? 'bg-blue-50 border-blue-200 text-blue-700' 
-                                                    : darkMode ? 'border-gray-600 text-gray-300 hover:bg-gray-700' : 'border-gray-300 text-gray-700 hover:bg-gray-50'
-                                            }`}
-                                        >
-                                            <Sparkles className="h-4 w-4" />
-                                            <span className="text-sm font-medium">AI Zoeken</span>
-                                        </button>
-                                        {isNaturalLanguageMode && (
-                                            <span className="text-xs text-gray-500">Gebruik natuurlijke taal zoals "verplichte datumvelden van DA"</span>
-                                        )}
-                                    </div>
-                                </div>
-
-                                {/* Search Input */}
                                 <div className="relative">
                                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                                    {isNaturalLanguageMode ? (
-                                        <input
-                                            ref={searchInputRef}
-                                            type="text"
-                                            value={aiQuery}
-                                            onChange={(e) => setAiQuery(e.target.value)}
-                                            onKeyDown={(e) => {
-                                                if (e.key === 'Enter' && aiQuery.trim()) {
-                                                    const parsed = parseNaturalLanguageQuery(aiQuery);
-                                                    setParsedQuery(parsed);
-                                                    applyNaturalLanguageFilters(parsed);
-                                                }
-                                            }}
-                                            placeholder="Bijvoorbeeld: 'verplichte datumvelden van DA' of 'attributen zonder ANVA code'"
-                                            className={`w-full pl-10 pr-20 py-3 border rounded-lg focus:ring-2 text-lg ${
-                                                darkMode ? 'bg-gray-700 border-gray-600 text-gray-100' : ''
-                                            }`}
-                                        />
-                                    ) : (
-                                        <input
-                                            ref={searchInputRef}
-                                            type="text"
-                                            value={searchTerm}
-                                            onChange={(e) => setSearchTerm(e.target.value)}
-                                            placeholder="Zoek op naam, omschrijving, AFD code of ANVA code... (druk / voor focus)"
-                                            className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 text-lg ${
-                                                darkMode ? 'bg-gray-700 border-gray-600 text-gray-100' : ''
-                                            }`}
-                                        />
+                                    <input
+                                        ref={searchInputRef}
+                                        type="text"
+                                        value={searchTerm}
+                                        onChange={(e) => setSearchTerm(e.target.value)}
+                                        placeholder="Zoek op naam, omschrijving, AFD code of ANVA code... (druk / voor focus)"
+                                        className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 text-lg ${
+                                            darkMode ? 'bg-gray-700 border-gray-600 text-gray-100' : ''
+                                        }`}
+                                    />
+                                    {searchTerm && (
+                                        <button
+                                            onClick={() => setSearchTerm('')}
+                                            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                                        >
+                                            ✕
+                                        </button>
                                     )}
-                                    
-                                    {/* Action buttons */}
-                                    <div className="absolute right-3 top-1/2 transform -translate-y-1/2 flex items-center space-x-2">
-                                        {isNaturalLanguageMode && aiQuery && (
-                                            <button
-                                                onClick={() => {
-                                                    const parsed = parseNaturalLanguageQuery(aiQuery);
-                                                    setParsedQuery(parsed);
-                                                    applyNaturalLanguageFilters(parsed);
-                                                }}
-                                                className="px-3 py-1 bg-blue-500 text-white text-sm rounded hover:bg-blue-600 transition-colors"
-                                            >
-                                                Zoek
-                                            </button>
-                                        )}
-                                        {((isNaturalLanguageMode && aiQuery) || (!isNaturalLanguageMode && searchTerm)) && (
-                                            <button
-                                                onClick={() => {
-                                                    if (isNaturalLanguageMode) {
-                                                        setAiQuery('');
-                                                        setParsedQuery(null);
-                                                    }
-                                                    setSearchTerm('');
-                                                    setTypeFilter('all');
-                                                    setEntityFilter('all');
-                                                }}
-                                                className="text-gray-400 hover:text-gray-600"
-                                            >
-                                                ✕
-                                            </button>
-                                        )}
-                                    </div>
                                 </div>
-
-                                {/* Parsed Query Display */}
-                                {parsedQuery && isNaturalLanguageMode && (
-                                    <div className={`p-3 rounded-lg border-l-4 border-blue-400 ${darkMode ? 'bg-gray-800' : 'bg-blue-50'}`}>
-                                        <div className="flex items-start space-x-2">
-                                            <Sparkles className="h-4 w-4 text-blue-500 mt-0.5 flex-shrink-0" />
-                                            <div className="flex-1 min-w-0">
-                                                <p className="text-sm text-blue-700 font-medium mb-1">AI interpretatie:</p>
-                                                <div className="flex flex-wrap gap-1">
-                                                    {parsedQuery.type !== 'all' && (
-                                                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                                            {parsedQuery.type === 'E' ? 'Entiteiten' : 'Attributen'}
-                                                        </span>
-                                                    )}
-                                                    {parsedQuery.entity !== 'all' && (
-                                                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                                            Entiteit: {parsedQuery.entity}
-                                                        </span>
-                                                    )}
-                                                    {parsedQuery.required !== null && (
-                                                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                                                            {parsedQuery.required === 'J' ? 'Verplicht' : 'Niet verplicht'}
-                                                        </span>
-                                                    )}
-                                                    {parsedQuery.hasAnva !== null && (
-                                                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                                                            {parsedQuery.hasAnva ? 'Met ANVA' : 'Zonder ANVA'}
-                                                        </span>
-                                                    )}
-                                                    {parsedQuery.datatype && (
-                                                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
-                                                            Type: {parsedQuery.datatype.join(', ')}
-                                                        </span>
-                                                    )}
-                                                    {parsedQuery.isKey && (
-                                                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
-                                                            Sleutelvelden
-                                                        </span>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                )}
                                 <div className="flex flex-wrap gap-4">
                                     <div className="flex items-center space-x-2">
                                         <Filter className="h-5 w-5 text-gray-400" />
