@@ -193,7 +193,25 @@
 
         .disabled\:bg-gray-100:disabled { background-color: #f3f4f6; }
         .disabled\:text-gray-400:disabled { color: #9ca3af; }
-        .disabled\:cursor-not-allowed:disabled { cursor: not-allowed; }
+        .fixed { position: fixed; }
+        .inset-0 { top: 0; right: 0; bottom: 0; left: 0; }
+        .z-50 { z-index: 50; }
+        .bg-opacity-50 { background-color: rgba(0, 0, 0, 0.5); }
+        .max-h-\[90vh\] { max-height: 90vh; }
+        .overflow-y-auto { overflow-y: auto; }
+        .flex-col { flex-direction: column; }
+        .flex-shrink-0 { flex-shrink: 0; }
+        .break-words { word-wrap: break-word; }
+
+        .h-3 { height: 0.75rem; }
+        .w-3 { width: 0.75rem; }
+
+        .bg-green-100 { background-color: #dcfce7; }
+        .bg-green-800 { background-color: #166534; }
+        .bg-red-100 { background-color: #fee2e2; }
+        .bg-red-800 { background-color: #991b1b; }
+        .text-green-800 { color: #166534; }
+        .text-red-800 { color: #991b1b; }
 
         .animate-spin {
             animation: spin 1s linear infinite;
@@ -341,9 +359,16 @@
             </svg>
         );
 
-        const Moon = ({ className }) => (
+        const BookOpen = ({ className }) => (
             <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+                <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+            </svg>
+        );
+
+        const X = ({ className }) => (
+            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
         );
 
@@ -374,6 +399,7 @@
 
         function AFDSearchTool() {
             const [data, setData] = useState([]);
+            const [codelistData, setCodelistData] = useState({});
             const [searchTerm, setSearchTerm] = useState('');
             const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
             const [searchMode, setSearchMode] = useState('normal');
@@ -385,6 +411,8 @@
             const [darkMode, setDarkMode] = useState(false);
             const [copiedItem, setCopiedItem] = useState(null);
             const [currentPage, setCurrentPage] = useState(1);
+            const [selectedCodelist, setSelectedCodelist] = useState(null);
+            const [codelistSearch, setCodelistSearch] = useState('');
             const searchInputRef = useRef(null);
             
             const ITEMS_PER_PAGE = 25;
@@ -477,6 +505,42 @@
                             return cleanRow;
                         });
 
+                        // Load codelist data (optional)
+                        try {
+                            console.log('🔄 Attempting to load codelist data...');
+                            const codelistContent = await window.fs.readFile('Codelist.afm.csv', { encoding: 'utf8' });
+                            console.log('✅ Codelist loaded, parsing...');
+                            
+                            const parsedCodelist = Papa.parse(codelistContent, {
+                                header: false,
+                                dynamicTyping: true,
+                                skipEmptyLines: true,
+                                delimiter: ';'
+                            });
+
+                            const codelistGroups = {};
+                            let codelistCount = 0;
+                            parsedCodelist.data.slice(1).forEach(row => {
+                                const [codelijst, code, omschrijving, actief] = row;
+                                if (codelijst) {
+                                    if (!codelistGroups[codelijst]) {
+                                        codelistGroups[codelijst] = [];
+                                    }
+                                    codelistGroups[codelijst].push({
+                                        code: code || '',
+                                        omschrijving: omschrijving || '',
+                                        actief: actief || ''
+                                    });
+                                    codelistCount++;
+                                }
+                            });
+
+                            setCodelistData(codelistGroups);
+                            console.log(`📚 Codelist loaded: ${Object.keys(codelistGroups).length} lists, ${codelistCount} total items`);
+                        } catch (err) {
+                            console.warn('⚠️ Codelist data not found or could not be loaded:', err.message);
+                        }
+
                         setData(cleanedData);
                         
                         const entities = cleanedData.filter(row => row['Entiteit/Attribuut'] === 'E').length;
@@ -566,7 +630,41 @@
                 return filteredData.slice(startIndex, endIndex);
             }, [filteredData, currentPage]);
 
+            // Filtered codelist items
+            const filteredCodelistItems = useMemo(() => {
+                if (!selectedCodelist || !codelistData[selectedCodelist.codelijst]) return [];
+                
+                const items = codelistData[selectedCodelist.codelijst];
+                if (!codelistSearch) return items;
+                
+                const searchLower = codelistSearch.toLowerCase();
+                return items.filter(item => 
+                    item.code.toLowerCase().includes(searchLower) ||
+                    item.omschrijving.toLowerCase().includes(searchLower)
+                );
+            }, [selectedCodelist, codelistData, codelistSearch]);
+
+            // Filtered codelist items
+            const filteredCodelistItems = useMemo(() => {
+                if (!selectedCodelist || !codelistData[selectedCodelist.codelijst]) return [];
+                
+                const items = codelistData[selectedCodelist.codelijst];
+                if (!codelistSearch) return items;
+                
+                const searchLower = codelistSearch.toLowerCase();
+                return items.filter(item => 
+                    item.code.toLowerCase().includes(searchLower) ||
+                    item.omschrijving.toLowerCase().includes(searchLower)
+                );
+            }, [selectedCodelist, codelistData, codelistSearch]);
+
             const totalPages = Math.ceil(filteredData.length / ITEMS_PER_PAGE);
+
+            // Open codelist
+            const openCodelist = useCallback((codelijst, naam) => {
+                setSelectedCodelist({ codelijst, naam });
+                setCodelistSearch('');
+            }, []);
 
             // Copy function
             const copyToClipboard = useCallback((text, id) => {
@@ -815,6 +913,16 @@
                                                                         {datatypeInfo[item.Datatype].label}
                                                                     </span>
                                                                 )}
+                                                                {item.Codelijst && codelistData[item.Codelijst] && (
+                                                                    <button
+                                                                        onClick={() => openCodelist(item.Codelijst, item.Naam)}
+                                                                        className="inline-flex items-center space-x-1 text-xs text-blue-600 hover:text-blue-800 underline"
+                                                                        title={`Bekijk codelijst ${item.Codelijst} (${codelistData[item.Codelijst].length} items)`}
+                                                                    >
+                                                                        <BookOpen className="h-3 w-3" />
+                                                                        <span>{item.Codelijst}</span>
+                                                                    </button>
+                                                                )}
                                                             </div>
                                                             <h3 className={`font-semibold ${darkMode ? 'text-gray-100' : 'text-gray-900'} mb-1`}>
                                                                 {highlightText(item.Naam, searchTerm)}
@@ -877,6 +985,109 @@
                             </div>
                         )}
                     </div>
+
+                    {/* Codelist Modal */}
+                    {selectedCodelist && (
+                        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                            <div className={`${darkMode ? 'bg-gray-800 text-gray-100' : 'bg-white'} rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col`}>
+                                <div className="flex-shrink-0 p-6 border-b">
+                                    <div className="flex items-start justify-between">
+                                        <div>
+                                            <h2 className="text-xl font-bold">Codelijst: {selectedCodelist.codelijst}</h2>
+                                            <p className="text-sm text-gray-500 mt-1">{selectedCodelist.naam}</p>
+                                            <p className="text-sm text-gray-500">
+                                                {filteredCodelistItems.length} van {codelistData[selectedCodelist.codelijst]?.length || 0} items
+                                            </p>
+                                        </div>
+                                        <button
+                                            onClick={() => {
+                                                setSelectedCodelist(null);
+                                                setCodelistSearch('');
+                                            }}
+                                            className="p-2 hover:bg-gray-100 rounded-lg"
+                                        >
+                                            <X className="h-5 w-5" />
+                                        </button>
+                                    </div>
+                                    <div className="mt-4">
+                                        <div className="relative">
+                                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                                            <input
+                                                type="text"
+                                                value={codelistSearch}
+                                                onChange={(e) => setCodelistSearch(e.target.value)}
+                                                placeholder="Zoek in codelijst..."
+                                                className={`w-full pl-9 pr-4 py-2 border rounded-lg ${
+                                                    darkMode ? 'bg-gray-700 border-gray-600' : ''
+                                                }`}
+                                                autoFocus
+                                            />
+                                            {codelistSearch && (
+                                                <button
+                                                    onClick={() => setCodelistSearch('')}
+                                                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                                                >
+                                                    ✕
+                                                </button>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div className="flex-1 overflow-y-auto min-h-0 p-6">
+                                    {filteredCodelistItems.length === 0 ? (
+                                        <div className="text-center py-8">
+                                            <p className="text-gray-500">
+                                                {codelistSearch ? 'Geen items gevonden voor deze zoekopdracht' : 'Geen items in deze codelijst'}
+                                            </p>
+                                        </div>
+                                    ) : (
+                                        <div className="space-y-2">
+                                            {filteredCodelistItems.map((item, index) => (
+                                                <div 
+                                                    key={index}
+                                                    className={`flex items-start justify-between p-3 rounded-lg hover:shadow-sm transition-shadow ${
+                                                        darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-50 hover:bg-gray-100'
+                                                    }`}
+                                                >
+                                                    <div className="flex-1 min-w-0 pr-2">
+                                                        <div className="flex items-center space-x-2">
+                                                            <code className="font-mono text-sm font-semibold text-blue-600">
+                                                                {highlightText(item.code, codelistSearch)}
+                                                            </code>
+                                                            {item.actief === 'J' && (
+                                                                <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-green-100 text-green-800">
+                                                                    Actief
+                                                                </span>
+                                                            )}
+                                                            {item.actief === 'N' && (
+                                                                <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-red-100 text-red-800">
+                                                                    Inactief
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                        <p className="text-sm mt-1 text-gray-700 break-words">
+                                                            {highlightText(item.omschrijving, codelistSearch)}
+                                                        </p>
+                                                    </div>
+                                                    <button
+                                                        onClick={() => copyToClipboard(item.code, `cl-${index}`)}
+                                                        className="flex-shrink-0 p-1 hover:bg-gray-200 rounded transition-colors"
+                                                        title="Kopieer code"
+                                                    >
+                                                        {copiedItem === `cl-${index}` ? 
+                                                            <Check className="h-4 w-4 text-green-500" /> : 
+                                                            <Copy className="h-4 w-4 text-gray-400" />
+                                                        }
+                                                    </button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </div>
             );
         }
