@@ -920,9 +920,65 @@
                                                                 {highlightText(item.Naam, searchTerm)}
                                                             </h3>
                                                             {item.Omschrijving && (
-                                                                <p className={`${darkMode ? 'text-gray-300' : 'text-gray-600'} text-sm`}>
+                                                                <p className={`${darkMode ? 'text-gray-300' : 'text-gray-600'} text-sm mb-2`}>
                                                                     {highlightText(item.Omschrijving, searchTerm)}
                                                                 </p>
+                                                            )}
+                                                            
+                                                            {/* Extra attribuut informatie */}
+                                                            {!isEntity && (
+                                                                <div className="space-y-1 text-xs text-gray-500">
+                                                                    {item.Formaat && (
+                                                                        <div className="flex items-center space-x-2">
+                                                                            <span className="font-medium">Formaat:</span>
+                                                                            <code className={`px-1 py-0.5 rounded ${darkMode ? 'bg-gray-700' : 'bg-gray-100'}`}>
+                                                                                {item.Formaat}
+                                                                            </code>
+                                                                        </div>
+                                                                    )}
+                                                                    {item.Lengte && (
+                                                                        <div className="flex items-center space-x-2">
+                                                                            <span className="font-medium">Lengte:</span>
+                                                                            <span>{item.Lengte}</span>
+                                                                        </div>
+                                                                    )}
+                                                                    {item.Decimalen && (
+                                                                        <div className="flex items-center space-x-2">
+                                                                            <span className="font-medium">Decimalen:</span>
+                                                                            <span>{item.Decimalen}</span>
+                                                                        </div>
+                                                                    )}
+                                                                    {item.Verplicht && (
+                                                                        <div className="flex items-center space-x-2">
+                                                                            <span className="font-medium">Verplicht:</span>
+                                                                            <span className={item.Verplicht === 'J' ? 'text-red-600' : 'text-green-600'}>
+                                                                                {item.Verplicht === 'J' ? 'Ja' : 'Nee'}
+                                                                            </span>
+                                                                        </div>
+                                                                    )}
+                                                                    {item.Primairesleutel && item.Primairesleutel === 'J' && (
+                                                                        <div className="flex items-center space-x-2">
+                                                                            <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-yellow-200 text-yellow-800">
+                                                                                🔑 Primaire sleutel
+                                                                            </span>
+                                                                        </div>
+                                                                    )}
+                                                                    {item.Vreemdessleutel && item.Vreemdessleutel === 'J' && (
+                                                                        <div className="flex items-center space-x-2">
+                                                                            <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                                                                                🔗 Vreemde sleutel
+                                                                            </span>
+                                                                        </div>
+                                                                    )}
+                                                                    {item.Defaultwaarde && (
+                                                                        <div className="flex items-center space-x-2">
+                                                                            <span className="font-medium">Default:</span>
+                                                                            <code className={`px-1 py-0.5 rounded ${darkMode ? 'bg-gray-700' : 'bg-gray-100'}`}>
+                                                                                {item.Defaultwaarde}
+                                                                            </code>
+                                                                        </div>
+                                                                    )}
+                                                                </div>
                                                             )}
                                                         </div>
                                                     </div>
