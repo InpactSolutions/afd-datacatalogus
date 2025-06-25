@@ -533,9 +533,9 @@
                                         codelistGroups[codelijst] = [];
                                     }
                                     codelistGroups[codelijst].push({
-                                        code: code || '',
-                                        omschrijving: omschrijving || '',
-                                        actief: actief || ''
+                                        code: String(code || ''),
+                                        omschrijving: String(omschrijving || ''),
+                                        actief: String(actief || '')
                                     });
                                     codelistCount++;
                                 }
@@ -577,7 +577,9 @@
                     row.Naam,
                     row.Omschrijving,
                     row.Entiteitcode,
-                    row.Attribuutcode
+                    row.Attribuutcode,
+                    // Ook zoeken in volledige attribuutcode (entiteit + attribuut)
+                    row.Entiteitcode && row.Attribuutcode ? `${row.Entiteitcode}_${row.Attribuutcode}` : null
                 ].filter(Boolean).join(' ').toLowerCase();
 
                 if (searchMode === 'regex') {
@@ -618,16 +620,24 @@
                 return filtered;
             }, [data, debouncedSearchTerm, typeFilter, entityFilter, searchFilter]);
 
-            // Available entities
+            // Available entities with descriptions
             const availableEntities = useMemo(() => {
                 const entityMap = new Map();
                 filteredData.forEach(row => {
                     if (row.Entiteitcode && !entityMap.has(row.Entiteitcode)) {
-                        entityMap.set(row.Entiteitcode, row.Entiteitcode);
+                        // Zoek de entiteit record voor de omschrijving
+                        const entityRecord = data.find(r => 
+                            r.Entiteitcode === row.Entiteitcode && 
+                            r['Entiteit/Attribuut'] === 'E'
+                        );
+                        entityMap.set(row.Entiteitcode, {
+                            code: row.Entiteitcode,
+                            naam: entityRecord ? entityRecord.Naam : row.Entiteitcode
+                        });
                     }
                 });
-                return Array.from(entityMap.keys()).sort();
-            }, [filteredData]);
+                return Array.from(entityMap.values()).sort((a, b) => a.code.localeCompare(b.code));
+            }, [filteredData, data]);
 
             // Paginated data
             const paginatedData = useMemo(() => {
@@ -643,10 +653,8 @@
                 let items = codelistData[selectedCodelist.codelijst];
                 
                 // Filter uit de eerste regel als deze de omschrijving van de codelijst bevat
-                // (meestal heeft deze een lege code of "code" als code)
                 items = items.filter(item => {
                     const code = String(item.code || '').trim();
-                    // Skip items met lege code of "code" als code (dit zijn meestal beschrijvingen)
                     return code !== '' && code.toLowerCase() !== 'code';
                 });
                 
@@ -654,7 +662,6 @@
                 
                 const searchLower = codelistSearch.toLowerCase();
                 return items.filter(item => {
-                    // Veilige string conversie
                     const code = String(item.code || '').toLowerCase();
                     const omschrijving = String(item.omschrijving || '').toLowerCase();
                     
@@ -835,7 +842,9 @@
                                             >
                                                 <option value="all">Alle entiteiten ({availableEntities.length})</option>
                                                 {availableEntities.map(entity => (
-                                                    <option key={entity} value={entity}>{entity}</option>
+                                                    <option key={entity.code} value={entity.code}>
+                                                        {entity.code} - {entity.naam}
+                                                    </option>
                                                 ))}
                                             </select>
                                         </div>
@@ -863,7 +872,7 @@
                                             <li>Naam van een entiteit of attribuut</li>
                                             <li>Omschrijving</li>
                                             <li>Entiteitcode (bijv. OB, XA, RI)</li>
-                                            <li>Attribuutcode</li>
+                                            <li>Attribuutcode of volledige codes (bijv. DA_VERZSOM)</li>
                                         </ul>
                                     </div>
                                     <div className="mt-6 flex justify-center">
