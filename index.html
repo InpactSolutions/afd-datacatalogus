@@ -551,9 +551,17 @@
                             console.log('Enter pressed - copying item:', item);
                             if (item) {
                                 const isEntity = item['Entiteit/Attribuut'] === 'E';
-                                const itemId = isEntity ? item.Entiteitcode : `${item.Entiteitcode}_${item.Attribuutcode}`;
-                                console.log('Copying:', itemId);
-                                copyToClipboard(itemId, itemId);
+                                
+                                if (e.shiftKey && !isEntity) {
+                                    // Shift+Enter: Copy full attribute info
+                                    console.log('Shift+Enter - copying full attribute info');
+                                    copyFullAttributeInfo(item, `full-${item.Entiteitcode}_${item.Attribuutcode}`);
+                                } else {
+                                    // Regular Enter: Copy just the code
+                                    const itemId = isEntity ? item.Entiteitcode : `${item.Entiteitcode}_${item.Attribuutcode}`;
+                                    console.log('Enter - copying code:', itemId);
+                                    copyToClipboard(itemId, itemId);
+                                }
                             }
                         }
                     } else {
@@ -1066,7 +1074,11 @@
                                             </div>
                                             <div className="flex items-center justify-between p-2 rounded bg-gray-50 dark:bg-gray-700">
                                                 <span><kbd className="px-2 py-1 bg-gray-200 dark:bg-gray-600 rounded text-xs">Enter</kbd></span>
-                                                <span>Kopieer geselecteerd item</span>
+                                                <span>Kopieer geselecteerde code</span>
+                                            </div>
+                                            <div className="flex items-center justify-between p-2 rounded bg-gray-50 dark:bg-gray-700">
+                                                <span><kbd className="px-2 py-1 bg-gray-200 dark:bg-gray-600 rounded text-xs">Shift+Enter</kbd></span>
+                                                <span>Kopieer volledige attribuut info</span>
                                             </div>
                                             <div className="flex items-center justify-between p-2 rounded bg-gray-50 dark:bg-gray-700">
                                                 <span><kbd className="px-2 py-1 bg-gray-200 dark:bg-gray-600 rounded text-xs">Esc</kbd></span>
@@ -1199,11 +1211,11 @@
                                 {paginatedData.length > 0 && (
                                     <div className={`text-xs space-y-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
                                         <div>
-                                            <strong>Sneltoetsen:</strong> ↑↓ navigeren door resultaten • Enter kopiëren geselecteerd item • / zoeken • Esc wissen
+                                            <strong>Sneltoetsen:</strong> ↑↓ navigeren • Enter kopieer code • Shift+Enter kopieer volledige info • / zoeken • Esc wissen
                                         </div>
                                         {keyboardActive && selectedItemIndex >= 0 && (
                                             <div className="text-blue-400 font-medium">
-                                                <strong>📍 Geselecteerd:</strong> Item {selectedItemIndex + 1} van {paginatedData.length} • Druk Enter om te kopiëren
+                                                <strong>📍 Geselecteerd:</strong> Item {selectedItemIndex + 1} van {paginatedData.length} • Enter = code • Shift+Enter = volledige info
                                             </div>
                                         )}
                                     </div>
