@@ -474,7 +474,7 @@
                         return;
                     }
 
-                    console.log('Key:', e.key, 'Results:', paginatedData.length, 'Selected:', selectedItemIndex);
+                    console.log('Key:', e.key, 'Results:', paginatedData.length, 'Selected:', selectedItemIndex, 'Search:', debouncedSearchTerm);
 
                     if (e.key === '/') {
                         e.preventDefault();
@@ -483,8 +483,10 @@
                     }
 
                     if (e.key === 'Escape') {
+                        console.log('Escape pressed - clearing search and selection');
                         setSelectedItemIndex(-1);
                         setKeyboardActive(false);
+                        setSearchTerm('');
                         return;
                     }
 
@@ -494,6 +496,7 @@
                             setKeyboardActive(true);
                             setSelectedItemIndex(prev => {
                                 const newIndex = prev >= paginatedData.length - 1 ? 0 : prev + 1;
+                                console.log('Arrow Down - new index:', newIndex);
                                 return newIndex;
                             });
                         }
@@ -503,6 +506,7 @@
                             setKeyboardActive(true);
                             setSelectedItemIndex(prev => {
                                 const newIndex = prev <= 0 ? paginatedData.length - 1 : prev - 1;
+                                console.log('Arrow Up - new index:', newIndex);
                                 return newIndex;
                             });
                         }
@@ -510,18 +514,22 @@
                         if (e.key === 'Enter' && selectedItemIndex >= 0) {
                             e.preventDefault();
                             const item = paginatedData[selectedItemIndex];
+                            console.log('Enter pressed - copying item:', item);
                             if (item) {
                                 const isEntity = item['Entiteit/Attribuut'] === 'E';
                                 const itemId = isEntity ? item.Entiteitcode : `${item.Entiteitcode}_${item.Attribuutcode}`;
+                                console.log('Copying:', itemId);
                                 copyToClipboard(itemId, itemId);
                             }
                         }
+                    } else {
+                        console.log('No results to navigate through');
                     }
                 };
 
                 document.addEventListener('keydown', handleKeyDown);
                 return () => document.removeEventListener('keydown', handleKeyDown);
-            }, [paginatedData, selectedItemIndex, selectedCodelist]);
+            }, [paginatedData, selectedItemIndex, selectedCodelist, debouncedSearchTerm]);
 
             // Scroll to selected item
             useEffect(() => {
