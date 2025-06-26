@@ -1046,7 +1046,7 @@
                                         <h3 className={`text-lg font-semibold mb-3 ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
                                             🔍 Zoeken
                                         </h3>
-                                        <div className="space-y-2 text-sm">
+                                        <div className={`space-y-2 text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
                                             <p>Je kunt zoeken op:</p>
                                             <ul className="list-disc list-inside space-y-1 ml-4">
                                                 <li>Naam van een entiteit of attribuut</li>
@@ -1064,28 +1064,28 @@
                                             ⌨️ Sneltoetsen
                                         </h3>
                                         <div className="space-y-2 text-sm">
-                                            <div className="flex items-center justify-between p-2 rounded bg-gray-50 dark:bg-gray-700">
-                                                <span><kbd className="px-2 py-1 bg-gray-200 dark:bg-gray-600 rounded text-xs">/</kbd></span>
-                                                <span>Focus op zoekbalk</span>
+                                            <div className={`flex items-center justify-between p-2 rounded ${darkMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
+                                                <span><kbd className={`px-2 py-1 rounded text-xs ${darkMode ? 'bg-gray-600 text-gray-200' : 'bg-gray-200 text-gray-800'}`}>/</kbd></span>
+                                                <span className={darkMode ? 'text-gray-300' : 'text-gray-700'}>Focus op zoekbalk</span>
                                             </div>
-                                            <div className="flex items-center justify-between p-2 rounded bg-gray-50 dark:bg-gray-700">
-                                                <span><kbd className="px-2 py-1 bg-gray-200 dark:bg-gray-600 rounded text-xs">↑ ↓</kbd></span>
-                                                <span>Navigeer door zoekresultaten</span>
+                                            <div className={`flex items-center justify-between p-2 rounded ${darkMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
+                                                <span><kbd className={`px-2 py-1 rounded text-xs ${darkMode ? 'bg-gray-600 text-gray-200' : 'bg-gray-200 text-gray-800'}`}>↑ ↓</kbd></span>
+                                                <span className={darkMode ? 'text-gray-300' : 'text-gray-700'}>Navigeer door zoekresultaten</span>
                                             </div>
-                                            <div className="flex items-center justify-between p-2 rounded bg-gray-50 dark:bg-gray-700">
-                                                <span><kbd className="px-2 py-1 bg-gray-200 dark:bg-gray-600 rounded text-xs">Enter</kbd></span>
-                                                <span>Kopieer geselecteerde code</span>
+                                            <div className={`flex items-center justify-between p-2 rounded ${darkMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
+                                                <span><kbd className={`px-2 py-1 rounded text-xs ${darkMode ? 'bg-gray-600 text-gray-200' : 'bg-gray-200 text-gray-800'}`}>Enter</kbd></span>
+                                                <span className={darkMode ? 'text-gray-300' : 'text-gray-700'}>Kopieer geselecteerde code</span>
                                             </div>
-                                            <div className="flex items-center justify-between p-2 rounded bg-gray-50 dark:bg-gray-700">
-                                                <span><kbd className="px-2 py-1 bg-gray-200 dark:bg-gray-600 rounded text-xs">Shift+Enter</kbd></span>
-                                                <span>Kopieer volledige attribuut info</span>
+                                            <div className={`flex items-center justify-between p-2 rounded ${darkMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
+                                                <span><kbd className={`px-2 py-1 rounded text-xs ${darkMode ? 'bg-gray-600 text-gray-200' : 'bg-gray-200 text-gray-800'}`}>Shift+Enter</kbd></span>
+                                                <span className={darkMode ? 'text-gray-300' : 'text-gray-700'}>Kopieer volledige attribuut info</span>
                                             </div>
-                                            <div className="flex items-center justify-between p-2 rounded bg-gray-50 dark:bg-gray-700">
-                                                <span><kbd className="px-2 py-1 bg-gray-200 dark:bg-gray-600 rounded text-xs">Esc</kbd></span>
-                                                <span>Wis zoekterm en selectie</span>
+                                            <div className={`flex items-center justify-between p-2 rounded ${darkMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
+                                                <span><kbd className={`px-2 py-1 rounded text-xs ${darkMode ? 'bg-gray-600 text-gray-200' : 'bg-gray-200 text-gray-800'}`}>Esc</kbd></span>
+                                                <span className={darkMode ? 'text-gray-300' : 'text-gray-700'}>Wis zoekterm en selectie</span>
                                             </div>
                                         </div>
-                                        <p className="text-xs text-gray-500 mt-2">
+                                        <p className={`text-xs mt-2 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
                                             💡 <strong>Tip:</strong> Klik buiten de zoekbalk om keyboard navigatie te activeren
                                         </p>
                                     </div>
@@ -1094,13 +1094,13 @@
                                         <h3 className={`text-lg font-semibold mb-3 ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
                                             📋 Kopiëren
                                         </h3>
-                                        <div className="space-y-2 text-sm">
+                                        <div className={`space-y-2 text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
                                             <div className="flex items-start space-x-2">
-                                                <Copy className="h-4 w-4 mt-0.5 text-gray-400" />
+                                                <Copy className={`h-4 w-4 mt-0.5 ${darkMode ? 'text-gray-400' : 'text-gray-400'}`} />
                                                 <span>Kopieer alleen de code (bijv. OB_NAAM)</span>
                                             </div>
                                             <div className="flex items-start space-x-2">
-                                                <ClipboardList className="h-4 w-4 mt-0.5 text-gray-400" />
+                                                <ClipboardList className={`h-4 w-4 mt-0.5 ${darkMode ? 'text-gray-400' : 'text-gray-400'}`} />
                                                 <span>Kopieer volledige attribuut info (Entiteit, Code, Omschrijving, Codelijst)</span>
                                             </div>
                                         </div>
@@ -1110,7 +1110,7 @@
                                         <h3 className={`text-lg font-semibold mb-3 ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
                                             📚 Codelijsten
                                         </h3>
-                                        <div className="space-y-2 text-sm">
+                                        <div className={`space-y-2 text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
                                             <p>Klik op een codelijst link (bijv. <BookOpen className="h-3 w-3 inline" /> ADNABS) om alle waarden te bekijken.</p>
                                             <p>In de codelijst kun je:</p>
                                             <ul className="list-disc list-inside space-y-1 ml-4">
@@ -1125,13 +1125,13 @@
                                         <h3 className={`text-lg font-semibold mb-3 ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
                                             🎯 Filters
                                         </h3>
-                                        <div className="space-y-2 text-sm">
+                                        <div className={`space-y-2 text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
                                             <div className="flex items-start space-x-2">
-                                                <Filter className="h-4 w-4 mt-0.5 text-gray-400" />
+                                                <Filter className={`h-4 w-4 mt-0.5 ${darkMode ? 'text-gray-400' : 'text-gray-400'}`} />
                                                 <span><strong>Type filter:</strong> Filter op entiteiten of attributen</span>
                                             </div>
                                             <div className="flex items-start space-x-2">
-                                                <Database className="h-4 w-4 mt-0.5 text-gray-400" />
+                                                <Database className={`h-4 w-4 mt-0.5 ${darkMode ? 'text-gray-400' : 'text-gray-400'}`} />
                                                 <span><strong>Entiteit filter:</strong> Toon alleen attributen van een specifieke entiteit</span>
                                             </div>
                                         </div>
@@ -1141,7 +1141,7 @@
                                         <h3 className={`text-lg font-semibold mb-3 ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
                                             🏷️ Labels & Info
                                         </h3>
-                                        <div className="space-y-2 text-sm">
+                                        <div className={`space-y-2 text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
                                             <div className="flex flex-wrap gap-2">
                                                 <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium text-blue-600 bg-blue-100">
                                                     Ja/Nee
@@ -1152,7 +1152,7 @@
                                                 <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium text-purple-600 bg-gray-100">
                                                     Datum
                                                 </span>
-                                                <span className="text-gray-600">← Datatypes</span>
+                                                <span className={`${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>← Datatypes</span>
                                             </div>
                                             <div className="flex flex-wrap gap-2 items-center">
                                                 <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-yellow-200 text-yellow-800">
@@ -1165,7 +1165,7 @@
                                         </div>
                                     </div>
 
-                                    <div className="text-xs text-gray-500 border-t pt-4">
+                                    <div className={`text-xs border-t pt-4 ${darkMode ? 'text-gray-400 border-gray-700' : 'text-gray-500 border-gray-200'}`}>
                                         <p><strong>AFD 1.0 Datacatalogus</strong> • {stats.total.toLocaleString()} items • {stats.entities} entiteiten • {stats.attributes.toLocaleString()} attributen</p>
                                     </div>
                                 </div>
