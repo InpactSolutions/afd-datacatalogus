@@ -472,6 +472,7 @@
             const [codelistSearch, setCodelistSearch] = useState('');
             const [selectedItemIndex, setSelectedItemIndex] = useState(-1);
             const [keyboardActive, setKeyboardActive] = useState(false);
+            const [showInfo, setShowInfo] = useState(false);
             const searchInputRef = useRef(null);
             const itemRefs = useRef([]);
             
@@ -495,7 +496,7 @@
             useEffect(() => {
                 const handleKeyDown = (e) => {
                     // Don't interfere with modals or inputs
-                    if (selectedCodelist || e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') {
+                    if (selectedCodelist || showInfo || e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') {
                         return;
                     }
 
@@ -554,7 +555,7 @@
 
                 document.addEventListener('keydown', handleKeyDown);
                 return () => document.removeEventListener('keydown', handleKeyDown);
-            }, [paginatedData, selectedItemIndex, selectedCodelist, debouncedSearchTerm]);
+            }, [paginatedData, selectedItemIndex, selectedCodelist, debouncedSearchTerm, showInfo]);
 
             // Scroll to selected item
             useEffect(() => {
@@ -950,13 +951,22 @@
                                         </div>
                                     </div>
                                 </div>
-                                <button
-                                    onClick={() => setDarkMode(!darkMode)}
-                                    className="p-2 rounded-lg hover:bg-gray-100"
-                                    title={darkMode ? 'Light mode' : 'Dark mode'}
-                                >
-                                    {darkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-                                </button>
+                                <div className="flex items-center space-x-2">
+                                    <button
+                                        onClick={() => setShowInfo(true)}
+                                        className="p-2 rounded-lg hover:bg-gray-100"
+                                        title="Help & Instructies"
+                                    >
+                                        <Info className="h-5 w-5" />
+                                    </button>
+                                    <button
+                                        onClick={() => setDarkMode(!darkMode)}
+                                        className="p-2 rounded-lg hover:bg-gray-100"
+                                        title={darkMode ? 'Light mode' : 'Dark mode'}
+                                    >
+                                        {darkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -985,6 +995,161 @@
                                             ✕
                                         </button>
                                     )}
+
+                    {/* Info Modal */}
+                    {showInfo && (
+                        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                            <div className={`${darkMode ? 'bg-gray-800 text-gray-100' : 'bg-white'} rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col`}>
+                                <div className="flex-shrink-0 p-6 border-b ${darkMode ? 'border-gray-700' : 'border-gray-200'}">
+                                    <div className="flex items-start justify-between">
+                                        <div className="flex items-center space-x-3">
+                                            <Info className="h-6 w-6 text-blue-600" />
+                                            <h2 className={`text-xl font-bold ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
+                                                Help & Instructies
+                                            </h2>
+                                        </div>
+                                        <button
+                                            onClick={() => setShowInfo(false)}
+                                            className={`p-2 rounded-lg flex-shrink-0 ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'}`}
+                                        >
+                                            <X className="h-5 w-5" />
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <div className="flex-1 overflow-y-auto p-6 space-y-6">
+                                    <div>
+                                        <h3 className={`text-lg font-semibold mb-3 ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
+                                            🔍 Zoeken
+                                        </h3>
+                                        <div className="space-y-2 text-sm">
+                                            <p>Je kunt zoeken op:</p>
+                                            <ul className="list-disc list-inside space-y-1 ml-4">
+                                                <li>Naam van een entiteit of attribuut</li>
+                                                <li>Omschrijving</li>
+                                                <li>Entiteitcode (bijv. OB, XA, RI)</li>
+                                                <li>Attribuutcode of volledige codes (bijv. DA_VERZSOM)</li>
+                                                <li>ANVA code (bijv. 13689)</li>
+                                                <li>Codelijst naam (bijv. ADNABS, SECTCOD)</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <h3 className={`text-lg font-semibold mb-3 ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
+                                            ⌨️ Sneltoetsen
+                                        </h3>
+                                        <div className="space-y-2 text-sm">
+                                            <div className="flex items-center justify-between p-2 rounded bg-gray-50 dark:bg-gray-700">
+                                                <span><kbd className="px-2 py-1 bg-gray-200 dark:bg-gray-600 rounded text-xs">/</kbd></span>
+                                                <span>Focus op zoekbalk</span>
+                                            </div>
+                                            <div className="flex items-center justify-between p-2 rounded bg-gray-50 dark:bg-gray-700">
+                                                <span><kbd className="px-2 py-1 bg-gray-200 dark:bg-gray-600 rounded text-xs">↑ ↓</kbd></span>
+                                                <span>Navigeer door zoekresultaten</span>
+                                            </div>
+                                            <div className="flex items-center justify-between p-2 rounded bg-gray-50 dark:bg-gray-700">
+                                                <span><kbd className="px-2 py-1 bg-gray-200 dark:bg-gray-600 rounded text-xs">Enter</kbd></span>
+                                                <span>Kopieer geselecteerd item</span>
+                                            </div>
+                                            <div className="flex items-center justify-between p-2 rounded bg-gray-50 dark:bg-gray-700">
+                                                <span><kbd className="px-2 py-1 bg-gray-200 dark:bg-gray-600 rounded text-xs">Esc</kbd></span>
+                                                <span>Wis zoekterm en selectie</span>
+                                            </div>
+                                        </div>
+                                        <p className="text-xs text-gray-500 mt-2">
+                                            💡 <strong>Tip:</strong> Klik buiten de zoekbalk om keyboard navigatie te activeren
+                                        </p>
+                                    </div>
+
+                                    <div>
+                                        <h3 className={`text-lg font-semibold mb-3 ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
+                                            📋 Kopiëren
+                                        </h3>
+                                        <div className="space-y-2 text-sm">
+                                            <div className="flex items-start space-x-2">
+                                                <Copy className="h-4 w-4 mt-0.5 text-gray-400" />
+                                                <span>Kopieer alleen de code (bijv. OB_NAAM)</span>
+                                            </div>
+                                            <div className="flex items-start space-x-2">
+                                                <ClipboardList className="h-4 w-4 mt-0.5 text-gray-400" />
+                                                <span>Kopieer volledige attribuut info (Entiteit, Code, Omschrijving, Codelijst)</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <h3 className={`text-lg font-semibold mb-3 ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
+                                            📚 Codelijsten
+                                        </h3>
+                                        <div className="space-y-2 text-sm">
+                                            <p>Klik op een codelijst link (bijv. <BookOpen className="h-3 w-3 inline" /> ADNABS) om alle waarden te bekijken.</p>
+                                            <p>In de codelijst kun je:</p>
+                                            <ul className="list-disc list-inside space-y-1 ml-4">
+                                                <li>Zoeken naar specifieke codes of omschrijvingen</li>
+                                                <li>Codes kopiëren naar het klembord</li>
+                                                <li>Status zien (Actief/Inactief)</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <h3 className={`text-lg font-semibold mb-3 ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
+                                            🎯 Filters
+                                        </h3>
+                                        <div className="space-y-2 text-sm">
+                                            <div className="flex items-start space-x-2">
+                                                <Filter className="h-4 w-4 mt-0.5 text-gray-400" />
+                                                <span><strong>Type filter:</strong> Filter op entiteiten of attributen</span>
+                                            </div>
+                                            <div className="flex items-start space-x-2">
+                                                <Database className="h-4 w-4 mt-0.5 text-gray-400" />
+                                                <span><strong>Entiteit filter:</strong> Toon alleen attributen van een specifieke entiteit</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <h3 className={`text-lg font-semibold mb-3 ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
+                                            🏷️ Labels & Info
+                                        </h3>
+                                        <div className="space-y-2 text-sm">
+                                            <div className="flex flex-wrap gap-2">
+                                                <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium text-blue-600 bg-blue-100">
+                                                    Ja/Nee
+                                                </span>
+                                                <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium text-green-600 bg-gray-100">
+                                                    Alfanumeriek
+                                                </span>
+                                                <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium text-purple-600 bg-gray-100">
+                                                    Datum
+                                                </span>
+                                                <span>Datatypes</span>
+                                            </div>
+                                            <div className="flex flex-wrap gap-2 items-center">
+                                                <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-yellow-200 text-yellow-800">
+                                                    🔑 Primaire sleutel
+                                                </span>
+                                                <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                                                    🔗 Vreemde sleutel
+                                                </span>
+                                            </div>
+                                            <div className="flex items-center space-x-2">
+                                                <span className="inline-flex items-center px-1 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">
+                                                    ⚠️
+                                                </span>
+                                                <span>ANVA: Afwijkend niet toegestaan</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="text-xs text-gray-500 border-t pt-4">
+                                        <p><strong>AFD 1.0 Datacatalogus</strong> • {stats.total.toLocaleString()} items • {stats.entities} entiteiten • {stats.attributes.toLocaleString()} attributen</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
                                 </div>
                                 <div className="flex flex-wrap gap-4">
                                     <div className="flex items-center space-x-2">
