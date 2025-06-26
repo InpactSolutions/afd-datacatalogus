@@ -41,6 +41,7 @@
         .bg-gray-900 { background-color: #111827; }
         .bg-blue-500 { background-color: #3b82f6; }
         .bg-blue-100 { background-color: #dbeafe; }
+        .bg-blue-50 { background-color: #eff6ff; }
         .bg-green-100 { background-color: #dcfce7; }
         .bg-yellow-200 { background-color: #fef08a; }
         .bg-yellow-800 { background-color: #92400e; }
@@ -296,6 +297,21 @@
             background-color: #374151;
         }
 
+        /* Selection highlight for keyboard navigation */
+        .selected-item {
+            background-color: #3b82f6 !important;
+            color: white !important;
+        }
+
+        .dark .selected-item {
+            background-color: #2563eb !important;
+            color: white !important;
+        }
+
+        .selected-item * {
+            color: white !important;
+        }
+
         /* Responsive */
         @media (min-width: 640px) {
             .sm\:px-6 { padding-left: 1.5rem; padding-right: 1.5rem; }
@@ -428,7 +444,9 @@
             const [currentPage, setCurrentPage] = useState(1);
             const [selectedCodelist, setSelectedCodelist] = useState(null);
             const [codelistSearch, setCodelistSearch] = useState('');
+            const [selectedItemIndex, setSelectedItemIndex] = useState(-1);
             const searchInputRef = useRef(null);
+            const itemRefs = useRef([]);
             
             const ITEMS_PER_PAGE = 25;
 
@@ -451,6 +469,7 @@
                 const timer = setTimeout(() => {
                     setDebouncedSearchTerm(searchTerm);
                     setCurrentPage(1);
+                    setSelectedItemIndex(-1);
                 }, 300);
                 return () => clearTimeout(timer);
             }, [searchTerm]);
@@ -458,22 +477,103 @@
             // Reset page when filters change
             useEffect(() => {
                 setCurrentPage(1);
+                setSelectedItemIndex(-1);
             }, [typeFilter, entityFilter]);
 
-            // Keyboard shortcuts
+            // Reset selected item when page changes
+            useEffect(() => {
+                setSelectedItemIndex(-1);
+                itemRefs.current = [];
+            }, [currentPage]);
+
+            // Keyboard shortcuts and navigation
             useEffect(() => {
                 const handleKeyDown = (e) => {
-                    if (e.key === '/' && !e.ctrlKey && !e.metaKey) {
+                    // Don't interfere with modal or form inputs
+                    if (selectedCodelist || e.target.tagName === 'SELECT') {
+                        return;
+                    }
+
+                    // Focus search with '/'
+                    if (e.key === '/' && document.activeElement !== searchInputRef.current) {
                         e.preventDefault();
                         searchInputRef.current?.focus();
+                        return;
                     }
+                    
+                    // Clear search with Escape when in search input
                     if (e.key === 'Escape' && document.activeElement === searchInputRef.current) {
                         setSearchTerm('');
+                        setSelectedItemIndex(-1);
+                        searchInputRef.current?.blur();
+                        return;
+                    }
+
+                    // Arrow key navigation - only when not typing in search
+                    if (paginatedData.length > 0 && document.activeElement !== searchInputRef.current) {
+                        if (e.key === 'ArrowDown') {
+                            e.preventDefault();
+                            setSelectedItemIndex(prev => {
+                                const newIndex = prev >= paginatedData.length - 1 ? 0 : prev + 1;
+                                setTimeout(() => scrollToItem(newIndex), 0);
+                                return newIndex;
+                            });
+                            return;
+                        }
+                        
+                        if (e.key === 'ArrowUp') {
+                            e.preventDefault();
+                            setSelectedItemIndex(prev => {
+                                const newIndex = prev <= 0 ? paginatedData.length - 1 : prev - 1;
+                                setTimeout(() => scrollToItem(newIndex), 0);
+                                return newIndex;
+                            });
+                            return;
+                        }
+                        
+                        if (e.key === 'Enter' && selectedItemIndex >= 0) {
+                            e.preventDefault();
+                            const selectedItem = paginatedData[selectedItemIndex];
+                            if (selectedItem) {
+                                const isEntity = selectedItem['Entiteit/Attribuut'] === 'E';
+                                const itemId = isEntity ? selectedItem.Entiteitcode : `${selectedItem.Entiteitcode}_${selectedItem.Attribuutcode}`;
+                                copyToClipboard(itemId, itemId);
+                            }
+                            return;
+                        }
+                    }
+
+                    // Page navigation with arrow keys - only when no item selected and not in search
+                    if (selectedItemIndex === -1 && document.activeElement !== searchInputRef.current && totalPages > 1) {
+                        if (e.key === 'ArrowLeft' && currentPage > 1) {
+                            e.preventDefault();
+                            setCurrentPage(prev => prev - 1);
+                            return;
+                        }
+                        
+                        if (e.key === 'ArrowRight' && currentPage < totalPages) {
+                            e.preventDefault();
+                            setCurrentPage(prev => prev + 1);
+                            return;
+                        }
                     }
                 };
-                document.addEventListener('keydown', handleKeyDown);
-                return () => document.removeEventListener('keydown', handleKeyDown);
-            }, []);
+
+                document.addEventListener('keydown', handleKeyDown, true);
+                return () => document.removeEventListener('keydown', handleKeyDown, true);
+            }, [paginatedData.length, selectedItemIndex, currentPage, totalPages, selectedCodelist]);
+
+            // Scroll to selected item
+            const scrollToItem = (index) => {
+                setTimeout(() => {
+                    if (itemRefs.current[index]) {
+                        itemRefs.current[index].scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'center'
+                        });
+                    }
+                }, 0);
+            };
 
             // Load preferences
             useEffect(() => {
@@ -610,7 +710,7 @@
                 loadData();
             }, []);
 
-            // Search filter - simplified to normal search only
+            // Enhanced search filter with codelist support
             const searchFilter = useCallback((row, term) => {
                 if (!term) return true;
 
@@ -619,7 +719,8 @@
                     row.Omschrijving,
                     row.Entiteitcode,
                     row.Attribuutcode,
-                    row.Entiteitcode && row.Attribuutcode ? `${row.Entiteitcode}_${row.Attribuutcode}` : null
+                    row.Entiteitcode && row.Attribuutcode ? `${row.Entiteitcode}_${row.Attribuutcode}` : null,
+                    row.Codelijst  // Now also search in codelist field
                 ];
 
                 // Add ANVA information if available
@@ -855,7 +956,7 @@
                                         type="text"
                                         value={searchTerm}
                                         onChange={(e) => setSearchTerm(e.target.value)}
-                                        placeholder="Zoek op naam, omschrijving, AFD code of ANVA code... (druk / voor focus)"
+                                        placeholder="Zoek op naam, omschrijving, AFD code, ANVA code of codelijst... (druk / voor focus)"
                                         className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 text-lg ${
                                             darkMode ? 'bg-gray-700 border-gray-600 text-gray-100' : ''
                                         }`}
@@ -900,6 +1001,23 @@
                                         </div>
                                     )}
                                 </div>
+                                {paginatedData.length > 0 && (
+                                    <div className="text-xs text-gray-500 space-y-1">
+                                        <div>
+                                            <strong>Sneltoetsen:</strong> ↑↓ navigeren door resultaten • Enter kopiëren geselecteerd item • / zoeken • Esc wissen
+                                        </div>
+                                        {totalPages > 1 && selectedItemIndex === -1 && (
+                                            <div>
+                                                <strong>Pagina's:</strong> ←→ vorige/volgende pagina (wanneer geen item geselecteerd)
+                                            </div>
+                                        )}
+                                        {selectedItemIndex >= 0 && (
+                                            <div className="text-blue-600">
+                                                <strong>Geselecteerd:</strong> Item {selectedItemIndex + 1} van {paginatedData.length}
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>
@@ -924,6 +1042,7 @@
                                             <li>Entiteitcode (bijv. OB, XA, RI)</li>
                                             <li>Attribuutcode of volledige codes (bijv. DA_VERZSOM)</li>
                                             <li>ANVA code (bijv. 13689)</li>
+                                            <li>Codelijst naam (bijv. ADNABS, SECTCOD)</li>
                                         </ul>
                                     </div>
                                     <div className="mt-6 flex justify-center">
@@ -954,11 +1073,15 @@
                                     {paginatedData.map((item, index) => {
                                         const isEntity = item['Entiteit/Attribuut'] === 'E';
                                         const itemId = isEntity ? item.Entiteitcode : `${item.Entiteitcode}_${item.Attribuutcode}`;
+                                        const isSelected = selectedItemIndex === index;
                                         
                                         return (
                                             <div 
-                                                key={index} 
-                                                className={`${darkMode ? 'bg-gray-800 text-gray-100' : 'bg-white'} rounded-lg shadow-sm p-4 hover:shadow-md transition-shadow`}
+                                                key={index}
+                                                ref={el => itemRefs.current[index] = el}
+                                                className={`${darkMode ? 'bg-gray-800 text-gray-100' : 'bg-white'} rounded-lg shadow-sm p-4 hover:shadow-md transition-shadow ${
+                                                    isSelected ? 'selected-item' : ''
+                                                }`}
                                             >
                                                 <div className="flex items-start justify-between">
                                                     <div className="flex items-start space-x-3 flex-1">
@@ -984,7 +1107,7 @@
                                                                         title={`Bekijk codelijst ${item.Codelijst} (${codelistData[item.Codelijst].length} items)`}
                                                                     >
                                                                         <BookOpen className="h-3 w-3" />
-                                                                        <span>{item.Codelijst}</span>
+                                                                        <span>{highlightText(item.Codelijst, searchTerm)}</span>
                                                                     </button>
                                                                 )}
                                                             </div>
@@ -1017,7 +1140,7 @@
                                                                                 <div className="flex items-center space-x-2">
                                                                                     <span className="font-medium">ANVA:</span>
                                                                                     <code className={`px-1 py-0.5 rounded ${darkMode ? 'bg-gray-700' : 'bg-gray-100'}`}>
-                                                                                        {anvaInfo.code}
+                                                                                        {highlightText(anvaInfo.code, searchTerm)}
                                                                                     </code>
                                                                                     {anvaInfo.afwijkendNietToegestaan === 'J' && (
                                                                                         <span className="inline-flex items-center px-1 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">
