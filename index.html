@@ -1214,13 +1214,13 @@
                             <div className="text-center py-12">
                                 <div className={`${darkMode ? 'bg-gray-800 text-gray-100' : 'bg-white'} rounded-lg shadow-sm p-12 max-w-2xl mx-auto`}>
                                     <Search className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                                    <h2 className="text-2xl font-semibold text-gray-700 mb-2">
+                                    <h2 className={`text-2xl font-semibold mb-2 ${darkMode ? 'text-gray-200' : 'text-gray-700'}`}>
                                         Begin met zoeken
                                     </h2>
-                                    <p className="text-gray-500 mb-6">
+                                    <p className={`${darkMode ? 'text-gray-300' : 'text-gray-500'} mb-6`}>
                                         Gebruik de zoekbalk hierboven om te zoeken in de AFD 1.0 datacatalogus met {stats.total.toLocaleString()} items
                                     </p>
-                                    <div className="space-y-2 text-sm text-gray-500">
+                                    <div className={`space-y-2 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
                                         <p>Je kunt zoeken op:</p>
                                         <ul className="list-disc list-inside space-y-1">
                                             <li>Naam van een entiteit of attribuut</li>
