@@ -585,12 +585,15 @@
                 setKeyboardActive(false);
             }, [typeFilter, entityFilter]);
 
-            // Reset selected item when page changes
+            // Scroll to selected item when index changes
             useEffect(() => {
-                setSelectedItemIndex(-1);
-                setKeyboardActive(false);
-                itemRefs.current = [];
-            }, [currentPage]);
+                if (selectedItemIndex >= 0 && keyboardActive && itemRefs.current[selectedItemIndex]) {
+                    itemRefs.current[selectedItemIndex].scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'center'
+                    });
+                }
+            }, [selectedItemIndex, keyboardActive]);
 
             // Load preferences
             useEffect(() => {
