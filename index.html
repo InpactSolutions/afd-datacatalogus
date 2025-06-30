@@ -433,6 +433,12 @@
             </svg>
         );
 
+        const ChevronDown = ({ className }) => (
+            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="m6 9 6 6 6-6" />
+            </svg>
+        );
+
         const Info = ({ className }) => (
             <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <circle cx="12" cy="12" r="10"/>
@@ -485,6 +491,7 @@
             const [selectedItemIndex, setSelectedItemIndex] = useState(-1);
             const [keyboardActive, setKeyboardActive] = useState(false);
             const [showInfo, setShowInfo] = useState(false);
+            const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
             const searchInputRef = useRef(null);
             const itemRefs = useRef([]);
             
