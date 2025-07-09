@@ -3,26 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AFD 1.0 Datacatalogus</title>
-    
-    <!-- Favicon -->
-    <link rel="icon" type="image/png" href="favicon.png">
-    <link rel="icon" type="image/x-icon" href="favicon.ico">
-    
-    <!-- React -->
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    
-    <!-- Babel voor JSX -->
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    
-    <!-- XLSX voor Excel bestanden -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    
-    <!-- PapaParse voor CSV -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
-    
-    <!-- Inline CSS styling (geen externe dependencies) -->
+    <title>IPC Team Intranet</title>
     <style>
         * {
             margin: 0;
@@ -32,1559 +13,1887 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            line-height: 1.6;
-            color: #374151;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            color: #333;
+            padding: 20px;
         }
 
-        .bg-gray-50 { background-color: #f9fafb; }
-        .bg-white { background-color: #ffffff; }
-        .bg-gray-100 { background-color: #f3f4f6; }
-        .bg-gray-200 { background-color: #e5e7eb; }
-        .bg-gray-700 { background-color: #374151; }
-        .bg-gray-800 { background-color: #1f2937; }
-        .bg-gray-900 { background-color: #111827; }
-        .bg-blue-500 { background-color: #3b82f6; }
-        .bg-blue-100 { background-color: #dbeafe; }
-        .bg-blue-50 { background-color: #eff6ff; }
-        .bg-green-100 { background-color: #dcfce7; }
-        .bg-yellow-200 { background-color: #fef08a; }
-        .bg-yellow-800 { background-color: #92400e; }
-        .bg-red-600 { background-color: #dc2626; }
-
-        .text-white { color: #ffffff; }
-        .text-gray-100 { color: #f3f4f6; }
-        .text-gray-300 { color: #d1d5db; }
-        .text-gray-400 { color: #9ca3af; }
-        .text-gray-500 { color: #6b7280; }
-        .text-gray-600 { color: #4b5563; }
-        .text-gray-700 { color: #374151; }
-        .text-gray-900 { color: #111827; }
-        .text-blue-600 { color: #2563eb; }
-        .text-blue-800 { color: #1e40af; }
-        .text-green-600 { color: #16a34a; }
-        .text-green-500 { color: #22c55e; }
-        .text-purple-600 { color: #9333ea; }
-        .text-yellow-600 { color: #ca8a04; }
-        .text-indigo-600 { color: #4f46e5; }
-        .text-orange-600 { color: #ea580c; }
-        .text-red-600 { color: #dc2626; }
-
-        .border { border: 1px solid #e5e7eb; }
-        .border-gray-200 { border-color: #e5e7eb; }
-        .border-gray-600 { border-color: #4b5563; }
-        .border-gray-700 { border-color: #374151; }
-        .border-b { border-bottom: 1px solid #e5e7eb; }
-
-        .rounded { border-radius: 0.25rem; }
-        .rounded-lg { border-radius: 0.5rem; }
-        .rounded-full { border-radius: 9999px; }
-
-        .shadow-sm { box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); }
-        .shadow-md { box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
-        .shadow-xl { box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); }
-
-        .p-1 { padding: 0.25rem; }
-        .p-2 { padding: 0.5rem; }
-        .p-4 { padding: 1rem; }
-        .p-6 { padding: 1.5rem; }
-        .p-12 { padding: 3rem; }
-        .px-1 { padding-left: 0.25rem; padding-right: 0.25rem; }
-        .px-2 { padding-left: 0.5rem; padding-right: 0.5rem; }
-        .px-3 { padding-left: 0.75rem; padding-right: 0.75rem; }
-        .px-4 { padding-left: 1rem; padding-right: 1rem; }
-        .py-1 { padding-top: 0.25rem; padding-bottom: 0.25rem; }
-        .py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
-        .py-3 { padding-top: 0.75rem; padding-bottom: 0.75rem; }
-        .py-4 { padding-top: 1rem; padding-bottom: 1rem; }
-        .py-6 { padding-top: 1.5rem; padding-bottom: 1.5rem; }
-        .py-12 { padding-top: 3rem; padding-bottom: 3rem; }
-        .pl-10 { padding-left: 2.5rem; }
-        .pr-4 { padding-right: 1rem; }
-        .mt-1 { margin-top: 0.25rem; }
-        .mt-2 { margin-top: 0.5rem; }
-        .mt-4 { margin-top: 1rem; }
-        .mt-6 { margin-top: 1.5rem; }
-        .mb-1 { margin-bottom: 0.25rem; }
-        .mb-2 { margin-bottom: 0.5rem; }
-        .mb-4 { margin-bottom: 1rem; }
-        .mb-6 { margin-bottom: 1.5rem; }
-        .ml-2 { margin-left: 0.5rem; }
-        .mx-auto { margin-left: auto; margin-right: auto; }
-
-        .w-full { width: 100%; }
-        .h-4 { height: 1rem; }
-        .h-5 { height: 1.25rem; }
-        .h-8 { height: 2rem; }
-        .h-12 { height: 3rem; }
-        .h-16 { height: 4rem; }
-        .h-screen { height: 100vh; }
-        .min-h-screen { min-height: 100vh; }
-        .max-w-2xl { max-width: 42rem; }
-        .max-w-7xl { max-width: 80rem; }
-        .max-w-lg { max-width: 32rem; }
-
-        .flex { display: flex; }
-        .inline-flex { display: inline-flex; }
-        .items-center { align-items: center; }
-        .items-start { align-items: flex-start; }
-        .justify-center { justify-content: center; }
-        .justify-between { justify-content: space-between; }
-        .flex-1 { flex: 1 1 0%; }
-        .flex-shrink-0 { flex-shrink: 0; }
-        .flex-wrap { flex-wrap: wrap; }
-
-        .space-x-1 > * + * { margin-left: 0.25rem; }
-        .space-x-2 > * + * { margin-left: 0.5rem; }
-        .space-x-3 > * + * { margin-left: 0.75rem; }
-        .space-x-4 > * + * { margin-left: 1rem; }
-        .space-y-1 > * + * { margin-top: 0.25rem; }
-        .space-y-2 > * + * { margin-top: 0.5rem; }
-        .space-y-3 > * + * { margin-top: 0.75rem; }
-        .space-y-4 > * + * { margin-top: 1rem; }
-
-        .gap-2 { gap: 0.5rem; }
-        .gap-3 { gap: 0.75rem; }
-        .gap-4 { gap: 1rem; }
-
-        .text-xs { font-size: 0.75rem; }
-        .text-sm { font-size: 0.875rem; }
-        .text-lg { font-size: 1.125rem; }
-        .text-xl { font-size: 1.25rem; }
-        .text-2xl { font-size: 1.5rem; }
-        .text-6xl { font-size: 3.75rem; }
-
-        .font-mono { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; }
-        .font-medium { font-weight: 500; }
-        .font-semibold { font-weight: 600; }
-        .font-bold { font-weight: 700; }
-
-        .text-center { text-align: center; }
-        .text-left { text-align: left; }
-
-        .list-disc { list-style-type: disc; }
-        .list-inside { list-style-position: inside; }
-
-        .underline { text-decoration: underline; }
-
-        .cursor-not-allowed { cursor: not-allowed; }
-
-        .transform { transform: translateZ(0); }
-        .translate-y-1\/2 { transform: translateY(-50%); }
-
-        .absolute { position: absolute; }
-        .relative { position: relative; }
-        .sticky { position: sticky; }
-        .top-0 { top: 0; }
-        .top-1\/2 { top: 50%; }
-        .left-3 { left: 0.75rem; }
-        .right-3 { right: 0.75rem; }
-
-        .z-10 { z-index: 10; }
-
-        .overflow-hidden { overflow: hidden; }
-        .min-w-0 { min-width: 0; }
-
-        .transition-shadow { transition: box-shadow 0.15s ease-in-out; }
-
-        .hover\:bg-gray-50:hover { background-color: #f9fafb; }
-        .hover\:bg-gray-100:hover { background-color: #f3f4f6; }
-        .hover\:bg-gray-700:hover { background-color: #374151; }
-        .hover\:text-gray-600:hover { color: #4b5563; }
-        .hover\:text-blue-800:hover { color: #1e40af; }
-        .hover\:shadow-md:hover { box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
-
-        .focus\:ring-2:focus { 
-            outline: none;
-            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5); 
-        }
-        .focus\:border-transparent:focus { border-color: transparent; }
-
-        .disabled\:bg-gray-100:disabled { background-color: #f3f4f6; }
-        .disabled\:text-gray-400:disabled { color: #9ca3af; }
-        .fixed { position: fixed; }
-        .inset-0 { top: 0; right: 0; bottom: 0; left: 0; }
-        .z-50 { z-index: 50; }
-        .bg-opacity-50 { background-color: rgba(0, 0, 0, 0.5); }
-        .max-h-\[90vh\] { max-height: 90vh; }
-        .overflow-y-auto { overflow-y: auto; }
-        .flex-col { flex-direction: column; }
-        .flex-shrink-0 { flex-shrink: 0; }
-        .break-words { word-wrap: break-word; }
-
-        .h-3 { height: 0.75rem; }
-        .w-3 { width: 0.75rem; }
-
-        .bg-green-100 { background-color: #dcfce7; }
-        .bg-green-800 { background-color: #166534; }
-        .bg-red-100 { background-color: #fee2e2; }
-        .bg-red-800 { background-color: #991b1b; }
-        .text-green-800 { color: #166534; }
-        .text-red-800 { color: #991b1b; }
-
-        .animate-spin {
-            animation: spin 1s linear infinite;
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
         }
 
-        @keyframes spin {
-            to { transform: rotate(360deg); }
+        header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 16px;
+            padding: 20px 30px;
+            margin-bottom: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
         }
 
-        /* Dark mode styles */
-        .dark .bg-gray-50 { background-color: #111827; }
-        .dark .bg-white { background-color: #1f2937; }
-        .dark .bg-gray-100 { background-color: #374151; }
-        .dark .bg-gray-700 { background-color: #4b5563; }
-        .dark .bg-gray-800 { background-color: #1f2937; }
-        .dark .bg-gray-900 { background-color: #111827; }
-        .dark .text-gray-100 { color: #f3f4f6; }
-        .dark .text-gray-300 { color: #d1d5db; }
-        .dark .text-gray-400 { color: #9ca3af; }
-        .dark .text-gray-500 { color: #6b7280; }
-        .dark .border-gray-600 { border-color: #4b5563; }
-        .dark .border-gray-700 { border-color: #374151; }
-        .dark .placeholder-gray-400::placeholder { color: #9ca3af; }
-        .dark .hover\:bg-gray-700:hover { background-color: #374151; }
-        .dark .bg-yellow-800 { background-color: #92400e; }
-
-        /* Input styling */
-        input, select {
-            appearance: none;
-            background-color: white;
-            border: 1px solid #d1d5db;
-            border-radius: 0.5rem;
-            padding: 0.5rem 0.75rem;
-            font-size: 1rem;
-            line-height: 1.5;
-            color: #111827;
+        .header-left h1 {
+            color: white;
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 4px;
         }
 
-        .dark input, .dark select {
-            background-color: #374151;
-            border-color: #4b5563;
-            color: #f3f4f6;
+        .header-left .subtitle {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9rem;
         }
 
-        button {
-            background: none;
+        .header-center {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .time-widget {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-width: 140px;
+            backdrop-filter: blur(10px);
+        }
+
+        .time-icon {
+            font-size: 20px;
+            width: 24px;
+            text-align: center;
+        }
+
+        .time-info {
+            flex: 1;
+        }
+
+        .time-display {
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 2px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .date-display {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 11px;
+        }
+
+        .weather-widget {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-width: 180px;
+            backdrop-filter: blur(10px);
+        }
+
+        .weather-icon {
+            font-size: 24px;
+            width: 32px;
+            text-align: center;
+        }
+
+        .weather-info {
+            flex: 1;
+        }
+
+        .weather-temp {
+            color: white;
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+
+        .weather-desc {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 12px;
+            text-transform: capitalize;
+        }
+
+        .weather-location {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 11px;
+        }
+
+        .header-right {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+        }
+
+        .search-container {
+            position: relative;
+            width: 320px;
+        }
+
+        .search-box {
+            width: 100%;
+            padding: 12px 16px;
             border: none;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            font-size: 14px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .search-box::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .search-box:focus {
+            outline: none;
+            background: rgba(255, 255, 255, 0.25);
+            border-color: rgba(255, 255, 255, 0.4);
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .section {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 16px;
+            padding: 20px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .section:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .section-icon {
+            width: 20px;
+            height: 20px;
+            fill: white;
+            margin-right: 12px;
+        }
+
+        .section-title {
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .section-controls {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            display: none;
+            gap: 6px;
+        }
+
+        .edit-mode .section-controls {
+            display: flex;
+        }
+
+        .control-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            border-radius: 6px;
+            width: 28px;
+            height: 28px;
             cursor: pointer;
-            font-family: inherit;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            color: white;
+            font-size: 12px;
         }
 
-        button:disabled {
-            cursor: not-allowed;
-            opacity: 0.6;
+        .control-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
         }
 
-        /* Mark styling */
-        mark {
-            background-color: #fef08a;
-            padding: 0.125rem;
-            border-radius: 0.125rem;
+        .links-grid {
+            display: grid;
+            gap: 8px;
         }
 
-        .dark mark {
-            background-color: #92400e;
-            color: #fef3c7;
+        .link-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            text-decoration: none;
+            color: white;
+            transition: all 0.2s ease;
+            position: relative;
+            overflow: hidden;
         }
 
-        /* Code styling */
-        code {
-            font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
-            font-size: 0.875rem;
-            background-color: #f3f4f6;
-            padding: 0.125rem 0.25rem;
-            border-radius: 0.25rem;
+        .link-item:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: translateX(4px);
         }
 
-        .dark code {
-            background-color: #374151;
+        .link-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: linear-gradient(to bottom, #4facfe, #00f2fe);
+            opacity: 0;
+            transition: opacity 0.2s ease;
         }
 
-        /* Selection highlight for keyboard navigation */
-        .selected-item {
-            background-color: #dbeafe !important;
-            border: 2px solid #3b82f6 !important;
-            box-shadow: 0 0 0 1px #3b82f6;
+        .link-item:hover::before {
+            opacity: 1;
         }
 
-        .dark .selected-item {
-            background-color: #1e3a8a !important;
-            border: 2px solid #60a5fa !important;
-            box-shadow: 0 0 0 1px #60a5fa;
+        .link-icon {
+            width: 16px;
+            height: 16px;
+            fill: rgba(255, 255, 255, 0.7);
+            margin-right: 12px;
+            flex-shrink: 0;
         }
 
-        .selected-item .text-gray-500 {
-            color: #374151 !important;
+        .link-content {
+            flex: 1;
+            min-width: 0;
         }
 
-        .selected-item .text-gray-600 {
-            color: #111827 !important;
+        .link-title {
+            font-weight: 500;
+            font-size: 14px;
+            margin-bottom: 2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
-        .selected-item .text-gray-700 {
-            color: #111827 !important;
+        .link-description {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.6);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
-        .selected-item .text-gray-900 {
-            color: #111827 !important;
+        .link-controls {
+            display: none;
+            gap: 4px;
+            margin-left: 8px;
         }
 
-        .dark .selected-item .text-gray-100 {
-            color: #f3f4f6 !important;
+        .edit-mode .link-item:hover .link-controls {
+            display: flex;
         }
 
-        .dark .selected-item .text-gray-300 {
-            color: #e5e7eb !important;
+        .link-control-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            border-radius: 4px;
+            width: 22px;
+            height: 22px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            color: white;
+            transition: all 0.2s ease;
         }
 
-        .dark .selected-item .text-gray-500 {
-            color: #d1d5db !important;
+        .link-control-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
         }
 
-        /* Responsive */
-        @media (min-width: 640px) {
-            .sm\:px-6 { padding-left: 1.5rem; padding-right: 1.5rem; }
+        .drag-handle {
+            cursor: move;
+            color: rgba(255, 255, 255, 0.5);
+            margin-right: 8px;
+            font-size: 14px;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            user-select: none;
+            padding: 4px;
+            border-radius: 4px;
         }
 
-        @media (min-width: 1024px) {
-            .lg\:px-8 { padding-left: 2rem; padding-right: 2rem; }
+        .drag-handle:hover {
+            color: rgba(255, 255, 255, 0.8);
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .edit-mode .drag-handle {
+            opacity: 1;
+        }
+
+        .section.dragging {
+            opacity: 0.5;
+            transform: rotate(5deg);
+        }
+
+        .link-item.dragging {
+            opacity: 0.5;
+            transform: rotate(2deg);
+        }
+
+        .drag-over {
+            border: 2px dashed rgba(255, 255, 255, 0.5) !important;
+            background: rgba(255, 255, 255, 0.1) !important;
+        }
+
+        .admin-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            border-radius: 12px;
+            width: 44px;
+            height: 44px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1001;
+            transition: all 0.3s ease;
+        }
+
+        .admin-toggle:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .admin-toggle.active {
+            background: rgba(46, 204, 113, 0.2);
+            border-color: rgba(46, 204, 113, 0.4);
+        }
+
+        .admin-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(20, 30, 48, 0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            padding: 12px 20px;
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transform: translateY(-100%);
+            transition: transform 0.3s ease;
+        }
+
+        .admin-bar.active {
+            transform: translateY(0);
+        }
+
+        .admin-controls {
+            display: flex;
+            gap: 12px;
+        }
+
+        .admin-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s ease;
+        }
+
+        .admin-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .admin-btn.danger {
+            background: rgba(231, 76, 60, 0.2);
+            border-color: rgba(231, 76, 60, 0.4);
+        }
+
+        .admin-btn.danger:hover {
+            background: rgba(231, 76, 60, 0.3);
+        }
+
+        .fab {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 16px;
+            width: 56px;
+            height: 56px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: 300;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+            transition: all 0.3s ease;
+            opacity: 0;
+            visibility: hidden;
+            transform: scale(0.8);
+        }
+
+        .edit-mode .fab {
+            opacity: 1;
+            visibility: visible;
+            transform: scale(1);
+        }
+
+        .fab:hover {
+            transform: scale(1.1);
+        }
+
+        .fab.secondary {
+            bottom: 92px;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .edit-mode .fab.secondary {
+            transform: scale(1);
+        }
+
+        .edit-mode .fab.secondary:hover {
+            transform: scale(1.1);
+        }
+
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 32px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            z-index: 1001;
+            width: 90%;
+            max-width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal h2 {
+            color: #2c3e50;
+            margin-bottom: 24px;
+            font-size: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 500;
+            color: #2c3e50;
+            font-size: 14px;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .form-buttons {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            margin-top: 24px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            font-size: 14px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #f8f9fa;
+            color: #6c757d;
+            border: 1px solid #e9ecef;
+        }
+
+        .btn-secondary:hover {
+            background: #e9ecef;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(46, 204, 113, 0.95);
+            backdrop-filter: blur(10px);
+            color: white;
+            padding: 16px 24px;
+            border-radius: 12px;
+            z-index: 1002;
+            font-weight: 500;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .edit-mode .section {
+            border: 2px dashed transparent;
+        }
+
+        .edit-mode .section:hover {
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Responsive design */
+        @media (max-width: 1024px) {
+            header {
+                flex-direction: column;
+                gap: 16px;
+                padding: 16px 20px;
+            }
+            
+            .header-center {
+                order: 2;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            .header-right {
+                order: 1;
+                align-items: center;
+            }
+            
+            .search-container {
+                width: 100%;
+                max-width: 400px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            
+            .header-center {
+                flex-direction: column;
+                gap: 12px;
+            }
+            
+            .time-widget, .weather-widget {
+                min-width: 160px;
+                padding: 10px 12px;
+            }
+            
+            .time-display {
+                font-size: 14px;
+            }
+            
+            .weather-temp {
+                font-size: 16px;
+            }
+            
+            .weather-icon {
+                font-size: 20px;
+                width: 28px;
+            }
+            
+            .time-icon {
+                font-size: 18px;
+                width: 22px;
+            }
+
+            .main-grid {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+
+            .section {
+                padding: 16px;
+            }
+
+            .header-left h1 {
+                font-size: 1.5rem;
+            }
+
+            .admin-bar {
+                flex-direction: column;
+                gap: 12px;
+                padding: 16px;
+            }
+
+            .admin-controls {
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+
+            .modal {
+                width: 95%;
+                padding: 24px;
+            }
+        }
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.5);
         }
     </style>
 </head>
 <body>
-    <div id="root"></div>
+    <div class="admin-toggle" onclick="toggleAdmin()">
+        <svg viewBox="0 0 24 24" style="width: 20px; height: 20px; fill: currentColor;">
+            <path d="M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5M19.43,12.97C19.47,12.65 19.5,12.33 19.5,12C19.5,11.67 19.47,11.34 19.43,11L21.54,9.37C21.73,9.22 21.78,8.95 21.66,8.73L19.66,5.27C19.54,5.05 19.27,4.96 19.05,5.05L16.56,6.05C16.04,5.66 15.5,5.32 14.87,5.07L14.5,2.42C14.46,2.18 14.25,2 14,2H10C9.75,2 9.54,2.18 9.5,2.42L9.13,5.07C8.5,5.32 7.96,5.66 7.44,6.05L4.95,5.05C4.73,4.96 4.46,5.05 4.34,5.27L2.34,8.73C2.22,8.95 2.27,9.22 2.46,9.37L4.57,11C4.53,11.34 4.5,11.67 4.5,12C4.5,12.33 4.53,12.65 4.57,12.97L2.46,14.63C2.27,14.78 2.22,15.05 2.34,15.27L4.34,18.73C4.46,18.95 4.73,19.03 4.95,18.95L7.44,17.94C7.96,18.34 8.5,18.68 9.13,18.93L9.5,21.58C9.54,21.82 9.75,22 10,22H14C14.25,22 14.46,21.82 14.5,21.58L14.87,18.93C15.5,18.68 16.04,18.34 16.56,17.94L19.05,18.95C19.27,19.03 19.54,18.95 19.66,18.73L21.66,15.27C21.78,15.05 21.73,14.78 21.54,14.63L19.43,12.97Z"/>
+        </svg>
+    </div>
+    
+    <div class="admin-bar" id="adminBar">
+        <div>
+            <strong>🔧 Beheer Modus</strong>
+            <span style="margin-left: 20px; font-size: 13px; opacity: 0.8;">Klik op secties en links om ze te bewerken</span>
+        </div>
+        <div class="admin-controls">
+            <button class="admin-btn" onclick="refreshFromGitHub()">🔄 Refresh</button>
+            <button class="admin-btn" onclick="syncToGitHub()">☁️ Sync to GitHub</button>
+            <button class="admin-btn" onclick="showGitHubConfigModal()">⚙️ GitHub Config</button>
+            <button class="admin-btn" onclick="exportData()">📤 Export</button>
+            <button class="admin-btn" onclick="saveForGitHub()">💾 Save for GitHub</button>
+            <button class="admin-btn danger" onclick="clearAllData()">🗑️ Reset</button>
+        </div>
+    </div>
 
-    <script type="text/babel">
-        const { useState, useEffect, useMemo, useCallback, useRef } = React;
-
-        // SVG Icons als React componenten
-        const Search = ({ className }) => (
-            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="m21 21-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-        );
-
-        const Database = ({ className }) => (
-            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <ellipse cx="12" cy="5" rx="9" ry="3"/>
-                <path d="m21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/>
-                <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
-            </svg>
-        );
-
-        const Package = ({ className }) => (
-            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path d="m7.5 4.27 9 5.15"/>
-                <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/>
-                <path d="m3.3 7 8.7 5 8.7-5"/>
-                <path d="M12 22V12"/>
-            </svg>
-        );
-
-        const Filter = ({ className }) => (
-            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <polygon points="22,3 2,3 10,12.46 10,19 14,21 14,12.46"/>
-            </svg>
-        );
-
-        const Copy = ({ className }) => (
-            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <rect width="14" height="14" x="8" y="8" rx="2" ry="2"/>
-                <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>
-            </svg>
-        );
-
-        const Check = ({ className }) => (
-            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <polyline points="20,6 9,17 4,12"/>
-            </svg>
-        );
-
-        const Sun = ({ className }) => (
-            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <circle cx="12" cy="12" r="5"/>
-                <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
-            </svg>
-        );
-
-        const Moon = ({ className }) => (
-            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-            </svg>
-        );
-
-        const BookOpen = ({ className }) => (
-            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
-                <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
-            </svg>
-        );
-
-        const X = ({ className }) => (
-            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-        );
-
-        const ClipboardList = ({ className }) => (
-            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
-            </svg>
-        );
-
-        const Info = ({ className }) => (
-            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <circle cx="12" cy="12" r="10"/>
-                <path d="m12 16v-4"/>
-                <path d="m12 8h.01"/>
-            </svg>
-        );
-
-        // Mock file system voor GitHub Pages
-        window.fs = {
-            readFile: async (filename, options = {}) => {
-                try {
-                    console.log(`Attempting to load: ${filename}`);
-                    const response = await fetch(filename);
-                    if (!response.ok) {
-                        throw new Error(`Bestand niet gevonden: ${filename} (Status: ${response.status})`);
-                    }
-                    
-                    if (options.encoding === 'utf8') {
-                        const text = await response.text();
-                        console.log(`Successfully loaded: ${filename} (${text.length} characters)`);
-                        return text;
-                    }
-                    
-                    const arrayBuffer = await response.arrayBuffer();
-                    return new Uint8Array(arrayBuffer);
-                } catch (error) {
-                    console.error('Error reading file:', filename, error);
-                    throw error;
-                }
-            }
-        };
-
-        function AFDSearchTool() {
-            const [data, setData] = useState([]);
-            const [codelistData, setCodelistData] = useState({});
-            const [anvaData, setAnvaData] = useState({});
-            const [searchTerm, setSearchTerm] = useState('');
-            const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
-            const [typeFilter, setTypeFilter] = useState('all');
-            const [entityFilter, setEntityFilter] = useState('all');
-            const [loading, setLoading] = useState(true);
-            const [error, setError] = useState(null);
-            const [stats, setStats] = useState({ total: 0, entities: 0, attributes: 0 });
-            const [darkMode, setDarkMode] = useState(false);
-            const [copiedItem, setCopiedItem] = useState(null);
-            const [currentPage, setCurrentPage] = useState(1);
-            const [selectedCodelist, setSelectedCodelist] = useState(null);
-            const [codelistSearch, setCodelistSearch] = useState('');
-            const [selectedItemIndex, setSelectedItemIndex] = useState(-1);
-            const [keyboardActive, setKeyboardActive] = useState(false);
-            const [showInfo, setShowInfo] = useState(false);
-            const searchInputRef = useRef(null);
-            const itemRefs = useRef([]);
+    <div class="container">
+        <header>
+            <div class="header-left">
+                <h1>IPC Team Intranet</h1>
+                <p class="subtitle">Centrale hub voor tools, links en informatie</p>
+            </div>
             
-            const ITEMS_PER_PAGE = 25;
-
-            // Datatype info
-            const datatypeInfo = {
-                'JN': { label: 'Ja/Nee', color: 'text-blue-600' },
-                'A0': { label: 'Alfanumeriek', color: 'text-green-600' },
-                'A1': { label: 'Alfanumeriek', color: 'text-green-600' },
-                'A2': { label: 'Alfanumeriek', color: 'text-green-600' },
-                'D1': { label: 'Datum', color: 'text-purple-600' },
-                'D3': { label: 'Datum', color: 'text-purple-600' },
-                'B2': { label: 'Bedrag', color: 'text-yellow-600' },
-                'T1': { label: 'Tijd', color: 'text-indigo-600' },
-                'P3': { label: 'Percentage', color: 'text-orange-600' },
-                'ME': { label: 'Memo', color: 'text-gray-600' }
-            };
-
-            // Simple keyboard navigation
-            useEffect(() => {
-                const handleKeyDown = (e) => {
-                    // Don't interfere with modals or inputs
-                    if (selectedCodelist || showInfo || e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') {
-                        return;
-                    }
-
-                    console.log('Key:', e.key, 'Results:', paginatedData.length, 'Selected:', selectedItemIndex, 'Search:', debouncedSearchTerm);
-
-                    if (e.key === '/') {
-                        e.preventDefault();
-                        searchInputRef.current?.focus();
-                        return;
-                    }
-
-                    if (e.key === 'Escape') {
-                        console.log('Escape pressed - clearing search and selection');
-                        setSelectedItemIndex(-1);
-                        setKeyboardActive(false);
-                        setSearchTerm('');
-                        return;
-                    }
-
-                    if (paginatedData.length > 0) {
-                        if (e.key === 'ArrowDown') {
-                            e.preventDefault();
-                            setKeyboardActive(true);
-                            setSelectedItemIndex(prev => {
-                                const newIndex = prev >= paginatedData.length - 1 ? 0 : prev + 1;
-                                console.log('Arrow Down - new index:', newIndex);
-                                return newIndex;
-                            });
-                        }
-
-                        if (e.key === 'ArrowUp') {
-                            e.preventDefault();
-                            setKeyboardActive(true);
-                            setSelectedItemIndex(prev => {
-                                const newIndex = prev <= 0 ? paginatedData.length - 1 : prev - 1;
-                                console.log('Arrow Up - new index:', newIndex);
-                                return newIndex;
-                            });
-                        }
-
-                        if (e.key === 'Enter' && selectedItemIndex >= 0) {
-                            e.preventDefault();
-                            const item = paginatedData[selectedItemIndex];
-                            console.log('Enter pressed - copying item:', item);
-                            if (item) {
-                                const isEntity = item['Entiteit/Attribuut'] === 'E';
-                                
-                                if (e.shiftKey && !isEntity) {
-                                    // Shift+Enter: Copy full attribute info
-                                    console.log('Shift+Enter - copying full attribute info');
-                                    copyFullAttributeInfo(item, `full-${item.Entiteitcode}_${item.Attribuutcode}`);
-                                } else {
-                                    // Regular Enter: Copy just the code
-                                    const itemId = isEntity ? item.Entiteitcode : `${item.Entiteitcode}_${item.Attribuutcode}`;
-                                    console.log('Enter - copying code:', itemId);
-                                    copyToClipboard(itemId, itemId);
-                                }
-                            }
-                        }
-                    } else {
-                        console.log('No results to navigate through');
-                    }
-                };
-
-                document.addEventListener('keydown', handleKeyDown);
-                return () => document.removeEventListener('keydown', handleKeyDown);
-            }, [paginatedData, selectedItemIndex, selectedCodelist, debouncedSearchTerm, showInfo]);
-
-            // Scroll to selected item
-            useEffect(() => {
-                if (selectedItemIndex >= 0 && keyboardActive && itemRefs.current[selectedItemIndex]) {
-                    itemRefs.current[selectedItemIndex].scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'center'
-                    });
-                }
-            }, [selectedItemIndex, keyboardActive]);
-
-            // Debounce search term
-            useEffect(() => {
-                const timer = setTimeout(() => {
-                    setDebouncedSearchTerm(searchTerm);
-                    setCurrentPage(1);
-                    setSelectedItemIndex(-1);
-                    setKeyboardActive(false);
-                }, 300);
-                return () => clearTimeout(timer);
-            }, [searchTerm]);
-
-            // Reset page when filters change
-            useEffect(() => {
-                setCurrentPage(1);
-                setSelectedItemIndex(-1);
-                setKeyboardActive(false);
-            }, [typeFilter, entityFilter]);
-
-            // Reset selected item when page changes
-            useEffect(() => {
-                setSelectedItemIndex(-1);
-                setKeyboardActive(false);
-                itemRefs.current = [];
-            }, [currentPage]);
-
-            // Load preferences
-            useEffect(() => {
-                try {
-                    const savedDarkMode = localStorage.getItem('afd-darkmode') === 'true';
-                    setDarkMode(savedDarkMode);
-                } catch (e) {
-                    console.warn('LocalStorage not available');
-                }
-            }, []);
-
-            // Save preferences
-            useEffect(() => {
-                try {
-                    localStorage.setItem('afd-darkmode', darkMode);
-                    document.documentElement.classList.toggle('dark', darkMode);
-                } catch (e) {
-                    console.warn('LocalStorage not available');
-                }
-            }, [darkMode]);
-
-            // Load data
-            useEffect(() => {
-                const loadData = async () => {
-                    try {
-                        console.log('🔄 Starting to load AFD data...');
-                        const csvContent = await window.fs.readFile('data.csv', { encoding: 'utf8' });
-                        console.log('✅ CSV loaded successfully, parsing...');
-                        
-                        const parsed = Papa.parse(csvContent, {
-                            header: true,
-                            dynamicTyping: true,
-                            skipEmptyLines: true,
-                            delimitersToGuess: [',', '\t', '|', ';']
-                        });
-
-                        console.log(`📊 Parsed ${parsed.data.length} rows`);
-
-                        const cleanedData = parsed.data.map(row => {
-                            const cleanRow = {};
-                            Object.keys(row).forEach(key => {
-                                cleanRow[key.trim()] = row[key];
-                            });
-                            return cleanRow;
-                        });
-
-                        // Load codelist data (optional)
-                        try {
-                            console.log('🔄 Attempting to load codelist data...');
-                            const codelistContent = await window.fs.readFile('Codelist.afm.csv', { encoding: 'utf8' });
-                            console.log('✅ Codelist loaded, parsing...');
-                            
-                            const parsedCodelist = Papa.parse(codelistContent, {
-                                header: false,
-                                dynamicTyping: true,
-                                skipEmptyLines: true,
-                                delimiter: ';'
-                            });
-
-                            const codelistGroups = {};
-                            let codelistCount = 0;
-                            parsedCodelist.data.slice(1).forEach(row => {
-                                const [codelijst, code, omschrijving, actief] = row;
-                                if (codelijst) {
-                                    if (!codelistGroups[codelijst]) {
-                                        codelistGroups[codelijst] = [];
-                                    }
-                                    codelistGroups[codelijst].push({
-                                        code: String(code || ''),
-                                        omschrijving: String(omschrijving || ''),
-                                        actief: String(actief || '')
-                                    });
-                                    codelistCount++;
-                                }
-                            });
-
-                            setCodelistData(codelistGroups);
-                            console.log(`📚 Codelist loaded: ${Object.keys(codelistGroups).length} lists, ${codelistCount} total items`);
-                        } catch (err) {
-                            console.warn('⚠️ Codelist data not found or could not be loaded:', err.message);
-                        }
-
-                        // Load ANVA mapping data (optional)
-                        try {
-                            console.log('🔄 Attempting to load ANVA mapping data...');
-                            const anvaResponse = await window.fs.readFile('ANVA AFD.xlsx');
-                            console.log('✅ ANVA Excel loaded, parsing...');
-                            
-                            const anvaWorkbook = XLSX.read(anvaResponse, {
-                                cellStyles: true,
-                                cellFormulas: true,
-                                cellDates: true
-                            });
-                            
-                            const anvaSheet = anvaWorkbook.Sheets[anvaWorkbook.SheetNames[0]];
-                            const anvaJsonData = XLSX.utils.sheet_to_json(anvaSheet);
-                            
-                            const anvaMapping = {};
-                            anvaJsonData.forEach(row => {
-                                if (row.AFD && row.ANVA) {
-                                    anvaMapping[row.AFD] = {
-                                        code: String(row.ANVA || ''),
-                                        omschrijving: String(row['ANVA Omschrijving'] || ''),
-                                        afwijkendNietToegestaan: String(row['Afwijkend niet toegestaan'] || '')
-                                    };
-                                }
-                            });
-                            
-                            setAnvaData(anvaMapping);
-                            console.log(`📋 ANVA mapping loaded: ${Object.keys(anvaMapping).length} mappings`);
-                        } catch (err) {
-                            console.warn('⚠️ ANVA mapping data not found or could not be loaded:', err.message);
-                        }
-
-                        setData(cleanedData);
-                        
-                        const entities = cleanedData.filter(row => row['Entiteit/Attribuut'] === 'E').length;
-                        const attributes = cleanedData.filter(row => row['Entiteit/Attribuut'] === 'A').length;
-                        setStats({
-                            total: cleanedData.length,
-                            entities,
-                            attributes
-                        });
-                        
-                        console.log(`🎉 Data loaded: ${cleanedData.length} total, ${entities} entities, ${attributes} attributes`);
-                        setLoading(false);
-                    } catch (err) {
-                        console.error('❌ Error loading data:', err);
-                        setError(err.message);
-                        setLoading(false);
-                    }
-                };
-
-                loadData();
-            }, []);
-
-            // Enhanced search filter with codelist support
-            const searchFilter = useCallback((row, term) => {
-                if (!term) return true;
-
-                const basicFields = [
-                    row.Naam,
-                    row.Omschrijving,
-                    row.Entiteitcode,
-                    row.Attribuutcode,
-                    row.Entiteitcode && row.Attribuutcode ? `${row.Entiteitcode}_${row.Attribuutcode}` : null,
-                    row.Codelijst  // Now also search in codelist field
-                ];
-
-                // Add ANVA information if available
-                const fullCode = row.Entiteitcode && row.Attribuutcode ? `${row.Entiteitcode}_${row.Attribuutcode}` : null;
-                const anvaInfo = fullCode ? anvaData[fullCode] : null;
-                if (anvaInfo) {
-                    basicFields.push(anvaInfo.code);
-                    basicFields.push(anvaInfo.omschrijving);  
-                }
-
-                const searchFields = basicFields.filter(Boolean).join(' ').toLowerCase();
-                return searchFields.includes(term.toLowerCase());
-            }, [anvaData]);
-
-            // Filtered data
-            const filteredData = useMemo(() => {
-                let filtered = data;
-
-                if (typeFilter !== 'all') {
-                    filtered = filtered.filter(row => row['Entiteit/Attribuut'] === typeFilter);
-                }
-
-                if (debouncedSearchTerm) {
-                    filtered = filtered.filter(row => searchFilter(row, debouncedSearchTerm));
-                }
-
-                if (entityFilter !== 'all') {
-                    filtered = filtered.filter(row => row.Entiteitcode === entityFilter);
-                }
-
-                return filtered;
-            }, [data, debouncedSearchTerm, typeFilter, entityFilter, searchFilter]);
-
-            // Available entities with descriptions
-            const availableEntities = useMemo(() => {
-                const entityMap = new Map();
-                filteredData.forEach(row => {
-                    if (row.Entiteitcode && !entityMap.has(row.Entiteitcode)) {
-                        const entityRecord = data.find(r => 
-                            r.Entiteitcode === row.Entiteitcode && 
-                            r['Entiteit/Attribuut'] === 'E'
-                        );
-                        entityMap.set(row.Entiteitcode, {
-                            code: row.Entiteitcode,
-                            naam: entityRecord ? entityRecord.Naam : row.Entiteitcode
-                        });
-                    }
-                });
-                return Array.from(entityMap.values()).sort((a, b) => a.code.localeCompare(b.code));
-            }, [filteredData, data]);
-
-            // Paginated data
-            const paginatedData = useMemo(() => {
-                const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;  
-                const endIndex = startIndex + ITEMS_PER_PAGE;
-                return filteredData.slice(startIndex, endIndex);
-            }, [filteredData, currentPage]);
-
-            // Filtered codelist items
-            const codelistItems = useMemo(() => {
-                if (!selectedCodelist || !codelistData[selectedCodelist.codelijst]) return [];
-                
-                let items = codelistData[selectedCodelist.codelijst];
-                
-                items = items.filter(item => {
-                    const code = String(item.code || '').trim();
-                    return code !== '' && code.toLowerCase() !== 'code';
-                });
-                
-                if (!codelistSearch) return items;
-                
-                const searchLower = codelistSearch.toLowerCase();
-                return items.filter(item => {
-                    const code = String(item.code || '').toLowerCase();
-                    const omschrijving = String(item.omschrijving || '').toLowerCase();
-                    
-                    return code.includes(searchLower) || omschrijving.includes(searchLower);
-                });
-            }, [selectedCodelist, codelistData, codelistSearch]);
-
-            const totalPages = Math.ceil(filteredData.length / ITEMS_PER_PAGE);
-
-            const openCodelist = useCallback((codelijst, naam) => {
-                setSelectedCodelist({ codelijst, naam });
-                setCodelistSearch('');
-            }, []);
-
-            const copyToClipboard = useCallback((text, id) => {
-                if (navigator.clipboard) {
-                    navigator.clipboard.writeText(text);
-                } else {
-                    const textArea = document.createElement('textarea');
-                    textArea.value = text;
-                    document.body.appendChild(textArea);
-                    textArea.select();
-                    document.execCommand('copy');
-                    document.body.removeChild(textArea);
-                }
-                setCopiedItem(id);
-                setTimeout(() => setCopiedItem(null), 2000);
-            }, []);
-
-            // Copy full attribute info
-            const copyFullAttributeInfo = useCallback((item, id) => {
-                let entiteit = item.Entiteitcode || '';
-                
-                // Specifieke regels voor entiteit prefix
-                if (entiteit === 'WH') {
-                    // WH krijgt altijd PP/OG/ prefix
-                    entiteit = `PP/OG/${entiteit}`;
-                } else if (!['XG', 'XM', 'PP', 'AL'].includes(entiteit)) {
-                    // Alle andere entiteiten (behalve XG, XM, PP, AL) krijgen PP/ prefix
-                    entiteit = `PP/${entiteit}`;
-                }
-                // XG, XM, PP, AL blijven ongewijzigd
-                
-                const volledigAttribuut = item.Entiteitcode && item.Attribuutcode ? `${item.Entiteitcode}_${item.Attribuutcode}` : item.Entiteitcode || '';
-                const omschrijving = item.Naam || '';
-                const codelijst = item.Codelijst || '';
-                
-                const fullInfo = `${entiteit}\t${volledigAttribuut}\t${omschrijving}\t${codelijst}`;
-                
-                if (navigator.clipboard) {
-                    navigator.clipboard.writeText(fullInfo);
-                } else {
-                    const textArea = document.createElement('textarea');
-                    textArea.value = fullInfo;
-                    document.body.appendChild(textArea);
-                    textArea.select();
-                    document.execCommand('copy');
-                    document.body.removeChild(textArea);
-                }
-                setCopiedItem(id);
-                setTimeout(() => setCopiedItem(null), 2000);
-            }, []);
-
-            const highlightText = (text, term) => {
-                if (!text || !term) return text;
-                
-                const parts = text.split(new RegExp(`(${term})`, 'gi'));
-                return parts.map((part, i) => 
-                    part.toLowerCase() === term.toLowerCase() 
-                        ? <mark key={i}>{part}</mark>
-                        : part
-                );
-            };
-
-            if (loading) {
-                return (
-                    <div className={`flex items-center justify-center h-screen ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
-                        <div className="text-center">
-                            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
-                            <p className={`mt-4 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                                AFD datacatalogus laden...
-                            </p>
-                        </div>
+            <div class="header-center">
+                <div class="time-widget" id="timeWidget">
+                    <div class="time-icon">🕐</div>
+                    <div class="time-info">
+                        <div class="time-display" id="timeDisplay">00:00</div>
+                        <div class="date-display" id="dateDisplay">Loading...</div>
                     </div>
-                );
-            }
-
-            if (error) {
-                return (
-                    <div className={`flex items-center justify-center h-screen ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
-                        <div className="text-center max-w-lg mx-auto p-6">
-                            <div className="text-red-600 mb-4">
-                                <div className="text-6xl mb-4">⚠️</div>
-                                <h2 className="text-xl font-bold mb-2">Fout bij laden</h2>
-                                <p className="text-sm mb-4">{error}</p>
-                            </div>
-                            <div className="text-sm text-gray-600 space-y-2">
-                                <p><strong>Controleer het volgende:</strong></p>
-                                <ul className="list-disc list-inside space-y-1 text-left">
-                                    <li>Het bestand <code>data.csv</code> staat in de root van je repository</li>
-                                    <li>Het bestand heeft exact de naam <code>data.csv</code> (let op hoofdletters)</li>
-                                    <li>Het CSV bestand is geldig en UTF-8 encoded</li>
-                                    <li>GitHub Pages is correct ingesteld</li>
-                                </ul>
-                                <p className="mt-4">
-                                    <strong>Test:</strong> <a 
-                                        href="data.csv" 
-                                        target="_blank" 
-                                        className="text-blue-600 underline"
-                                    >
-                                        Probeer data.csv direct te openen
-                                    </a>
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                );
-            }
-
-            return (
-                <div className={`min-h-screen ${darkMode ? 'dark bg-gray-900 text-gray-100' : 'bg-gray-50'}`}>
-                    {/* Header */}
-                    <div className={`${darkMode ? 'bg-gray-800 text-gray-100' : 'bg-white'} shadow-sm border-b ${darkMode ? 'border-gray-700' : ''}`}>
-                        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-                            <div className="flex items-center justify-between">
-                                <div className="flex items-center space-x-3">
-                                    <Database className="h-8 w-8 text-blue-600" />
-                                    <div>
-                                        <h1 className={`text-2xl font-bold ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
-                                            AFD 1.0 Datacatalogus
-                                        </h1>
-                                        <div className={`flex items-center space-x-4 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                                            <span>{stats.total.toLocaleString()} items</span>
-                                            <span>•</span>
-                                            <span>{stats.entities} entiteiten</span>
-                                            <span>•</span>
-                                            <span>{stats.attributes.toLocaleString()} attributen</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="flex items-center space-x-2">
-                                    <button
-                                        onClick={() => setShowInfo(true)}
-                                        className={`p-2 rounded-lg ${darkMode ? 'hover:bg-gray-700 text-gray-300' : 'hover:bg-gray-100 text-gray-600'}`}
-                                        title="Help & Instructies"
-                                    >
-                                        <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <circle cx="12" cy="12" r="10"/>
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="m12 16v-4"/>
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="m12 8h.01"/>
-                                        </svg>
-                                    </button>
-                                    <button
-                                        onClick={() => setDarkMode(!darkMode)}
-                                        className={`p-2 rounded-lg ${darkMode ? 'hover:bg-gray-700 text-gray-300' : 'hover:bg-gray-100 text-gray-600'}`}
-                                        title={darkMode ? 'Light mode' : 'Dark mode'}
-                                    >
-                                        {darkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Search section */}
-                    <div className={`${darkMode ? 'bg-gray-800 text-gray-100' : 'bg-white'} border-b ${darkMode ? 'border-gray-700' : ''} sticky top-0 z-10`}>
-                        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-                            <div className="space-y-4">
-                                <div className="relative">
-                                    <Search className={`absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 ${darkMode ? 'text-gray-300' : 'text-gray-400'}`} />
-                                    <input
-                                        ref={searchInputRef}
-                                        type="text"
-                                        value={searchTerm}
-                                        onChange={(e) => setSearchTerm(e.target.value)}
-                                        placeholder="Zoek op naam, omschrijving, AFD code, ANVA code of codelijst... (druk / voor focus)"
-                                        className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 text-lg ${
-                                            darkMode ? 'bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
-                                        }`}
-                                    />
-                                    {searchTerm && (
-                                        <button
-                                            onClick={() => setSearchTerm('')}
-                                            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                                        >
-                                            ✕
-                                        </button>
-                                    )}
-
-                    {/* Info Modal */}
-                    {showInfo && (
-                        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                            <div className={`${darkMode ? 'bg-gray-800 text-gray-100' : 'bg-white'} rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col`}>
-                                <div className="flex-shrink-0 p-6 border-b ${darkMode ? 'border-gray-700' : 'border-gray-200'}">
-                                    <div className="flex items-start justify-between">
-                                        <div className="flex items-center space-x-3">
-                                            <svg className="h-6 w-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <circle cx="12" cy="12" r="10"/>
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="m12 16v-4"/>
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="m12 8h.01"/>
-                                            </svg>
-                                            <h2 className={`text-xl font-bold ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
-                                                Help & Instructies
-                                            </h2>
-                                        </div>
-                                        <button
-                                            onClick={() => setShowInfo(false)}
-                                            className={`p-2 rounded-lg flex-shrink-0 ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'}`}
-                                        >
-                                            <X className="h-5 w-5" />
-                                        </button>
-                                    </div>
-                                </div>
-                                
-                                <div className="flex-1 overflow-y-auto p-6 space-y-6">
-                                    <div>
-                                        <h3 className={`text-lg font-semibold mb-3 ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
-                                            🔍 Zoeken
-                                        </h3>
-                                        <div className={`space-y-2 text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                                            <p>Je kunt zoeken op:</p>
-                                            <ul className="list-disc list-inside space-y-1 ml-4">
-                                                <li>Naam van een entiteit of attribuut</li>
-                                                <li>Omschrijving</li>
-                                                <li>Entiteitcode (bijv. OB, XA, RI)</li>
-                                                <li>Attribuutcode of volledige codes (bijv. DA_VERZSOM)</li>
-                                                <li>ANVA code (bijv. 13689)</li>
-                                                <li>Codelijst naam (bijv. ADNABS, SECTCOD)</li>
-                                            </ul>
-                                        </div>
-                                    </div>
-
-                                    <div>
-                                        <h3 className={`text-lg font-semibold mb-3 ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
-                                            ⌨️ Sneltoetsen
-                                        </h3>
-                                        <div className="space-y-2 text-sm">
-                                            <div className={`flex items-center justify-between p-2 rounded ${darkMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
-                                                <span><kbd className={`px-2 py-1 rounded text-xs ${darkMode ? 'bg-gray-600 text-gray-200' : 'bg-gray-200 text-gray-800'}`}>/</kbd></span>
-                                                <span className={darkMode ? 'text-gray-300' : 'text-gray-700'}>Focus op zoekbalk</span>
-                                            </div>
-                                            <div className={`flex items-center justify-between p-2 rounded ${darkMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
-                                                <span><kbd className={`px-2 py-1 rounded text-xs ${darkMode ? 'bg-gray-600 text-gray-200' : 'bg-gray-200 text-gray-800'}`}>↑ ↓</kbd></span>
-                                                <span className={darkMode ? 'text-gray-300' : 'text-gray-700'}>Navigeer door zoekresultaten</span>
-                                            </div>
-                                            <div className={`flex items-center justify-between p-2 rounded ${darkMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
-                                                <span><kbd className={`px-2 py-1 rounded text-xs ${darkMode ? 'bg-gray-600 text-gray-200' : 'bg-gray-200 text-gray-800'}`}>Enter</kbd></span>
-                                                <span className={darkMode ? 'text-gray-300' : 'text-gray-700'}>Kopieer geselecteerde code</span>
-                                            </div>
-                                            <div className={`flex items-center justify-between p-2 rounded ${darkMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
-                                                <span><kbd className={`px-2 py-1 rounded text-xs ${darkMode ? 'bg-gray-600 text-gray-200' : 'bg-gray-200 text-gray-800'}`}>Shift+Enter</kbd></span>
-                                                <span className={darkMode ? 'text-gray-300' : 'text-gray-700'}>Kopieer volledige attribuut info</span>
-                                            </div>
-                                            <div className={`flex items-center justify-between p-2 rounded ${darkMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
-                                                <span><kbd className={`px-2 py-1 rounded text-xs ${darkMode ? 'bg-gray-600 text-gray-200' : 'bg-gray-200 text-gray-800'}`}>Esc</kbd></span>
-                                                <span className={darkMode ? 'text-gray-300' : 'text-gray-700'}>Wis zoekterm en selectie</span>
-                                            </div>
-                                        </div>
-                                        <p className={`text-xs mt-2 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                                            💡 <strong>Tip:</strong> Klik buiten de zoekbalk om keyboard navigatie te activeren
-                                        </p>
-                                    </div>
-
-                                    <div>
-                                        <h3 className={`text-lg font-semibold mb-3 ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
-                                            📋 Kopiëren
-                                        </h3>
-                                        <div className={`space-y-2 text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                                            <div className="flex items-start space-x-2">
-                                                <Copy className={`h-4 w-4 mt-0.5 ${darkMode ? 'text-gray-400' : 'text-gray-400'}`} />
-                                                <span>Kopieer alleen de code (bijv. OB_NAAM)</span>
-                                            </div>
-                                            <div className="flex items-start space-x-2">
-                                                <ClipboardList className={`h-4 w-4 mt-0.5 ${darkMode ? 'text-gray-400' : 'text-gray-400'}`} />
-                                                <span>Kopieer volledige attribuut info (Entiteit, Code, Omschrijving, Codelijst)</span>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div>
-                                        <h3 className={`text-lg font-semibold mb-3 ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
-                                            📚 Codelijsten
-                                        </h3>
-                                        <div className={`space-y-2 text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                                            <p>Klik op een codelijst link (bijv. <BookOpen className="h-3 w-3 inline" /> ADNABS) om alle waarden te bekijken.</p>
-                                            <p>In de codelijst kun je:</p>
-                                            <ul className="list-disc list-inside space-y-1 ml-4">
-                                                <li>Zoeken naar specifieke codes of omschrijvingen</li>
-                                                <li>Codes kopiëren naar het klembord</li>
-                                                <li>Status zien (Actief/Inactief)</li>
-                                            </ul>
-                                        </div>
-                                    </div>
-
-                                    <div>
-                                        <h3 className={`text-lg font-semibold mb-3 ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
-                                            🎯 Filters
-                                        </h3>
-                                        <div className={`space-y-2 text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                                            <div className="flex items-start space-x-2">
-                                                <Filter className={`h-4 w-4 mt-0.5 ${darkMode ? 'text-gray-400' : 'text-gray-400'}`} />
-                                                <span><strong>Type filter:</strong> Filter op entiteiten of attributen</span>
-                                            </div>
-                                            <div className="flex items-start space-x-2">
-                                                <Database className={`h-4 w-4 mt-0.5 ${darkMode ? 'text-gray-400' : 'text-gray-400'}`} />
-                                                <span><strong>Entiteit filter:</strong> Toon alleen attributen van een specifieke entiteit</span>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div>
-                                        <h3 className={`text-lg font-semibold mb-3 ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
-                                            🏷️ Labels & Info
-                                        </h3>
-                                        <div className={`space-y-2 text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                                            <div className="flex flex-wrap gap-2">
-                                                <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium text-blue-600 bg-blue-100">
-                                                    Ja/Nee
-                                                </span>
-                                                <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium text-green-600 bg-gray-100">
-                                                    Alfanumeriek
-                                                </span>
-                                                <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium text-purple-600 bg-gray-100">
-                                                    Datum
-                                                </span>
-                                                <span className={`${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>← Datatypes</span>
-                                            </div>
-                                            <div className="flex flex-wrap gap-2 items-center">
-                                                <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-yellow-200 text-yellow-800">
-                                                    🔑 Primaire sleutel
-                                                </span>
-                                                <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-blue-100 text-blue-800">
-                                                    🔗 Vreemde sleutel
-                                                </span>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div className={`text-xs border-t pt-4 ${darkMode ? 'text-gray-400 border-gray-700' : 'text-gray-500 border-gray-200'}`}>
-                                        <p><strong>AFD 1.0 Datacatalogus</strong> • {stats.total.toLocaleString()} items • {stats.entities} entiteiten • {stats.attributes.toLocaleString()} attributen</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-                                </div>
-                                <div className="flex flex-wrap gap-4">
-                                    <div className="flex items-center space-x-2">
-                                        <Filter className={`h-5 w-5 ${darkMode ? 'text-gray-300' : 'text-gray-400'}`} />
-                                        <select
-                                            value={typeFilter}
-                                            onChange={(e) => setTypeFilter(e.target.value)}
-                                            className={`border rounded-lg px-3 py-2 ${
-                                                darkMode ? 'bg-gray-700 border-gray-600 text-gray-100' : 'bg-white border-gray-300 text-gray-900'
-                                            }`}
-                                        >
-                                            <option value="all">Alle types</option>
-                                            <option value="E">Alleen entiteiten</option>
-                                            <option value="A">Alleen attributen</option>
-                                        </select>
-                                    </div>
-                                    {availableEntities.length > 0 && (
-                                        <div className="flex items-center space-x-2">
-                                            <Database className={`h-5 w-5 ${darkMode ? 'text-gray-300' : 'text-gray-400'}`} />
-                                            <select
-                                                value={entityFilter}
-                                                onChange={(e) => setEntityFilter(e.target.value)}
-                                                className={`border rounded-lg px-3 py-2 ${
-                                                    darkMode ? 'bg-gray-700 border-gray-600 text-gray-100' : 'bg-white border-gray-300 text-gray-900'
-                                                }`}
-                                            >
-                                                <option value="all">Alle entiteiten ({availableEntities.length})</option>
-                                                {availableEntities.map(entity => (
-                                                    <option key={entity.code} value={entity.code}>
-                                                        {entity.code} - {entity.naam}
-                                                    </option>
-                                                ))}
-                                            </select>
-                                        </div>
-                                    )}
-                                </div>
-                                {paginatedData.length > 0 && (
-                                    <div className={`text-xs space-y-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                                        <div>
-                                            <strong>Sneltoetsen:</strong> ↑↓ navigeren • Enter kopieer code • Shift+Enter kopieer volledige info • / zoeken • Esc wissen
-                                        </div>
-                                        {keyboardActive && selectedItemIndex >= 0 && (
-                                            <div className="text-blue-400 font-medium">
-                                                <strong>📍 Geselecteerd:</strong> Item {selectedItemIndex + 1} van {paginatedData.length} • Enter = code • Shift+Enter = volledige info
-                                            </div>
-                                        )}
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Results */}
-                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-                        {!searchTerm && typeFilter === 'all' && entityFilter === 'all' ? (
-                            <div className="text-center py-12">
-                                <div className={`${darkMode ? 'bg-gray-800 text-gray-100' : 'bg-white'} rounded-lg shadow-sm p-12 max-w-2xl mx-auto`}>
-                                    <Search className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                                    <h2 className={`text-2xl font-semibold mb-2 ${darkMode ? 'text-gray-200' : 'text-gray-700'}`}>
-                                        Begin met zoeken
-                                    </h2>
-                                    <p className={`${darkMode ? 'text-gray-300' : 'text-gray-500'} mb-6`}>
-                                        Gebruik de zoekbalk hierboven om te zoeken in de AFD 1.0 datacatalogus met {stats.total.toLocaleString()} items
-                                    </p>
-                                    <div className={`space-y-2 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                                        <p>Je kunt zoeken op:</p>
-                                        <ul className="list-disc list-inside space-y-1">
-                                            <li>Naam van een entiteit of attribuut</li>
-                                            <li>Omschrijving</li>
-                                            <li>Entiteitcode (bijv. OB, XA, RI)</li>
-                                            <li>Attribuutcode of volledige codes (bijv. DA_VERZSOM)</li>
-                                            <li>ANVA code (bijv. 13689)</li>
-                                            <li>Codelijst naam (bijv. ADNABS, SECTCOD)</li>
-                                        </ul>
-                                    </div>
-                                    <div className="mt-6 flex justify-center">
-                                        <kbd className={`px-3 py-1 rounded text-sm ${
-                                            darkMode ? 'bg-gray-700 text-gray-200 border border-gray-600' : 'bg-gray-200 text-gray-800'
-                                        }`}>
-                                            Druk op / om te beginnen met typen
-                                        </kbd>
-                                    </div>
-                                </div>
-                            </div>
-                        ) : filteredData.length === 0 ? (
-                            <div className="text-center py-12">
-                                <p className="text-gray-500 text-lg">Geen resultaten gevonden</p>
-                                <p className="text-gray-400 mt-2">Probeer een andere zoekterm of pas de filters aan</p>
-                            </div>
-                        ) : (
-                            <div>
-                                <div className="flex justify-between items-center mb-4">
-                                    <p className="text-gray-600">
-                                        {filteredData.length} {filteredData.length === 1 ? "resultaat" : "resultaten"}
-                                    </p>
-                                    {totalPages > 1 && (
-                                        <p className="text-sm text-gray-500">
-                                            Pagina {currentPage} van {totalPages}
-                                        </p>
-                                    )}
-                                </div>
-                                <div className="space-y-3">
-                                    {paginatedData.map((item, index) => {
-                                        const isEntity = item['Entiteit/Attribuut'] === 'E';
-                                        const itemId = isEntity ? item.Entiteitcode : `${item.Entiteitcode}_${item.Attribuutcode}`;
-                                        const isSelected = keyboardActive && selectedItemIndex === index;
-                                        
-                                        return (
-                                            <div 
-                                                key={index}
-                                                ref={el => itemRefs.current[index] = el}
-                                                className={`${darkMode ? 'bg-gray-800 text-gray-100' : 'bg-white'} rounded-lg shadow-sm p-4 hover:shadow-md transition-shadow ${
-                                                    isSelected ? 'selected-item' : ''
-                                                }`}
-                                            >
-                                                <div className="flex items-start justify-between">
-                                                    <div className="flex items-start space-x-3 flex-1">
-                                                        {isEntity ? (
-                                                            <Database className="h-5 w-5 text-blue-600 mt-1 flex-shrink-0" />
-                                                        ) : (
-                                                            <Package className="h-5 w-5 text-green-600 mt-1 flex-shrink-0" />
-                                                        )}
-                                                        <div className="flex-1 min-w-0">
-                                                            <div className="flex items-center space-x-2 flex-wrap mb-1">
-                                                                <span className="text-sm font-mono text-gray-500">
-                                                                    {itemId}
-                                                                </span>
-                                                                {item.Datatype && datatypeInfo[item.Datatype] && (
-                                                                    <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium ${datatypeInfo[item.Datatype].color} bg-gray-100`}>
-                                                                        {datatypeInfo[item.Datatype].label}
-                                                                    </span>
-                                                                )}
-                                                                {item.Codelijst && codelistData[item.Codelijst] && (
-                                                                    <button
-                                                                        onClick={() => openCodelist(item.Codelijst, item.Naam)}
-                                                                        className="inline-flex items-center space-x-1 text-xs text-blue-600 hover:text-blue-800 underline"
-                                                                        title={`Bekijk codelijst ${item.Codelijst} (${codelistData[item.Codelijst].length} items)`}
-                                                                    >
-                                                                        <BookOpen className="h-3 w-3" />
-                                                                        <span>{highlightText(item.Codelijst, searchTerm)}</span>
-                                                                    </button>
-                                                                )}
-                                                            </div>
-                                                            <h3 className={`font-semibold ${darkMode ? 'text-gray-100' : 'text-gray-900'} mb-1`}>
-                                                                {highlightText(item.Naam, searchTerm)}
-                                                            </h3>
-                                                            {item.Omschrijving && (
-                                                                <p className={`${darkMode ? 'text-gray-300' : 'text-gray-600'} text-sm mb-2`}>
-                                                                    {highlightText(item.Omschrijving, searchTerm)}
-                                                                </p>
-                                                            )}
-                                                            
-                                                            {/* Extra attribuut informatie */}
-                                                            {!isEntity && (
-                                                                <div className="space-y-1 text-xs text-gray-500">
-                                                                    {item.Formaat && (
-                                                                        <div className="flex items-center space-x-2">
-                                                                            <span className="font-medium">Formaat:</span>
-                                                                            <code className={`px-1 py-0.5 rounded ${darkMode ? 'bg-gray-700' : 'bg-gray-100'}`}>
-                                                                                {item.Formaat}
-                                                                            </code>
-                                                                        </div>
-                                                                    )}
-                                                                    {(() => {
-                                                                        // ANVA code opzoeken
-                                                                        const fullCode = `${item.Entiteitcode}_${item.Attribuutcode}`;
-                                                                        const anvaInfo = anvaData[fullCode];
-                                                                        if (anvaInfo && anvaInfo.code) {
-                                                                            return (
-                                                                                <div className="flex items-center space-x-2">
-                                                                                    <span className="font-medium">ANVA:</span>
-                                                                                    <code className={`px-1 py-0.5 rounded ${darkMode ? 'bg-gray-700' : 'bg-gray-100'}`}>
-                                                                                        {highlightText(anvaInfo.code, searchTerm)}
-                                                                                    </code>
-                                                                                    {anvaInfo.afwijkendNietToegestaan === 'J' && (
-                                                                                        <span className="inline-flex items-center px-1 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">
-                                                                                            ⚠️
-                                                                                        </span>
-                                                                                    )}
-                                                                                </div>
-                                                                            );
-                                                                        }
-                                                                        return null;
-                                                                    })()}
-                                                                    {item.Lengte && (
-                                                                        <div className="flex items-center space-x-2">
-                                                                            <span className="font-medium">Lengte:</span>
-                                                                            <span>{item.Lengte}</span>
-                                                                        </div>
-                                                                    )}
-                                                                    {item.Decimalen && (
-                                                                        <div className="flex items-center space-x-2">
-                                                                            <span className="font-medium">Decimalen:</span>
-                                                                            <span>{item.Decimalen}</span>
-                                                                        </div>
-                                                                    )}
-                                                                    {item.Verplicht && (
-                                                                        <div className="flex items-center space-x-2">
-                                                                            <span className="font-medium">Verplicht:</span>
-                                                                            <span className={item.Verplicht === 'J' ? 'text-red-600' : 'text-green-600'}>
-                                                                                {item.Verplicht === 'J' ? 'Ja' : 'Nee'}
-                                                                            </span>
-                                                                        </div>
-                                                                    )}
-                                                                    {item.Primairesleutel && item.Primairesleutel === 'J' && (
-                                                                        <div className="flex items-center space-x-2">
-                                                                            <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-yellow-200 text-yellow-800">
-                                                                                🔑 Primaire sleutel
-                                                                            </span>
-                                                                        </div>
-                                                                    )}
-                                                                    {item.Vreemdessleutel && item.Vreemdessleutel === 'J' && (
-                                                                        <div className="flex items-center space-x-2">
-                                                                            <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-blue-100 text-blue-800">
-                                                                                🔗 Vreemde sleutel
-                                                                            </span>
-                                                                        </div>
-                                                                    )}
-                                                                    {item.Defaultwaarde && (
-                                                                        <div className="flex items-center space-x-2">
-                                                                            <span className="font-medium">Default:</span>
-                                                                            <code className={`px-1 py-0.5 rounded ${darkMode ? 'bg-gray-700' : 'bg-gray-100'}`}>
-                                                                                {item.Defaultwaarde}
-                                                                            </code>
-                                                                        </div>
-                                                                    )}
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                    </div>
-                                                    <div className="flex items-center space-x-1 ml-2">
-                                                        <button
-                                                            onClick={() => copyToClipboard(itemId, itemId)}
-                                                            className="p-1 hover:bg-gray-100 rounded"
-                                                            title="Kopieer code"
-                                                        >
-                                                            {copiedItem === itemId ? (
-                                                                <Check className="h-4 w-4 text-green-500" />
-                                                            ) : (
-                                                                <Copy className="h-4 w-4 text-gray-400" />
-                                                            )}
-                                                        </button>
-                                                        {!isEntity && (
-                                                            <button
-                                                                onClick={() => copyFullAttributeInfo(item, `full-${itemId}`)}
-                                                                className="p-1 hover:bg-gray-100 rounded"
-                                                                title="Kopieer volledige attribuut info (Entiteit, Code, Omschrijving, Codelijst)"
-                                                            >
-                                                                {copiedItem === `full-${itemId}` ? (
-                                                                    <Check className="h-4 w-4 text-green-500" />
-                                                                ) : (
-                                                                    <ClipboardList className="h-4 w-4 text-gray-400" />
-                                                                )}
-                                                            </button>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                                {/* Pagination */}
-                                {totalPages > 1 && (
-                                    <div className="flex items-center justify-center space-x-2 mt-6">
-                                        <button
-                                            onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                                            disabled={currentPage === 1}
-                                            className={`px-3 py-1 rounded border ${
-                                                currentPage === 1
-                                                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                                                    : 'bg-white text-gray-700 hover:bg-gray-50'
-                                            }`}
-                                        >
-                                            Vorige
-                                        </button>
-                                        <span className="px-3 py-1">
-                                            {currentPage} / {totalPages}
-                                        </span>
-                                        <button
-                                            onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                                            disabled={currentPage === totalPages}
-                                            className={`px-3 py-1 rounded border ${
-                                                currentPage === totalPages
-                                                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                                                    : 'bg-white text-gray-700 hover:bg-gray-50'
-                                            }`}
-                                        >
-                                            Volgende
-                                        </button>
-                                    </div>
-                                )}
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Codelist Modal */}
-                    {selectedCodelist && (
-                        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                            <div className={`${darkMode ? 'bg-gray-800 text-gray-100' : 'bg-white'} rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col`}>
-                                <div className="flex-shrink-0 p-6 border-b ${darkMode ? 'border-gray-700' : 'border-gray-200'}">
-                                    <div className="flex items-start justify-between">
-                                        <div className="flex-1 min-w-0">
-                                            <h2 className={`text-xl font-bold ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
-                                                Codelijst: {selectedCodelist.codelijst}
-                                            </h2>
-                                            <p className="text-sm text-gray-500 mt-1 truncate">{selectedCodelist.naam}</p>
-                                            <p className="text-sm text-gray-500">
-                                                {codelistItems.length} van {codelistData[selectedCodelist.codelijst]?.length || 0} items
-                                            </p>
-                                        </div>
-                                        <button
-                                            onClick={() => {
-                                                setSelectedCodelist(null);
-                                                setCodelistSearch('');
-                                            }}
-                                            className={`ml-4 p-2 rounded-lg flex-shrink-0 ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'}`}
-                                        >
-                                            <X className="h-5 w-5" />
-                                        </button>
-                                    </div>
-                                    <div className="mt-4">
-                                        <div className="relative">
-                                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
-                                            <input
-                                                type="text"
-                                                value={codelistSearch}
-                                                onChange={(e) => setCodelistSearch(e.target.value)}
-                                                placeholder="Zoek in codelijst..."
-                                                className={`w-full pl-10 pr-10 py-2 border rounded-lg ${
-                                                    darkMode ? 'bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
-                                                } focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
-                                                autoFocus
-                                            />
-                                            {codelistSearch && (
-                                                <button
-                                                    onClick={() => setCodelistSearch('')}
-                                                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                                                >
-                                                    <X className="h-4 w-4" />
-                                                </button>
-                                            )}
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div className="flex-1 overflow-y-auto min-h-0 p-4">
-                                    {codelistItems.length === 0 ? (
-                                        <div className="text-center py-8">
-                                            <p className="text-gray-500">
-                                                {codelistSearch ? 'Geen items gevonden voor deze zoekopdracht' : 'Geen items in deze codelijst'}
-                                            </p>
-                                        </div>
-                                    ) : (
-                                        <div className="space-y-2">
-                                            {codelistItems.map((item, index) => (
-                                                <div 
-                                                    key={index}
-                                                    className={`flex items-start justify-between p-3 rounded-lg hover:shadow-sm transition-shadow ${
-                                                        darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-50 hover:bg-gray-100'
-                                                    }`}
-                                                >
-                                                    <div className="flex-1 min-w-0 pr-3">
-                                                        <div className="flex items-center space-x-2 mb-1">
-                                                            <code className={`font-mono text-sm font-semibold px-2 py-1 rounded ${
-                                                                darkMode ? 'bg-gray-800 text-blue-400' : 'bg-blue-50 text-blue-600'
-                                                            }`}>
-                                                                {highlightText(String(item.code), codelistSearch)}
-                                                            </code>
-                                                            {item.actief === 'J' && (
-                                                                <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-green-100 text-green-800">
-                                                                    Actief
-                                                                </span>
-                                                            )}
-                                                            {item.actief === 'N' && (
-                                                                <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-red-100 text-red-800">
-                                                                    Inactief
-                                                                </span>
-                                                            )}
-                                                        </div>
-                                                        <p className={`text-sm break-words ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                                                            {highlightText(String(item.omschrijving), codelistSearch)}
-                                                        </p>
-                                                    </div>
-                                                    <button
-                                                        onClick={() => copyToClipboard(String(item.code), `cl-${index}`)}
-                                                        className={`flex-shrink-0 p-2 rounded transition-colors ${
-                                                            darkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-200'
-                                                        }`}
-                                                        title="Kopieer code"
-                                                    >
-                                                        {copiedItem === `cl-${index}` ? 
-                                                            <Check className="h-4 w-4 text-green-500" /> : 
-                                                            <Copy className="h-4 w-4 text-gray-400" />
-                                                        }
-                                                    </button>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-                    )}
                 </div>
-            );
+                
+                <div class="weather-widget" id="weatherWidget">
+                    <div class="weather-icon" id="weatherIcon">🌤️</div>
+                    <div class="weather-info">
+                        <div class="weather-temp" id="weatherTemp">--°C</div>
+                        <div class="weather-desc" id="weatherDesc">Laden...</div>
+                        <div class="weather-location" id="weatherLocation">Veenendaal</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="header-right">
+                <div class="search-container">
+                    <input type="text" class="search-box" placeholder="Zoek naar tools, links of informatie..." id="searchInput">
+                </div>
+            </div>
+        </header>
+
+        <div class="main-grid" id="mainGrid">
+            <!-- Sections will be dynamically loaded here -->
+        </div>
+    </div>
+
+    <button class="fab secondary" onclick="openSectionForm()" title="Nieuwe sectie">📁</button>
+    <button class="fab" onclick="openAddForm()" title="Nieuwe link">+</button>
+
+    <div class="overlay" id="overlay" onclick="closeModals()"></div>
+
+    <div class="modal" id="addModal">
+        <h2>Nieuwe link toevoegen</h2>
+        <form id="linkForm">
+            <div class="form-group">
+                <label for="linkTitle">Titel:</label>
+                <input type="text" id="linkTitle" name="title" required>
+            </div>
+            <div class="form-group">
+                <label for="linkUrl">URL:</label>
+                <input type="url" id="linkUrl" name="url" required>
+            </div>
+            <div class="form-group">
+                <label for="linkDescription">Beschrijving:</label>
+                <textarea id="linkDescription" name="description" rows="3"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="linkTags">Tags (gescheiden door komma's):</label>
+                <input type="text" id="linkTags" name="tags" placeholder="bijv: jira, project, board">
+            </div>
+            <div class="form-group">
+                <label for="linkCategory">Categorie:</label>
+                <select id="linkCategory" name="category" required>
+                    <option value="">Selecteer categorie</option>
+                </select>
+            </div>
+            <div class="form-buttons">
+                <button type="button" class="btn btn-secondary" onclick="closeModals()">Annuleren</button>
+                <button type="submit" class="btn btn-primary">Toevoegen</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="modal" id="sectionModal">
+        <h2>Nieuwe sectie toevoegen</h2>
+        <form id="sectionForm">
+            <div class="form-group">
+                <label for="sectionTitle">Sectie titel:</label>
+                <input type="text" id="sectionTitle" name="title" required>
+            </div>
+            <div class="form-group">
+                <label for="sectionId">Sectie ID:</label>
+                <input type="text" id="sectionId" name="id" required placeholder="bijv: my-tools">
+            </div>
+            <div class="form-group">
+                <label for="sectionIcon">Icoon SVG path:</label>
+                <textarea id="sectionIcon" name="icon" rows="3" placeholder="SVG path voor het icoon"></textarea>
+            </div>
+            <div class="form-buttons">
+                <button type="button" class="btn btn-secondary" onclick="closeModals()">Annuleren</button>
+                <button type="submit" class="btn btn-primary">Toevoegen</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="modal" id="editModal">
+        <h2>Bewerken</h2>
+        <form id="editForm">
+            <div id="editFormContent"></div>
+            <div class="form-buttons">
+                <button type="button" class="btn btn-secondary" onclick="closeModals()">Annuleren</button>
+                <button type="submit" class="btn btn-primary">Opslaan</button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        // Data storage
+        let links = [];
+        let sections = [];
+        let isAdminMode = false;
+        let editingItem = null;
+        let editingType = null;
+        let linkIdCounter = 1;
+        let draggedElement = null;
+        let draggedType = null;
+
+        // Default data
+        const defaultSections = [
+            { id: 'tools', title: 'Jira', icon: 'M22.7 19l-9.1-9.1c.9-2.3.4-5-1.5-6.9-2-2-5-2.4-7.4-1.3L9 6 6 9 1.6 4.7C.4 7.1.9 10.1 2.9 12.1c1.9 1.9 4.6 2.4 6.9 1.5l9.1 9.1c.4.4 1 .4 1.4 0l2.3-2.3c.5-.4.5-1.1.1-1.4z' },
+            { id: 'monitoring', title: 'AFD', icon: 'M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z' },
+            { id: 'pe-beheer', title: 'PE Beheer', icon: 'M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z' },
+            { id: 'documentation', title: 'GPT', icon: 'M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z' },
+            { id: 'infrastructure', title: 'Tools', icon: 'M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z' }
+        ];
+
+        const defaultLinks = [
+            { id: 2, title: 'IPC Board', url: 'https://awisoftware.atlassian.net/jira/software/c/projects/PE/boards/94', description: 'Project board', category: 'tools', tags: ['jira', 'board', 'project'] },
+            { id: 3, title: 'IPC Servicedesk', url: 'https://awisoftware.atlassian.net/jira/servicedesk/projects/IPC/boards/107', description: 'Support tickets', category: 'tools', tags: ['jira', 'servicedesk', 'tickets'] },
+            { id: 4, title: 'AFD 1.0 zoektool', url: 'https://inpactsolutions.github.io/afd-datacatalogus/', description: 'Inpact AFD zoektool', category: 'monitoring', tags: ['afd', 'zoeken', 'datacatalogus'] },
+            { id: 5, title: 'AOS', url: 'https://portal.sivi.org/', description: 'AFD Online Samenstellen', category: 'monitoring', tags: ['aos', 'sivi', 'online'] },
+            { id: 6, title: 'DEV', url: 'https://apetariffeditor.awisoftware.nl/', description: 'Development omgeving', category: 'pe-beheer', tags: ['dev', 'development', 'tariff'] },
+            { id: 7, title: 'ACC', url: 'https://ipc-tariffeditor-acc.awisoftware.nl/', description: 'Acceptatie omgeving', category: 'pe-beheer', tags: ['acc', 'acceptance', 'tariff'] },
+            { id: 8, title: 'Productanalyse', url: 'https://chatgpt.com/g/g-683407fd9f688191b4f3763225b3a133-productanalyse-ipc-inpact', description: 'AI assistant', category: 'documentation', tags: ['gpt', 'productanalyse', 'ai'] },
+            { id: 9, title: 'PET Web', url: 'https://ipc-forms.awisoftware.nl/', description: 'Product engine test tool', category: 'infrastructure', tags: ['pet', 'forms', 'testing'] },
+            { id: 11, title: 'AFD 1.0 Online (SIVI)', url: 'https://www.sivi.org/sivi-afs/online-diensten/afd-1-0-online-raadplegen/', description: 'SIVI AFD online', category: 'monitoring', tags: ['afd', 'sivi', 'online'] },
+            { id: 12, title: 'Interne Confluence', url: 'https://awisoftware.atlassian.net/wiki/spaces/PE/overview', description: 'Interne wiki', category: 'tools', tags: ['confluence', 'wiki', 'intern'] },
+            { id: 13, title: 'Openbare Confluence', url: 'https://awisoftware.atlassian.net/wiki/spaces/IK1/overview', description: 'Openbare wiki', category: 'tools', tags: ['confluence', 'wiki', 'openbaar'] },
+            { id: 14, title: 'PRD', url: 'https://ipc-tariffeditor-prd.awisoftware.nl/', description: 'Productie omgeving', category: 'pe-beheer', tags: ['prd', 'production', 'tariff'] },
+            { id: 15, title: 'Transscript', url: 'https://chatgpt.com/g/g-6853ba18f4ec81919b75ed778aff8d26-transcript-vertaler-naar-samenvatting-actiepunten', description: 'Transcript vertaler', category: 'documentation', tags: ['gpt', 'transcript', 'samenvatting'] }
+        ];
+
+        // Storage helpers
+        function saveToStorage() {
+            const data = {
+                sections: sections,
+                links: links,
+                linkIdCounter: linkIdCounter
+            };
+            localStorage.setItem('ipc-intranet-data', JSON.stringify(data));
         }
 
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<AFDSearchTool />);
+        function loadFromStorage() {
+            try {
+                const savedData = localStorage.getItem('ipc-intranet-data');
+                if (savedData) {
+                    const data = JSON.parse(savedData);
+                    sections = data.sections || defaultSections;
+                    links = data.links || defaultLinks;
+                    linkIdCounter = data.linkIdCounter || 16;
+                    return true;
+                }
+            } catch (error) {
+                console.error('Error loading from storage:', error);
+            }
+            return false;
+        }
+
+        // GitHub Pages JSON file loading
+        async function loadFromGitHub() {
+            try {
+                const response = await fetch('./data/intranet-data.json?t=' + Date.now());
+                if (response.ok) {
+                    const data = await response.json();
+                    sections = data.sections || defaultSections;
+                    links = data.links || defaultLinks;
+                    linkIdCounter = data.linkIdCounter || 16;
+                    console.log('Data loaded from GitHub Pages');
+                    return true;
+                }
+            } catch (error) {
+                console.error('Error loading from GitHub:', error);
+            }
+            return false;
+        }
+
+        // Save data to downloadable JSON (for GitHub commit)
+        function saveForGitHub() {
+            const data = {
+                sections: sections,
+                links: links,
+                linkIdCounter: linkIdCounter,
+                lastUpdated: new Date().toISOString()
+            };
+            const dataStr = JSON.stringify(data, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'intranet-data.json';
+            link.click();
+            URL.revokeObjectURL(url);
+            showNotification('Data gedownload! Upload naar GitHub /data/ folder');
+        }
+
+        // Auto-sync to GitHub (requires Personal Access Token)
+        async function syncToGitHub() {
+            const GITHUB_TOKEN = localStorage.getItem('github-token');
+            const GITHUB_REPO = localStorage.getItem('github-repo'); // format: "username/repo-name"
+            
+            if (!GITHUB_TOKEN || !GITHUB_REPO) {
+                showGitHubConfigModal();
+                return;
+            }
+
+            // Show loading state
+            const syncButton = document.querySelector('button[onclick="syncToGitHub()"]');
+            const originalText = syncButton.innerHTML;
+            syncButton.innerHTML = '⏳ Syncing...';
+            syncButton.disabled = true;
+
+            try {
+                const data = {
+                    sections: sections,
+                    links: links,
+                    linkIdCounter: linkIdCounter,
+                    lastUpdated: new Date().toISOString()
+                };
+
+                // Clean repo name (remove https:// if present)
+                const cleanRepo = GITHUB_REPO.replace(/^https:\/\/github\.com\//, '');
+
+                // Trigger GitHub Action
+                const response = await fetch(`https://api.github.com/repos/${cleanRepo}/actions/workflows/update-data.yml/dispatches`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `token ${GITHUB_TOKEN}`,
+                        'Accept': 'application/vnd.github.v3+json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        ref: 'main',
+                        inputs: {
+                            data: JSON.stringify(data, null, 2)
+                        }
+                    })
+                });
+
+                if (response.ok) {
+                    showNotification('✅ Data gesynchroniseerd met GitHub!');
+                    
+                    // Refresh page after a delay to load new data
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 3000);
+                } else {
+                    const errorText = await response.text();
+                    throw new Error(`HTTP ${response.status}: ${errorText}`);
+                }
+            } catch (error) {
+                console.error('Sync error:', error);
+                showNotification('❌ Sync failed: ' + error.message);
+            } finally {
+                // Restore button
+                syncButton.innerHTML = originalText;
+                syncButton.disabled = false;
+            }
+        }
+
+        // Show GitHub configuration modal
+        function showGitHubConfigModal() {
+            const modal = document.createElement('div');
+            modal.className = 'modal';
+            modal.id = 'githubConfigModal';
+            modal.style.display = 'block';
+            modal.innerHTML = `
+                <h2>GitHub Configuratie</h2>
+                <p>Voor automatische sync heb je een GitHub Personal Access Token nodig.</p>
+                <div class="form-group">
+                    <label for="githubRepo">Repository (bijv: username/repo-name):</label>
+                    <input type="text" id="githubRepo" placeholder="InpactSolutions/IPC-Intranet" 
+                           value="${localStorage.getItem('github-repo') || ''}">
+                    <small style="color: #666; font-size: 12px; display: block; margin-top: 4px;">
+                        Alleen de repository naam, NIET de volledige URL
+                    </small>
+                </div>
+                <div class="form-group">
+                    <label for="githubToken">Personal Access Token:</label>
+                    <input type="password" id="githubToken" placeholder="ghp_xxxxxxxxxxxx"
+                           value="${localStorage.getItem('github-token') || ''}">
+                    <small style="color: #666; font-size: 12px; display: block; margin-top: 4px;">
+                        Maak een token op: GitHub → Settings → Developer settings → Personal access tokens → Fine-grained tokens
+                        <br>Rechten: Actions (write), Contents (write), Metadata (read)
+                    </small>
+                </div>
+                <div class="form-buttons">
+                    <button type="button" class="btn btn-secondary" onclick="closeGitHubConfig()">Annuleren</button>
+                    <button type="button" class="btn btn-primary" onclick="saveGitHubConfig()">Opslaan</button>
+                    <button type="button" class="btn" onclick="clearGitHubConfig()" style="background: #e74c3c; color: white;">Reset</button>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            document.getElementById('overlay').style.display = 'block';
+        }
+
+        // Save GitHub configuration
+        function saveGitHubConfig() {
+            const repo = document.getElementById('githubRepo').value.trim();
+            const token = document.getElementById('githubToken').value.trim();
+            
+            if (!repo || !token) {
+                alert('Vul alle velden in');
+                return;
+            }
+            
+            // Clean repo name (remove https:// if present)
+            const cleanRepo = repo.replace(/^https:\/\/github\.com\//, '');
+            
+            localStorage.setItem('github-repo', cleanRepo);
+            localStorage.setItem('github-token', token);
+            
+            closeGitHubConfig();
+            showNotification('GitHub configuratie opgeslagen!');
+        }
+
+        // Clear GitHub configuration
+        function clearGitHubConfig() {
+            if (confirm('Weet je zeker dat je de GitHub configuratie wilt wissen?')) {
+                localStorage.removeItem('github-repo');
+                localStorage.removeItem('github-token');
+                closeGitHubConfig();
+                showNotification('GitHub configuratie gewist!');
+            }
+        }
+
+        // Close GitHub config modal
+        function closeGitHubConfig() {
+            const modal = document.getElementById('githubConfigModal');
+            if (modal) {
+                modal.remove();
+            }
+            document.getElementById('overlay').style.display = 'none';
+        }
+
+        // Auto-refresh data from GitHub
+        async function refreshFromGitHub() {
+            showNotification('🔄 Data verversen...');
+            const loaded = await loadFromGitHub();
+            if (loaded) {
+                renderSections();
+                updateCategoryOptions();
+                showNotification('✅ Data ververst van GitHub!');
+            } else {
+                showNotification('❌ Kon data niet verversen');
+            }
+        }
+
+        function resetToDefaults() {
+            sections = [...defaultSections];
+            links = [...defaultLinks];
+            linkIdCounter = 16;
+            saveToStorage();
+        }
+
+        // Admin mode with session-based authentication
+        function toggleAdmin() {
+            if (!isAdminMode) {
+                // Check if user is already authenticated this session
+                const isAuthenticated = sessionStorage.getItem('admin-authenticated') === 'true';
+                
+                if (isAuthenticated) {
+                    activateAdminMode();
+                } else {
+                    showPasswordModal();
+                }
+            } else {
+                deactivateAdminMode();
+            }
+        }
+
+        function showPasswordModal() {
+            const modal = document.createElement('div');
+            modal.className = 'modal';
+            modal.id = 'passwordModal';
+            modal.style.display = 'block';
+            modal.innerHTML = `
+                <h2>🔐 Beheer Toegang</h2>
+                <p>Voer het beheerder wachtwoord in:</p>
+                <div class="form-group">
+                    <label for="adminPassword">Wachtwoord:</label>
+                    <input type="password" id="adminPassword" placeholder="Beheerder wachtwoord" autofocus>
+                </div>
+                <div class="form-buttons">
+                    <button type="button" class="btn btn-secondary" onclick="closePasswordModal()">Annuleren</button>
+                    <button type="button" class="btn btn-primary" onclick="checkPassword()">Toegang</button>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            document.getElementById('overlay').style.display = 'block';
+            
+            // Enter key support
+            document.getElementById('adminPassword').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    checkPassword();
+                }
+            });
+        }
+
+        function checkPassword() {
+            const password = document.getElementById('adminPassword').value;
+            
+            // Admin password for IPC team
+            const ADMIN_PASSWORD = 'IPC2025!';
+            
+            if (password === ADMIN_PASSWORD) {
+                // Store authentication for this session only
+                sessionStorage.setItem('admin-authenticated', 'true');
+                
+                closePasswordModal();
+                activateAdminMode();
+                showNotification('✅ Beheer modus geactiveerd!');
+            } else {
+                showNotification('❌ Onjuist wachtwoord!');
+                document.getElementById('adminPassword').value = '';
+                document.getElementById('adminPassword').focus();
+            }
+        }
+
+        function closePasswordModal() {
+            const modal = document.getElementById('passwordModal');
+            if (modal) {
+                modal.remove();
+            }
+            document.getElementById('overlay').style.display = 'none';
+        }
+
+        function activateAdminMode() {
+            isAdminMode = true;
+            const adminBar = document.getElementById('adminBar');
+            const adminToggle = document.querySelector('.admin-toggle');
+            
+            adminBar.classList.add('active');
+            adminToggle.classList.add('active');
+            document.body.classList.add('edit-mode');
+            
+            // Re-render to enable dragging
+            renderSections();
+        }
+
+        function deactivateAdminMode() {
+            isAdminMode = false;
+            const adminBar = document.getElementById('adminBar');
+            const adminToggle = document.querySelector('.admin-toggle');
+            
+            adminBar.classList.remove('active');
+            adminToggle.classList.remove('active');
+            document.body.classList.remove('edit-mode');
+            
+            // Clear session authentication
+            sessionStorage.removeItem('admin-authenticated');
+            
+            // Re-render to disable dragging
+            renderSections();
+        }
+
+        // Modal management
+        function openAddForm() {
+            if (!isAdminMode) {
+                showNotification('⚠️ Ga eerst naar beheer modus om links toe te voegen');
+                return;
+            }
+            document.getElementById('overlay').style.display = 'block';
+            document.getElementById('addModal').style.display = 'block';
+        }
+
+        function openSectionForm() {
+            if (!isAdminMode) {
+                showNotification('⚠️ Ga eerst naar beheer modus om secties toe te voegen');
+                return;
+            }
+            document.getElementById('overlay').style.display = 'block';
+            document.getElementById('sectionModal').style.display = 'block';
+        }
+
+        function closeModals() {
+            document.getElementById('overlay').style.display = 'none';
+            document.getElementById('addModal').style.display = 'none';
+            document.getElementById('sectionModal').style.display = 'none';
+            document.getElementById('editModal').style.display = 'none';
+            
+            // Reset forms
+            document.getElementById('linkForm').reset();
+            document.getElementById('sectionForm').reset();
+            document.getElementById('editForm').reset();
+            
+            editingItem = null;
+            editingType = null;
+        }
+
+        // CRUD operations
+        function editSection(button) {
+            if (!isAdminMode) return;
+            
+            const section = button.closest('.section');
+            const category = section.dataset.category;
+            const sectionData = sections.find(s => s.id === category);
+            
+            if (!sectionData) return;
+            
+            editingItem = section;
+            editingType = 'section';
+            
+            document.getElementById('editFormContent').innerHTML = `
+                <div class="form-group">
+                    <label for="editSectionTitle">Sectie titel:</label>
+                    <input type="text" id="editSectionTitle" name="title" value="${sectionData.title}" required>
+                </div>
+                <div class="form-group">
+                    <label for="editSectionId">Sectie ID:</label>
+                    <input type="text" id="editSectionId" name="id" value="${sectionData.id}" required>
+                </div>
+                <div class="form-group">
+                    <label for="editSectionIcon">Icoon SVG path:</label>
+                    <textarea id="editSectionIcon" name="icon" rows="3">${sectionData.icon}</textarea>
+                </div>
+            `;
+            
+            document.getElementById('overlay').style.display = 'block';
+            document.getElementById('editModal').style.display = 'block';
+        }
+
+        function deleteSection(button) {
+            if (!isAdminMode) return;
+            
+            if (confirm('Weet je zeker dat je deze sectie wilt verwijderen?')) {
+                const section = button.closest('.section');
+                const category = section.dataset.category;
+                
+                sections = sections.filter(s => s.id !== category);
+                links = links.filter(l => l.category !== category);
+                
+                saveToStorage();
+                renderSections();
+                updateCategoryOptions();
+                showNotification('Sectie verwijderd!');
+            }
+        }
+
+        function editLink(button) {
+            if (!isAdminMode) return;
+            
+            const linkItem = button.closest('.link-item');
+            const linkId = parseInt(linkItem.dataset.linkId);
+            const linkData = links.find(l => l.id === linkId);
+            
+            if (!linkData) return;
+            
+            editingItem = linkItem;
+            editingType = 'link';
+            
+            document.getElementById('editFormContent').innerHTML = `
+                <div class="form-group">
+                    <label for="editLinkTitle">Titel:</label>
+                    <input type="text" id="editLinkTitle" name="title" value="${linkData.title}" required>
+                </div>
+                <div class="form-group">
+                    <label for="editLinkUrl">URL:</label>
+                    <input type="url" id="editLinkUrl" name="url" value="${linkData.url}" required>
+                </div>
+                <div class="form-group">
+                    <label for="editLinkDescription">Beschrijving:</label>
+                    <textarea id="editLinkDescription" name="description" rows="3">${linkData.description}</textarea>
+                </div>
+                <div class="form-group">
+                    <label for="editLinkTags">Tags (gescheiden door komma's):</label>
+                    <input type="text" id="editLinkTags" name="tags" value="${linkData.tags ? linkData.tags.join(', ') : ''}" placeholder="bijv: jira, project, board">
+                </div>
+                <div class="form-group">
+                    <label for="editLinkCategory">Categorie:</label>
+                    <select id="editLinkCategory" name="category" required>
+                        ${sections.map(s => `<option value="${s.id}" ${s.id === linkData.category ? 'selected' : ''}>${s.title}</option>`).join('')}
+                    </select>
+                </div>
+            `;
+            
+            document.getElementById('overlay').style.display = 'block';
+            document.getElementById('editModal').style.display = 'block';
+        }
+
+        function deleteLink(button) {
+            if (!isAdminMode) return;
+            
+            if (confirm('Weet je zeker dat je deze link wilt verwijderen?')) {
+                const linkItem = button.closest('.link-item');
+                const linkId = parseInt(linkItem.dataset.linkId);
+                
+                links = links.filter(l => l.id !== linkId);
+                saveToStorage();
+                renderSections();
+                showNotification('Link verwijderd!');
+            }
+        }
+
+        // Data management
+        function exportData() {
+            const data = { sections: sections, links: links };
+            const dataStr = JSON.stringify(data, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'ipc-intranet-data.json';
+            link.click();
+            URL.revokeObjectURL(url);
+            showNotification('Data geëxporteerd!');
+        }
+
+        function clearAllData() {
+            if (confirm('Weet je zeker dat je alle data wilt wissen?')) {
+                resetToDefaults();
+                renderSections();
+                updateCategoryOptions();
+                showNotification('Data gereset!');
+            }
+        }
+
+        // Rendering
+        function renderSections() {
+            const grid = document.getElementById('mainGrid');
+            grid.innerHTML = '';
+            
+            sections.forEach((section, index) => {
+                const sectionHTML = `
+                    <div class="section" data-category="${section.id}" data-section-index="${index}" draggable="${isAdminMode}">
+                        <div class="section-controls">
+                            <button class="control-btn" onclick="editSection(this)" title="Bewerk sectie">✏️</button>
+                            <button class="control-btn" onclick="deleteSection(this)" title="Verwijder sectie">🗑️</button>
+                        </div>
+                        <div class="section-header">
+                            <span class="drag-handle" title="Versleep sectie">⋮⋮</span>
+                            <svg class="section-icon" viewBox="0 0 24 24">
+                                <path d="${section.icon}"/>
+                            </svg>
+                            <h2 class="section-title">${section.title}</h2>
+                        </div>
+                        <div class="links-grid" id="links-${section.id}"></div>
+                    </div>
+                `;
+                grid.insertAdjacentHTML('beforeend', sectionHTML);
+            });
+            
+            // Add links to their sections
+            links.forEach(link => {
+                addLinkToDOM(link);
+            });
+            
+            // Setup drag and drop if in admin mode
+            if (isAdminMode) {
+                setupDragAndDrop();
+            }
+        }
+
+        function addLinkToDOM(link) {
+            const linksGrid = document.getElementById(`links-${link.category}`);
+            if (linksGrid) {
+                const linkHTML = `
+                    <a href="${link.url}" class="link-item" data-link-id="${link.id}" target="_blank">
+                        <span class="drag-handle" title="Versleep link">⋮⋮</span>
+                        <svg class="link-icon" viewBox="0 0 24 24">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                        </svg>
+                        <div class="link-content">
+                            <div class="link-title">${link.title}</div>
+                            <div class="link-description">${link.description}</div>
+                        </div>
+                        <div class="link-controls">
+                            <button class="link-control-btn" onclick="editLink(this)" title="Bewerk">✏️</button>
+                            <button class="link-control-btn" onclick="deleteLink(this)" title="Verwijder">🗑️</button>
+                        </div>
+                    </a>
+                `;
+                linksGrid.insertAdjacentHTML('beforeend', linkHTML);
+            }
+        }
+
+        function updateCategoryOptions() {
+            const categorySelect = document.getElementById('linkCategory');
+            categorySelect.innerHTML = '<option value="">Selecteer categorie</option>';
+            sections.forEach(section => {
+                categorySelect.innerHTML += `<option value="${section.id}">${section.title}</option>`;
+            });
+        }
+
+        // Simple drag and drop setup
+        function setupDragAndDrop() {
+            // Section drag and drop
+            document.querySelectorAll('.section').forEach(section => {
+                section.addEventListener('dragstart', function(e) {
+                    draggedElement = section;
+                    draggedType = 'section';
+                    section.classList.add('dragging');
+                    e.dataTransfer.setData('text/plain', section.dataset.category);
+                });
+                
+                section.addEventListener('dragover', function(e) {
+                    e.preventDefault();
+                    if (draggedType === 'section' && section !== draggedElement) {
+                        section.classList.add('drag-over');
+                    }
+                });
+                
+                section.addEventListener('drop', function(e) {
+                    e.preventDefault();
+                    if (draggedType === 'section' && section !== draggedElement && draggedElement) {
+                        const draggedIndex = parseInt(draggedElement.dataset.sectionIndex);
+                        const dropIndex = parseInt(section.dataset.sectionIndex);
+                        
+                        const draggedSection = sections[draggedIndex];
+                        sections.splice(draggedIndex, 1);
+                        sections.splice(dropIndex, 0, draggedSection);
+                        
+                        saveToStorage();
+                        renderSections();
+                        showNotification('Sectie volgorde aangepast!');
+                    }
+                    section.classList.remove('drag-over');
+                });
+                
+                section.addEventListener('dragend', function() {
+                    document.querySelectorAll('.dragging').forEach(el => el.classList.remove('dragging'));
+                    document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+                    draggedElement = null;
+                    draggedType = null;
+                });
+            });
+
+            // Link drag and drop with mouse events
+            document.querySelectorAll('.link-item').forEach(link => {
+                const dragHandle = link.querySelector('.drag-handle');
+                if (dragHandle) {
+                    let isDragging = false;
+                    
+                    dragHandle.addEventListener('mousedown', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        isDragging = true;
+                        
+                        draggedElement = link;
+                        draggedType = 'link';
+                        link.classList.add('dragging');
+                        
+                        const onMouseMove = function(e) {
+                            if (!isDragging) return;
+                            
+                            const elementBelow = document.elementFromPoint(e.clientX, e.clientY);
+                            const targetLink = elementBelow?.closest('.link-item');
+                            const targetGrid = elementBelow?.closest('.links-grid');
+                            
+                            document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+                            
+                            if (targetLink && targetLink !== link) {
+                                targetLink.classList.add('drag-over');
+                            } else if (targetGrid) {
+                                targetGrid.classList.add('drag-over');
+                            }
+                        };
+                        
+                        const onMouseUp = function(e) {
+                            if (!isDragging) return;
+                            
+                            isDragging = false;
+                            
+                            const elementBelow = document.elementFromPoint(e.clientX, e.clientY);
+                            const targetLink = elementBelow?.closest('.link-item');
+                            const targetGrid = elementBelow?.closest('.links-grid');
+                            
+                            if (targetLink && targetLink !== link) {
+                                const draggedLinkId = parseInt(link.dataset.linkId);
+                                const dropLinkId = parseInt(targetLink.dataset.linkId);
+                                
+                                const draggedIndex = links.findIndex(l => l.id === draggedLinkId);
+                                const dropIndex = links.findIndex(l => l.id === dropLinkId);
+                                
+                                const draggedLink = links[draggedIndex];
+                                links.splice(draggedIndex, 1);
+                                links.splice(dropIndex, 0, draggedLink);
+                                
+                                saveToStorage();
+                                renderSections();
+                                showNotification('Link volgorde aangepast!');
+                            } else if (targetGrid) {
+                                const draggedLinkId = parseInt(link.dataset.linkId);
+                                const targetCategory = targetGrid.id.replace('links-', '');
+                                
+                                const linkIndex = links.findIndex(l => l.id === draggedLinkId);
+                                if (linkIndex !== -1) {
+                                    links[linkIndex].category = targetCategory;
+                                    saveToStorage();
+                                    renderSections();
+                                    showNotification('Link verplaatst naar andere sectie!');
+                                }
+                            }
+                            
+                            document.querySelectorAll('.dragging').forEach(el => el.classList.remove('dragging'));
+                            document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+                            document.removeEventListener('mousemove', onMouseMove);
+                            document.removeEventListener('mouseup', onMouseUp);
+                            
+                            draggedElement = null;
+                            draggedType = null;
+                        };
+                        
+                        document.addEventListener('mousemove', onMouseMove);
+                        document.addEventListener('mouseup', onMouseUp);
+                    });
+                    
+                    dragHandle.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                    });
+                }
+            });
+        }
+
+        // Search functionality
+        document.getElementById('searchInput').addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const sections = document.querySelectorAll('.section');
+            
+            sections.forEach(section => {
+                const linkItems = section.querySelectorAll('.link-item');
+                let hasVisibleItems = false;
+                
+                linkItems.forEach(item => {
+                    const linkId = parseInt(item.dataset.linkId);
+                    const linkData = links.find(l => l.id === linkId);
+                    
+                    const title = item.querySelector('.link-title').textContent.toLowerCase();
+                    const description = item.querySelector('.link-description').textContent.toLowerCase();
+                    const tags = linkData && linkData.tags ? linkData.tags.join(' ').toLowerCase() : '';
+                    
+                    if (title.includes(searchTerm) || description.includes(searchTerm) || tags.includes(searchTerm)) {
+                        item.style.display = 'flex';
+                        hasVisibleItems = true;
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+                
+                section.style.display = hasVisibleItems ? 'block' : 'none';
+            });
+        });
+
+        // Form submissions
+        document.getElementById('linkForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const tagsInput = formData.get('tags');
+            const tags = tagsInput ? tagsInput.split(',').map(tag => tag.trim()).filter(tag => tag) : [];
+            
+            const newLink = {
+                id: linkIdCounter++,
+                title: formData.get('title'),
+                url: formData.get('url'),
+                description: formData.get('description'),
+                category: formData.get('category'),
+                tags: tags
+            };
+            
+            links.push(newLink);
+            saveToStorage();
+            renderSections();
+            closeModals();
+            showNotification('Link toegevoegd!');
+        });
+
+        document.getElementById('sectionForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const newSection = {
+                id: formData.get('id'),
+                title: formData.get('title'),
+                icon: formData.get('icon') || 'M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z'
+            };
+            
+            if (sections.find(s => s.id === newSection.id)) {
+                alert('Een sectie met deze ID bestaat al');
+                return;
+            }
+            
+            sections.push(newSection);
+            saveToStorage();
+            renderSections();
+            updateCategoryOptions();
+            closeModals();
+            showNotification('Sectie toegevoegd!');
+        });
+
+        document.getElementById('editForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            
+            if (editingType === 'section') {
+                const category = editingItem.dataset.category;
+                const sectionIndex = sections.findIndex(s => s.id === category);
+                
+                if (sectionIndex !== -1) {
+                    const oldId = sections[sectionIndex].id;
+                    const newId = formData.get('id');
+                    
+                    sections[sectionIndex] = {
+                        id: newId,
+                        title: formData.get('title'),
+                        icon: formData.get('icon')
+                    };
+                    
+                    if (oldId !== newId) {
+                        links.forEach(link => {
+                            if (link.category === oldId) {
+                                link.category = newId;
+                            }
+                        });
+                    }
+                    
+                    saveToStorage();
+                    renderSections();
+                    updateCategoryOptions();
+                    showNotification('Sectie bijgewerkt!');
+                }
+            } else if (editingType === 'link') {
+                const linkId = parseInt(editingItem.dataset.linkId);
+                const linkIndex = links.findIndex(l => l.id === linkId);
+                
+                const tagsInput = formData.get('tags');
+                const tags = tagsInput ? tagsInput.split(',').map(tag => tag.trim()).filter(tag => tag) : [];
+                
+                const updatedLink = {
+                    id: linkId,
+                    title: formData.get('title'),
+                    url: formData.get('url'),
+                    description: formData.get('description'),
+                    category: formData.get('category'),
+                    tags: tags
+                };
+                
+                if (linkIndex !== -1) {
+                    links[linkIndex] = updatedLink;
+                    saveToStorage();
+                    renderSections();
+                    showNotification('Link bijgewerkt!');
+                }
+            }
+            
+            closeModals();
+        });
+
+        // Time functionality
+        function updateTime() {
+            const now = new Date();
+            
+            // Format time (24-hour format)
+            const timeString = now.toLocaleTimeString('nl-NL', {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                timeZone: 'Europe/Amsterdam'
+            });
+            
+            // Format date
+            const dateString = now.toLocaleDateString('nl-NL', {
+                weekday: 'short',
+                day: 'numeric',
+                month: 'short',
+                timeZone: 'Europe/Amsterdam'
+            });
+            
+            document.getElementById('timeDisplay').textContent = timeString;
+            document.getElementById('dateDisplay').textContent = dateString;
+        }
+
+        // Weather functionality
+        async function loadWeather() {
+            try {
+                // Veenendaal coordinates
+                const lat = 52.0287;
+                const lon = 5.5577;
+                
+                // Using Open-Meteo API for Veenendaal
+                const response = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&timezone=Europe/Amsterdam`);
+                const data = await response.json();
+                
+                if (data.current_weather) {
+                    const temp = Math.round(data.current_weather.temperature);
+                    const weatherCode = data.current_weather.weathercode;
+                    
+                    document.getElementById('weatherTemp').textContent = `${temp}°C`;
+                    document.getElementById('weatherDesc').textContent = getWeatherDescription(weatherCode);
+                    document.getElementById('weatherLocation').textContent = 'Veenendaal';
+                    document.getElementById('weatherIcon').textContent = getWeatherEmojiFromCode(weatherCode);
+                } else {
+                    throw new Error('No weather data');
+                }
+            } catch (error) {
+                console.log('Weather loading failed, using fallback');
+                loadFallbackWeather();
+            }
+        }
+
+        function getWeatherDescription(code) {
+            const descriptions = {
+                0: 'helder',
+                1: 'overwegend helder',
+                2: 'gedeeltelijk bewolkt',
+                3: 'bewolkt',
+                45: 'mistig',
+                48: 'ijsmist',
+                51: 'lichte motregen',
+                53: 'matige motregen',
+                55: 'dichte motregen',
+                61: 'lichte regen',
+                63: 'matige regen',
+                65: 'zware regen',
+                71: 'lichte sneeuw',
+                73: 'matige sneeuw',
+                75: 'zware sneeuw',
+                95: 'onweer'
+            };
+            return descriptions[code] || 'wisselend weer';
+        }
+
+        function getWeatherEmojiFromCode(code) {
+            if (code === 0) return '☀️';
+            if (code <= 3) return '⛅';
+            if (code <= 48) return '🌫️';
+            if (code <= 65) return '🌧️';
+            if (code <= 75) return '❄️';
+            if (code >= 95) return '⛈️';
+            return '🌤️';
+        }
+
+        // Fallback weather (when API fails)
+        function loadFallbackWeather() {
+            const fallbackWeather = {
+                temp: 16,
+                description: 'wisselend bewolkt',
+                location: 'Veenendaal',
+                icon: '⛅'
+            };
+            
+            document.getElementById('weatherTemp').textContent = `${fallbackWeather.temp}°C`;
+            document.getElementById('weatherDesc').textContent = fallbackWeather.description;
+            document.getElementById('weatherLocation').textContent = fallbackWeather.location;
+            document.getElementById('weatherIcon').textContent = fallbackWeather.icon;
+        }
+
+        // Notification system
+        function showNotification(message) {
+            const notification = document.createElement('div');
+            notification.className = 'notification';
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => notification.classList.add('show'), 100);
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Try to load from GitHub first, then localStorage, then defaults
+            let dataLoaded = false;
+            
+            // First try GitHub Pages
+            dataLoaded = await loadFromGitHub();
+            
+            // Fallback to localStorage
+            if (!dataLoaded) {
+                dataLoaded = loadFromStorage();
+            }
+            
+            // Final fallback to defaults
+            if (!dataLoaded) {
+                resetToDefaults();
+            }
+            
+            // Ensure all links have tags
+            links.forEach(link => {
+                if (!link.tags) link.tags = [];
+            });
+            
+            renderSections();
+            updateCategoryOptions();
+            
+            // Load weather with fallback
+            loadWeather();
+            
+            // Initialize time and update every second
+            updateTime();
+            setInterval(updateTime, 1000);
+            
+            // Refresh weather every 30 minutes
+            setInterval(loadWeather, 30 * 60 * 1000);
+            
+            // Handle link clicks - prevent drag from triggering navigation
+            document.addEventListener('click', function(e) {
+                if (e.target.closest('.link-control-btn') || e.target.closest('.drag-handle')) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    return;
+                }
+                
+                if (e.target.closest('.link-item')) {
+                    const linkItem = e.target.closest('.link-item');
+                    if (!linkItem.href || linkItem.href === '#') {
+                        e.preventDefault();
+                        showNotification('Link nog niet geconfigureerd!');
+                    }
+                }
+            });
+        });
     </script>
 </body>
 </html>
