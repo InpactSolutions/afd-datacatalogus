@@ -618,100 +618,124 @@
                         acceptatieParsed = parseRhionCSV(acceptatieContent, 'acceptatie');
                     }
 
-                    // Combineer de data
-                    const combinedData = new Map();
+                    console.log('ANVA data keys voorbeeld:', Object.keys(anvaData).slice(0, 10));
+                    console.log('AFD data records:', data.length);
+
+                    // Combineer alle unieke paden/attributen
+                    const allRows = new Map();
                     
-                    // Voeg premie data toe
+                    // Verwerk premie data
                     premieParsed.data.forEach(row => {
-                        if (row.Attribuut && row.Entiteit) {
-                            const key = `${row.Entiteit}_${row.Attribuut}`;
-                            combinedData.set(key, {
-                                ...row,
-                                VerplichtPremie: row.Verplicht || '',
-                                VerplichtAcceptatie: '',
-                                Bron: 'Premie'
-                            });
-                        }
-                    });
-
-                    // Voeg acceptatie data toe
-                    if (acceptatieParsed) {
-                        acceptatieParsed.data.forEach(row => {
-                            if (row.Attribuut && row.Entiteit) {
-                                const key = `${row.Entiteit}_${row.Attribuut}`;
-                                const existing = combinedData.get(key);
-                                if (existing) {
-                                    // Update bestaande met acceptatie info
-                                    existing.VerplichtAcceptatie = row.Verplicht || '';
-                                    existing.Bron = 'Beide';
-                                    // Overschrijf andere velden indien aanwezig in acceptatie
-                                    Object.keys(row).forEach(k => {
-                                        if (row[k] && k !== 'Verplicht') {
-                                            existing[k] = row[k];
-                                        }
-                                    });
-                                } else {
-                                    // Nieuw item alleen in acceptatie
-                                    combinedData.set(key, {
-                                        ...row,
-                                        VerplichtPremie: '',
-                                        VerplichtAcceptatie: row.Verplicht || '',
-                                        Bron: 'Acceptatie'
-                                    });
-                                }
-                            }
-                        });
-                    }
-
-                    // Voeg ANVA data toe
-                    const enrichedData = [];
-                    for (const [key, row] of combinedData) {
-                        // ANVA data opzoeken
-                        const anvaInfo = anvaData[key];
-                        
-                        // AFD record opzoeken voor extra metadata
-                        const afdRecord = data.find(d => 
-                            d.Entiteitcode === row.Entiteit && 
-                            d.Attribuutcode === row.Attribuut
-                        );
-
-                        // Bepaal definitieve verplicht status
-                        let verplichtStatus = '';
-                        if (row.VerplichtPremie === 'V' || row.VerplichtAcceptatie === 'V') {
-                            verplichtStatus = 'V';
-                        } else if (row.VerplichtPremie === 'O' && row.VerplichtAcceptatie === 'O') {
-                            verplichtStatus = 'O';
-                        } else if (row.VerplichtPremie === 'O' || row.VerplichtAcceptatie === 'O') {
-                            verplichtStatus = 'O';
-                        }
-
-                        enrichedData.push({
+                        const key = `${row.Pad}`;
+                        const existing = allRows.get(key) || {
                             Pad: row.Pad,
                             Entiteit: row.Entiteit,
                             Attribuut: row.Attribuut,
+                            Naam: row.Naam || '',
+                            Omschrijving: row.Omschrijving || '',
+                            Codelijst: row.Codelijst || '',
+                            CodelijstSubset: row.CodelijstSubset || '',
+                            EigenOmschrijving: row.EigenOmschrijving || ''
+                        };
+                        
+                        existing.VerplichtPremie = row.Verplicht || '';
+                        existing.InPremie = 'X';
+                        
+                        allRows.set(key, existing);
+                    });
+
+                    // Verwerk acceptatie data
+                    if (acceptatieParsed) {
+                        acceptatieParsed.data.forEach(row => {
+                            const key = `${row.Pad}`;
+                            const existing = allRows.get(key) || {
+                                Pad: row.Pad,
+                                Entiteit: row.Entiteit,
+                                Attribuut: row.Attribuut,
+                                Naam: row.Naam || '',
+                                Omschrijving: row.Omschrijving || '',
+                                Codelijst: row.Codelijst || '',
+                                CodelijstSubset: row.CodelijstSubset || '',
+                                EigenOmschrijving: row.EigenOmschrijving || ''
+                            };
+                            
+                            existing.VerplichtAcceptatie = row.Verplicht || '';
+                            existing.InAcceptatie = 'X';
+                            
+                            // Update andere velden als ze in acceptatie gevuld zijn
+                            if (row.Naam) existing.Naam = row.Naam;
+                            if (row.Omschrijving) existing.Omschrijving = row.Omschrijving;
+                            if (row.Codelijst) existing.Codelijst = row.Codelijst;
+                            
+                            allRows.set(key, existing);
+                        });
+                    }
+
+                    // Verrijk met AFD en ANVA data
+                    const enrichedData = [];
+                    for (const [key, row] of allRows) {
+                        // Zoek AFD record
+                        const afdKey = `${row.Entiteit}_${row.Attribuut}`;
+                        const afdRecord = data.find(d => 
+                            d.Entiteitcode === row.Entiteit && 
+                            d.Attribuutcode === row.Attribuut &&
+                            d['Entiteit/Attribuut'] === 'A'
+                        );
+                        
+                        // ANVA data opzoeken - probeer verschillende formats
+                        let anvaInfo = null;
+                        
+                        // Probeer eerst directe lookup
+                        if (anvaData[afdKey]) {
+                            anvaInfo = anvaData[afdKey];
+                            console.log(`ANVA gevonden voor ${afdKey}`);
+                        } 
+                        // Probeer met punt notatie
+                        else if (anvaData[`${row.Entiteit}.${row.Attribuut}`]) {
+                            anvaInfo = anvaData[`${row.Entiteit}.${row.Attribuut}`];
+                            console.log(`ANVA gevonden voor ${row.Entiteit}.${row.Attribuut}`);
+                        }
+                        // Probeer hoofdletters
+                        else if (anvaData[afdKey.toUpperCase()]) {
+                            anvaInfo = anvaData[afdKey.toUpperCase()];
+                            console.log(`ANVA gevonden voor ${afdKey.toUpperCase()}`);
+                        }
+                        
+                        const enrichedRow = {
+                            Pad: row.Pad,
+                            Entiteit: row.Entiteit,
+                            Attribuut: row.Attribuut,
+                            'AFD Attribuut': afdKey,
                             Naam: row.Naam || (afdRecord ? afdRecord.Naam : ''),
                             Omschrijving: row.Omschrijving || (afdRecord ? afdRecord.Omschrijving : ''),
-                            ANVA_Code: anvaInfo ? anvaInfo.code : '',
-                            ANVA_Omschrijving: anvaInfo ? anvaInfo.omschrijving : '',
+                            'ANVA Label': anvaInfo ? anvaInfo.code : '',
+                            'ANVA Omschrijving': anvaInfo ? anvaInfo.omschrijving : '',
                             Datatype: afdRecord ? afdRecord.Datatype : '',
                             Formaat: afdRecord ? afdRecord.Formaat : '',
-                            Verplicht: verplichtStatus,
-                            VerplichtPremie: row.VerplichtPremie,
-                            VerplichtAcceptatie: row.VerplichtAcceptatie,
+                            Lengte: afdRecord ? afdRecord.Lengte : '',
+                            Decimalen: afdRecord ? afdRecord.Decimalen : '',
+                            Premie: row.InPremie || '',
+                            Acceptatie: row.InAcceptatie || '',
+                            'Verplicht Premie': row.VerplichtPremie || '',
+                            'Verplicht Acceptatie': row.VerplichtAcceptatie || '',
                             Codelijst: row.Codelijst || (afdRecord ? afdRecord.Codelijst : ''),
-                            Bron: row.Bron,
-                            EigenOmschrijving: row.EigenOmschrijving || ''
-                        });
+                            CodelijstSubset: row.CodelijstSubset || '',
+                            'Default Waarde': afdRecord ? afdRecord.Defaultwaarde : '',
+                            'Eigen Omschrijving': row.EigenOmschrijving || ''
+                        };
+                        
+                        enrichedData.push(enrichedRow);
                     }
 
                     // Sorteer op pad
                     enrichedData.sort((a, b) => a.Pad.localeCompare(b.Pad));
 
-                    console.log('Verrijkte data:', enrichedData.slice(0, 5));
-                    console.log('ANVA data beschikbaar:', Object.keys(anvaData).length);
-
+                    console.log(`Totaal verrijkte rijen: ${enrichedData.length}`);
+                    console.log(`Rijen met ANVA: ${enrichedData.filter(r => r['ANVA Label']).length}`);
+                    
                     setResult(enrichedData);
                 } catch (err) {
+                    console.error('Error in processing:', err);
                     setError(err.message);
                 } finally {
                     setProcessing(false);
@@ -721,23 +745,28 @@
             const downloadCSV = () => {
                 if (!result) return;
 
-                // Maak CSV content
+                // Maak CSV content zoals in Format Analyse bestand
                 const headers = [
                     'Pad',
                     'Entiteit', 
                     'Attribuut',
+                    'AFD Attribuut',
                     'Naam',
                     'Omschrijving',
-                    'ANVA_Code',
-                    'ANVA_Omschrijving',
+                    'ANVA Label',
+                    'ANVA Omschrijving',
                     'Datatype',
                     'Formaat',
-                    'Verplicht',
-                    'VerplichtPremie',
-                    'VerplichtAcceptatie',
+                    'Lengte',
+                    'Decimalen',
+                    'Premie',
+                    'Acceptatie',
+                    'Verplicht Premie',
+                    'Verplicht Acceptatie',
                     'Codelijst',
-                    'Bron',
-                    'EigenOmschrijving'
+                    'CodelijstSubset',
+                    'Default Waarde',
+                    'Eigen Omschrijving'
                 ];
 
                 const csvContent = [
@@ -918,9 +947,12 @@
                                 <div className="space-y-4">
                                     <div className={`p-4 rounded-lg ${darkMode ? 'bg-gray-700' : 'bg-green-50'}`}>
                                         <h3 className="font-semibold mb-2">Verwerking succesvol!</h3>
-                                        <p className="text-sm">
-                                            {result.length} attributen verwerkt
-                                        </p>
+                                        <div className="text-sm space-y-1">
+                                            <p>{result.length} totaal attributen verwerkt</p>
+                                            <p>{result.filter(r => r.Premie === 'X').length} in premie bestand</p>
+                                            <p>{result.filter(r => r.Acceptatie === 'X').length} in acceptatie bestand</p>
+                                            <p>{result.filter(r => r['ANVA Label']).length} met ANVA code</p>
+                                        </div>
                                     </div>
 
                                     <div className="overflow-x-auto">
@@ -930,8 +962,9 @@
                                                     <th className="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider">Pad</th>
                                                     <th className="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider">Attribuut</th>
                                                     <th className="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider">ANVA</th>
-                                                    <th className="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider">Verplicht</th>
-                                                    <th className="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider">Bron</th>
+                                                    <th className="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider">Premie</th>
+                                                    <th className="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider">Accept</th>
+                                                    <th className="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider">In CSV</th>
                                                 </tr>
                                             </thead>
                                             <tbody className={`divide-y ${darkMode ? 'divide-gray-700' : 'divide-gray-200'}`}>
@@ -939,33 +972,38 @@
                                                     <tr key={index}>
                                                         <td className="px-3 py-2 text-sm">{row.Pad}</td>
                                                         <td className="px-3 py-2 text-sm font-mono">{row.Entiteit}_{row.Attribuut}</td>
-                                                        <td className="px-3 py-2 text-sm">{row.ANVA_Code}</td>
+                                                        <td className="px-3 py-2 text-sm">{row['ANVA Label']}</td>
+                                                        <td className="px-3 py-2 text-sm">
+                                                            {row['Verplicht Premie'] && (
+                                                                <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium ${
+                                                                    row['Verplicht Premie'] === 'V' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800'
+                                                                }`}>
+                                                                    {row['Verplicht Premie']}
+                                                                </span>
+                                                            )}
+                                                        </td>
+                                                        <td className="px-3 py-2 text-sm">
+                                                            {row['Verplicht Acceptatie'] && (
+                                                                <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium ${
+                                                                    row['Verplicht Acceptatie'] === 'V' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800'
+                                                                }`}>
+                                                                    {row['Verplicht Acceptatie']}
+                                                                </span>
+                                                            )}
+                                                        </td>
                                                         <td className="px-3 py-2 text-sm">
                                                             <div className="flex items-center space-x-1">
-                                                                {row.VerplichtPremie && (
-                                                                    <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium ${
-                                                                        row.VerplichtPremie === 'V' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800'
-                                                                    }`}>
-                                                                        P:{row.VerplichtPremie}
+                                                                {row.Premie === 'X' && (
+                                                                    <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
+                                                                        P
                                                                     </span>
                                                                 )}
-                                                                {row.VerplichtAcceptatie && (
-                                                                    <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium ${
-                                                                        row.VerplichtAcceptatie === 'V' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800'
-                                                                    }`}>
-                                                                        A:{row.VerplichtAcceptatie}
+                                                                {row.Acceptatie === 'X' && (
+                                                                    <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                                                                        A
                                                                     </span>
                                                                 )}
                                                             </div>
-                                                        </td>
-                                                        <td className="px-3 py-2 text-sm">
-                                                            <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium ${
-                                                                row.Bron === 'Beide' ? 'bg-blue-100 text-blue-800' :
-                                                                row.Bron === 'Premie' ? 'bg-green-100 text-green-800' :
-                                                                'bg-yellow-100 text-yellow-800'
-                                                            }`}>
-                                                                {row.Bron}
-                                                            </span>
                                                         </td>
                                                     </tr>
                                                 ))}
