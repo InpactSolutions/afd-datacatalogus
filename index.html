@@ -618,19 +618,25 @@
                         acceptatieParsed = parseRhionCSV(acceptatieContent, 'acceptatie');
                     }
 
-                    console.log('ANVA data keys voorbeeld:', Object.keys(anvaData).slice(0, 10));
+                    console.log('ANVA data beschikbaar:', Object.keys(anvaData).length);
+                    console.log('ANVA keys voorbeeld:', Object.keys(anvaData).slice(0, 10));
                     console.log('AFD data records:', data.length);
 
-                    // Combineer alle unieke paden/attributen
-                    const allRows = new Map();
+                    // Gebruik Map met pad als key om duplicaten te voorkomen
+                    const rowsByPath = new Map();
                     
-                    // Verwerk premie data
-                    premieParsed.data.forEach(row => {
-                        const key = `${row.Pad}`;
-                        const existing = allRows.get(key) || {
-                            Pad: row.Pad,
-                            Entiteit: row.Entiteit,
-                            Attribuut: row.Attribuut,
+                    // Verwerk ALLE premie rijen
+                    premieParsed.data.forEach((row, index) => {
+                        const path = row.Pad;
+                        if (!path) {
+                            console.warn(`Premie rij ${index} heeft geen pad`);
+                            return;
+                        }
+                        
+                        const existing = rowsByPath.get(path) || {
+                            Pad: path,
+                            Entiteit: row.Entiteit || '',
+                            Attribuut: row.Attribuut || '',
                             Naam: row.Naam || '',
                             Omschrijving: row.Omschrijving || '',
                             Codelijst: row.Codelijst || '',
@@ -641,17 +647,24 @@
                         existing.VerplichtPremie = row.Verplicht || '';
                         existing.InPremie = 'X';
                         
-                        allRows.set(key, existing);
+                        rowsByPath.set(path, existing);
                     });
+
+                    console.log(`Na premie: ${rowsByPath.size} unieke paden`);
 
                     // Verwerk acceptatie data
                     if (acceptatieParsed) {
-                        acceptatieParsed.data.forEach(row => {
-                            const key = `${row.Pad}`;
-                            const existing = allRows.get(key) || {
-                                Pad: row.Pad,
-                                Entiteit: row.Entiteit,
-                                Attribuut: row.Attribuut,
+                        acceptatieParsed.data.forEach((row, index) => {
+                            const path = row.Pad;
+                            if (!path) {
+                                console.warn(`Acceptatie rij ${index} heeft geen pad`);
+                                return;
+                            }
+                            
+                            const existing = rowsByPath.get(path) || {
+                                Pad: path,
+                                Entiteit: row.Entiteit || '',
+                                Attribuut: row.Attribuut || '',
                                 Naam: row.Naam || '',
                                 Omschrijving: row.Omschrijving || '',
                                 Codelijst: row.Codelijst || '',
@@ -662,65 +675,89 @@
                             existing.VerplichtAcceptatie = row.Verplicht || '';
                             existing.InAcceptatie = 'X';
                             
-                            // Update andere velden als ze in acceptatie gevuld zijn
+                            // Update velden als ze in acceptatie gevuld zijn
                             if (row.Naam) existing.Naam = row.Naam;
                             if (row.Omschrijving) existing.Omschrijving = row.Omschrijving;
                             if (row.Codelijst) existing.Codelijst = row.Codelijst;
+                            if (row.Attribuut) existing.Attribuut = row.Attribuut;
+                            if (row.Entiteit) existing.Entiteit = row.Entiteit;
                             
-                            allRows.set(key, existing);
+                            rowsByPath.set(path, existing);
                         });
+                        
+                        console.log(`Na acceptatie: ${rowsByPath.size} unieke paden`);
                     }
 
                     // Verrijk met AFD en ANVA data
                     const enrichedData = [];
-                    for (const [key, row] of allRows) {
-                        // Zoek AFD record
-                        const afdKey = `${row.Entiteit}_${row.Attribuut}`;
-                        const afdRecord = data.find(d => 
-                            d.Entiteitcode === row.Entiteit && 
-                            d.Attribuutcode === row.Attribuut &&
-                            d['Entiteit/Attribuut'] === 'A'
-                        );
-                        
-                        // ANVA data opzoeken - probeer verschillende formats
-                        let anvaInfo = null;
-                        
-                        // Probeer eerst directe lookup
-                        if (anvaData[afdKey]) {
-                            anvaInfo = anvaData[afdKey];
-                            console.log(`ANVA gevonden voor ${afdKey}`);
-                        } 
-                        // Probeer met punt notatie
-                        else if (anvaData[`${row.Entiteit}.${row.Attribuut}`]) {
-                            anvaInfo = anvaData[`${row.Entiteit}.${row.Attribuut}`];
-                            console.log(`ANVA gevonden voor ${row.Entiteit}.${row.Attribuut}`);
+                    let anvaFound = 0;
+                    
+                    for (const [path, row] of rowsByPath) {
+                        // Maak AFD key
+                        let afdKey = '';
+                        if (row.Entiteit && row.Attribuut) {
+                            afdKey = `${row.Entiteit}_${row.Attribuut}`;
                         }
-                        // Probeer hoofdletters
-                        else if (anvaData[afdKey.toUpperCase()]) {
-                            anvaInfo = anvaData[afdKey.toUpperCase()];
-                            console.log(`ANVA gevonden voor ${afdKey.toUpperCase()}`);
+                        
+                        // Zoek AFD record
+                        let afdRecord = null;
+                        if (row.Entiteit && row.Attribuut) {
+                            afdRecord = data.find(d => 
+                                d.Entiteitcode === row.Entiteit && 
+                                d.Attribuutcode === row.Attribuut &&
+                                d['Entiteit/Attribuut'] === 'A'
+                            );
+                        }
+                        
+                        // ANVA lookup - probeer verschillende formats
+                        let anvaInfo = null;
+                        let anvaCode = '';
+                        let anvaOmschrijving = '';
+                        
+                        if (afdKey) {
+                            // Directe lookup
+                            if (anvaData[afdKey]) {
+                                anvaInfo = anvaData[afdKey];
+                                anvaCode = anvaInfo.code || '';
+                                anvaOmschrijving = anvaInfo.omschrijving || '';
+                                anvaFound++;
+                            }
+                            // Uppercase
+                            else if (anvaData[afdKey.toUpperCase()]) {
+                                anvaInfo = anvaData[afdKey.toUpperCase()];
+                                anvaCode = anvaInfo.code || '';
+                                anvaOmschrijving = anvaInfo.omschrijving || '';
+                                anvaFound++;
+                            }
+                            // Met punt
+                            else if (row.Entiteit && row.Attribuut && anvaData[`${row.Entiteit}.${row.Attribuut}`]) {
+                                anvaInfo = anvaData[`${row.Entiteit}.${row.Attribuut}`];
+                                anvaCode = anvaInfo.code || '';
+                                anvaOmschrijving = anvaInfo.omschrijving || '';
+                                anvaFound++;
+                            }
                         }
                         
                         const enrichedRow = {
-                            Pad: row.Pad,
-                            Entiteit: row.Entiteit,
-                            Attribuut: row.Attribuut,
+                            Pad: path,
+                            Entiteit: row.Entiteit || '',
+                            Attribuut: row.Attribuut || '',
                             'AFD Attribuut': afdKey,
                             Naam: row.Naam || (afdRecord ? afdRecord.Naam : ''),
                             Omschrijving: row.Omschrijving || (afdRecord ? afdRecord.Omschrijving : ''),
-                            'ANVA Label': anvaInfo ? anvaInfo.code : '',
-                            'ANVA Omschrijving': anvaInfo ? anvaInfo.omschrijving : '',
-                            Datatype: afdRecord ? afdRecord.Datatype : '',
-                            Formaat: afdRecord ? afdRecord.Formaat : '',
-                            Lengte: afdRecord ? afdRecord.Lengte : '',
-                            Decimalen: afdRecord ? afdRecord.Decimalen : '',
+                            'ANVA Label': anvaCode,
+                            'ANVA Omschrijving': anvaOmschrijving,
+                            Datatype: afdRecord ? (afdRecord.Datatype || '') : '',
+                            Formaat: afdRecord ? (afdRecord.Formaat || '') : '',
+                            Lengte: afdRecord ? (afdRecord.Lengte || '') : '',
+                            Decimalen: afdRecord ? (afdRecord.Decimalen || '') : '',
                             Premie: row.InPremie || '',
                             Acceptatie: row.InAcceptatie || '',
                             'Verplicht Premie': row.VerplichtPremie || '',
                             'Verplicht Acceptatie': row.VerplichtAcceptatie || '',
                             Codelijst: row.Codelijst || (afdRecord ? afdRecord.Codelijst : ''),
                             CodelijstSubset: row.CodelijstSubset || '',
-                            'Default Waarde': afdRecord ? afdRecord.Defaultwaarde : '',
+                            'Default Waarde': afdRecord ? (afdRecord.Defaultwaarde || '') : '',
                             'Eigen Omschrijving': row.EigenOmschrijving || ''
                         };
                         
@@ -728,10 +765,11 @@
                     }
 
                     // Sorteer op pad
-                    enrichedData.sort((a, b) => a.Pad.localeCompare(b.Pad));
+                    enrichedData.sort((a, b) => (a.Pad || '').localeCompare(b.Pad || ''));
 
                     console.log(`Totaal verrijkte rijen: ${enrichedData.length}`);
-                    console.log(`Rijen met ANVA: ${enrichedData.filter(r => r['ANVA Label']).length}`);
+                    console.log(`Rijen met ANVA: ${anvaFound}`);
+                    console.log('Voorbeeld verrijkte rij:', enrichedData[0]);
                     
                     setResult(enrichedData);
                 } catch (err) {
