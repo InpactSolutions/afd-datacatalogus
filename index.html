@@ -646,9 +646,10 @@
                         existing.VerplichtPremie = row.Verplicht || '';
                         existing.InPremie = 'X';
                         
-                        // Zet de geparseerde entiteit/attribuut
+                        // Zet de geparseerde waarden en AFD key
                         if (row.ParsedEntiteit) existing.ParsedEntiteit = row.ParsedEntiteit;
                         if (row.ParsedAttribuutCode) existing.ParsedAttribuutCode = row.ParsedAttribuutCode;
+                        if (row.AFDKey) existing.AFDKey = row.AFDKey;
                         
                         rowsByPath.set(path, existing);
                     });
@@ -683,9 +684,10 @@
                             if (row.Codelijst) existing.Codelijst = row.Codelijst;
                             if (row.Attribuut) existing.Attribuut = row.Attribuut;
                             
-                            // Zet de geparseerde entiteit/attribuut
+                            // Zet de geparseerde waarden en AFD key
                             if (row.ParsedEntiteit) existing.ParsedEntiteit = row.ParsedEntiteit;
                             if (row.ParsedAttribuutCode) existing.ParsedAttribuutCode = row.ParsedAttribuutCode;
+                            if (row.AFDKey) existing.AFDKey = row.AFDKey;
                             
                             rowsByPath.set(path, existing);
                         });
