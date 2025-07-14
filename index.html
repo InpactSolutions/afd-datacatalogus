@@ -635,7 +635,6 @@
                         
                         const existing = rowsByPath.get(path) || {
                             Pad: path,
-                            Entiteit: row.Entiteit || '',
                             Attribuut: row.Attribuut || '',
                             Naam: row.Naam || '',
                             Omschrijving: row.Omschrijving || '',
@@ -646,6 +645,10 @@
                         
                         existing.VerplichtPremie = row.Verplicht || '';
                         existing.InPremie = 'X';
+                        
+                        // Zet de geparseerde entiteit/attribuut
+                        if (row.ParsedEntiteit) existing.ParsedEntiteit = row.ParsedEntiteit;
+                        if (row.ParsedAttribuutCode) existing.ParsedAttribuutCode = row.ParsedAttribuutCode;
                         
                         rowsByPath.set(path, existing);
                     });
@@ -663,7 +666,6 @@
                             
                             const existing = rowsByPath.get(path) || {
                                 Pad: path,
-                                Entiteit: row.Entiteit || '',
                                 Attribuut: row.Attribuut || '',
                                 Naam: row.Naam || '',
                                 Omschrijving: row.Omschrijving || '',
@@ -680,7 +682,10 @@
                             if (row.Omschrijving) existing.Omschrijving = row.Omschrijving;
                             if (row.Codelijst) existing.Codelijst = row.Codelijst;
                             if (row.Attribuut) existing.Attribuut = row.Attribuut;
-                            if (row.Entiteit) existing.Entiteit = row.Entiteit;
+                            
+                            // Zet de geparseerde entiteit/attribuut
+                            if (row.ParsedEntiteit) existing.ParsedEntiteit = row.ParsedEntiteit;
+                            if (row.ParsedAttribuutCode) existing.ParsedAttribuutCode = row.ParsedAttribuutCode;
                             
                             rowsByPath.set(path, existing);
                         });
@@ -691,56 +696,82 @@
                     // Verrijk met AFD en ANVA data
                     const enrichedData = [];
                     let anvaFound = 0;
+                    let index = 0;
                     
                     for (const [path, row] of rowsByPath) {
-                        // Maak AFD key
+                        index++;
+                        // Bepaal entiteit en attribuutcode
+                        let entiteitCode = '';
+                        let attribuutCode = '';
                         let afdKey = '';
-                        if (row.Entiteit && row.Attribuut) {
-                            afdKey = `${row.Entiteit}_${row.Attribuut}`;
+                        
+                        // Als we een volledig attribuut hebben (bijv. PP_INGDAT)
+                        if (row.Attribuut && row.Attribuut.includes('_')) {
+                            const parts = row.Attribuut.split('_');
+                            entiteitCode = parts[0];
+                            attribuutCode = parts.slice(1).join('_');
+                            afdKey = row.Attribuut; // Het volledige attribuut IS de AFD key
+                        } 
+                        // Gebruik geparseerde waarden als fallback
+                        else if (row.ParsedEntiteit && row.ParsedAttribuutCode) {
+                            entiteitCode = row.ParsedEntiteit;
+                            attribuutCode = row.ParsedAttribuutCode;
+                            afdKey = `${entiteitCode}_${attribuutCode}`;
+                        }
+                        // Als we alleen een attribuut hebben zonder underscore
+                        else if (row.Attribuut) {
+                            // Haal entiteit uit pad
+                            const padParts = path.split('/').filter(p => p);
+                            if (padParts.length > 0) {
+                                entiteitCode = padParts[padParts.length - 1];
+                                attribuutCode = row.Attribuut;
+                                afdKey = `${entiteitCode}_${attribuutCode}`;
+                            }
                         }
                         
                         // Zoek AFD record
                         let afdRecord = null;
-                        if (row.Entiteit && row.Attribuut) {
+                        if (entiteitCode && attribuutCode) {
                             afdRecord = data.find(d => 
-                                d.Entiteitcode === row.Entiteit && 
-                                d.Attribuutcode === row.Attribuut &&
+                                d.Entiteitcode === entiteitCode && 
+                                d.Attribuutcode === attribuutCode &&
                                 d['Entiteit/Attribuut'] === 'A'
                             );
                         }
                         
-                        // ANVA lookup - probeer verschillende formats
-                        let anvaInfo = null;
+                        // ANVA lookup
                         let anvaCode = '';
                         let anvaOmschrijving = '';
                         
                         if (afdKey) {
+                            // Debug eerste paar lookups
+                            if (index < 5) {
+                                console.log(`ANVA lookup voor ${afdKey}`);
+                            }
+                            
                             // Directe lookup
                             if (anvaData[afdKey]) {
-                                anvaInfo = anvaData[afdKey];
-                                anvaCode = anvaInfo.code || '';
-                                anvaOmschrijving = anvaInfo.omschrijving || '';
+                                anvaCode = anvaData[afdKey].code || '';
+                                anvaOmschrijving = anvaData[afdKey].omschrijving || '';
                                 anvaFound++;
                             }
-                            // Uppercase
+                            // Probeer uppercase
                             else if (anvaData[afdKey.toUpperCase()]) {
-                                anvaInfo = anvaData[afdKey.toUpperCase()];
-                                anvaCode = anvaInfo.code || '';
-                                anvaOmschrijving = anvaInfo.omschrijving || '';
+                                anvaCode = anvaData[afdKey.toUpperCase()].code || '';
+                                anvaOmschrijving = anvaData[afdKey.toUpperCase()].omschrijving || '';
                                 anvaFound++;
                             }
-                            // Met punt
-                            else if (row.Entiteit && row.Attribuut && anvaData[`${row.Entiteit}.${row.Attribuut}`]) {
-                                anvaInfo = anvaData[`${row.Entiteit}.${row.Attribuut}`];
-                                anvaCode = anvaInfo.code || '';
-                                anvaOmschrijving = anvaInfo.omschrijving || '';
+                            // Probeer lowercase
+                            else if (anvaData[afdKey.toLowerCase()]) {
+                                anvaCode = anvaData[afdKey.toLowerCase()].code || '';
+                                anvaOmschrijving = anvaData[afdKey.toLowerCase()].omschrijving || '';
                                 anvaFound++;
                             }
                         }
                         
                         const enrichedRow = {
                             Pad: path,
-                            Entiteit: row.Entiteit || '',
+                            Entiteit: entiteitCode,
                             Attribuut: row.Attribuut || '',
                             'AFD Attribuut': afdKey,
                             Naam: row.Naam || (afdRecord ? afdRecord.Naam : ''),
