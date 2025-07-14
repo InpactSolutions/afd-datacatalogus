@@ -506,8 +506,8 @@
             }
         };
 
-        // Rhion Import Modal Component
-        function RhionImportModal({ isOpen, onClose, darkMode, anvaData, data }) {
+        // ANVA Verrijking Modal Component
+        function ANVAVerrijkingModal({ isOpen, onClose, darkMode, anvaData, data }) {
             const [premieFile, setPremieFile] = useState(null);
             const [acceptatieFile, setAcceptatieFile] = useState(null);
             const [processing, setProcessing] = useState(false);
@@ -551,7 +551,7 @@
                 }
             };
 
-            const parseRhionCSV = (content) => {
+            const parseRhionCSV = (content, type) => {
                 const lines = content.split('\n');
                 const dataStart = lines.findIndex(line => line.includes('Pad;Attribuut;'));
                 
@@ -561,6 +561,9 @@
                 
                 const headers = lines[dataStart].split(';').map(h => h.trim());
                 const data = [];
+                
+                // Vind de kolom met V/O waarden (premieBerekening_aanroep of Acceptatie_aanroep)
+                const verplichtheidKolom = headers.find(h => h.includes('_aanroep'));
                 
                 for (let i = dataStart + 1; i < lines.length; i++) {
                     const line = lines[i].trim();
@@ -575,14 +578,27 @@
                         const pad = row.Pad || '';
                         const parts = pad.split('/');
                         if (parts.length >= 2) {
-                            row.Entiteit = parts[parts.length - 2];
+                            // Neem het laatste deel voor attribuut, tweede laatste voor entiteit
+                            const attribuut = parts[parts.length - 1];
+                            const entiteit = parts[parts.length - 2];
+                            
+                            // Alleen verwerken als het een attribuut is (niet een entiteit)
+                            if (attribuut && attribuut !== entiteit) {
+                                row.Entiteit = entiteit;
+                                row.Attribuut = attribuut;
+                                
+                                // Verwerk V/O waarde
+                                if (verplichtheidKolom) {
+                                    row.Verplicht = row[verplichtheidKolom];
+                                }
+                                
+                                data.push(row);
+                            }
                         }
-                        
-                        data.push(row);
                     }
                 }
                 
-                return { headers, data };
+                return { headers, data, verplichtheidKolom };
             };
 
             const processFiles = async () => {
@@ -593,13 +609,13 @@
                 try {
                     // Lees premie bestand
                     const premieContent = await premieFile.text();
-                    const premieParsed = parseRhionCSV(premieContent);
+                    const premieParsed = parseRhionCSV(premieContent, 'premie');
                     
                     // Optioneel: lees acceptatie bestand
                     let acceptatieParsed = null;
                     if (acceptatieFile) {
                         const acceptatieContent = await acceptatieFile.text();
-                        acceptatieParsed = parseRhionCSV(acceptatieContent);
+                        acceptatieParsed = parseRhionCSV(acceptatieContent, 'acceptatie');
                     }
 
                     // Combineer de data
@@ -607,30 +623,39 @@
                     
                     // Voeg premie data toe
                     premieParsed.data.forEach(row => {
-                        if (row.Attribuut) {
+                        if (row.Attribuut && row.Entiteit) {
                             const key = `${row.Entiteit}_${row.Attribuut}`;
                             combinedData.set(key, {
                                 ...row,
+                                VerplichtPremie: row.Verplicht || '',
+                                VerplichtAcceptatie: '',
                                 Bron: 'Premie'
                             });
                         }
                     });
 
-                    // Voeg acceptatie data toe (overschrijft premie indien aanwezig)
+                    // Voeg acceptatie data toe
                     if (acceptatieParsed) {
                         acceptatieParsed.data.forEach(row => {
-                            if (row.Attribuut) {
+                            if (row.Attribuut && row.Entiteit) {
                                 const key = `${row.Entiteit}_${row.Attribuut}`;
                                 const existing = combinedData.get(key);
                                 if (existing) {
-                                    combinedData.set(key, {
-                                        ...existing,
-                                        ...row,
-                                        Bron: 'Beide'
+                                    // Update bestaande met acceptatie info
+                                    existing.VerplichtAcceptatie = row.Verplicht || '';
+                                    existing.Bron = 'Beide';
+                                    // Overschrijf andere velden indien aanwezig in acceptatie
+                                    Object.keys(row).forEach(k => {
+                                        if (row[k] && k !== 'Verplicht') {
+                                            existing[k] = row[k];
+                                        }
                                     });
                                 } else {
+                                    // Nieuw item alleen in acceptatie
                                     combinedData.set(key, {
                                         ...row,
+                                        VerplichtPremie: '',
+                                        VerplichtAcceptatie: row.Verplicht || '',
                                         Bron: 'Acceptatie'
                                     });
                                 }
@@ -641,11 +666,24 @@
                     // Voeg ANVA data toe
                     const enrichedData = [];
                     for (const [key, row] of combinedData) {
+                        // ANVA data opzoeken
                         const anvaInfo = anvaData[key];
+                        
+                        // AFD record opzoeken voor extra metadata
                         const afdRecord = data.find(d => 
                             d.Entiteitcode === row.Entiteit && 
                             d.Attribuutcode === row.Attribuut
                         );
+
+                        // Bepaal definitieve verplicht status
+                        let verplichtStatus = '';
+                        if (row.VerplichtPremie === 'V' || row.VerplichtAcceptatie === 'V') {
+                            verplichtStatus = 'V';
+                        } else if (row.VerplichtPremie === 'O' && row.VerplichtAcceptatie === 'O') {
+                            verplichtStatus = 'O';
+                        } else if (row.VerplichtPremie === 'O' || row.VerplichtAcceptatie === 'O') {
+                            verplichtStatus = 'O';
+                        }
 
                         enrichedData.push({
                             Pad: row.Pad,
@@ -657,7 +695,9 @@
                             ANVA_Omschrijving: anvaInfo ? anvaInfo.omschrijving : '',
                             Datatype: afdRecord ? afdRecord.Datatype : '',
                             Formaat: afdRecord ? afdRecord.Formaat : '',
-                            Verplicht: row[Object.keys(row).find(k => k.includes('_aanroep'))] || '',
+                            Verplicht: verplichtStatus,
+                            VerplichtPremie: row.VerplichtPremie,
+                            VerplichtAcceptatie: row.VerplichtAcceptatie,
                             Codelijst: row.Codelijst || (afdRecord ? afdRecord.Codelijst : ''),
                             Bron: row.Bron,
                             EigenOmschrijving: row.EigenOmschrijving || ''
@@ -666,6 +706,9 @@
 
                     // Sorteer op pad
                     enrichedData.sort((a, b) => a.Pad.localeCompare(b.Pad));
+
+                    console.log('Verrijkte data:', enrichedData.slice(0, 5));
+                    console.log('ANVA data beschikbaar:', Object.keys(anvaData).length);
 
                     setResult(enrichedData);
                 } catch (err) {
@@ -690,6 +733,8 @@
                     'Datatype',
                     'Formaat',
                     'Verplicht',
+                    'VerplichtPremie',
+                    'VerplichtAcceptatie',
                     'Codelijst',
                     'Bron',
                     'EigenOmschrijving'
@@ -712,7 +757,7 @@
                 // Download
                 const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
                 const link = document.createElement('a');
-                const filename = `rhion_combined_${new Date().toISOString().slice(0,10)}.csv`;
+                const filename = `anva_verrijkt_${new Date().toISOString().slice(0,10)}.csv`;
                 link.href = URL.createObjectURL(blob);
                 link.download = filename;
                 link.click();
@@ -728,7 +773,7 @@
                                 <div className="flex items-center space-x-3">
                                     <Upload className="h-6 w-6 text-blue-600" />
                                     <h2 className={`text-xl font-bold ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
-                                        Rhion CSV Import
+                                        ANVA Code Verrijking
                                     </h2>
                                 </div>
                                 <button
@@ -739,7 +784,7 @@
                                 </button>
                             </div>
                             <p className={`mt-2 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                                Upload Rhion premie en acceptatie CSV bestanden om ze te combineren met ANVA data
+                                Upload product CSV bestanden om ze te verrijken met ANVA codes
                             </p>
                         </div>
 
@@ -885,6 +930,7 @@
                                                     <th className="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider">Pad</th>
                                                     <th className="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider">Attribuut</th>
                                                     <th className="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider">ANVA</th>
+                                                    <th className="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider">Verplicht</th>
                                                     <th className="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider">Bron</th>
                                                 </tr>
                                             </thead>
@@ -894,6 +940,24 @@
                                                         <td className="px-3 py-2 text-sm">{row.Pad}</td>
                                                         <td className="px-3 py-2 text-sm font-mono">{row.Entiteit}_{row.Attribuut}</td>
                                                         <td className="px-3 py-2 text-sm">{row.ANVA_Code}</td>
+                                                        <td className="px-3 py-2 text-sm">
+                                                            <div className="flex items-center space-x-1">
+                                                                {row.VerplichtPremie && (
+                                                                    <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium ${
+                                                                        row.VerplichtPremie === 'V' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800'
+                                                                    }`}>
+                                                                        P:{row.VerplichtPremie}
+                                                                    </span>
+                                                                )}
+                                                                {row.VerplichtAcceptatie && (
+                                                                    <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium ${
+                                                                        row.VerplichtAcceptatie === 'V' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800'
+                                                                    }`}>
+                                                                        A:{row.VerplichtAcceptatie}
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                        </td>
                                                         <td className="px-3 py-2 text-sm">
                                                             <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium ${
                                                                 row.Bron === 'Beide' ? 'bg-blue-100 text-blue-800' :
@@ -1453,7 +1517,7 @@
                                     <button
                                         onClick={() => setShowImport(true)}
                                         className={`p-2 rounded-lg ${darkMode ? 'hover:bg-gray-700 text-gray-300' : 'hover:bg-gray-100 text-gray-600'}`}
-                                        title="Rhion CSV Import"
+                                        title="ANVA Code Verrijking"
                                     >
                                         <Upload className="h-5 w-5" />
                                     </button>
@@ -1844,15 +1908,15 @@
 
                                     <div>
                                         <h3 className={`text-lg font-semibold mb-3 ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
-                                            📤 Rhion Import
+                                            📤 ANVA Verrijking
                                         </h3>
                                         <div className={`space-y-2 text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                                            <p>De Rhion import functionaliteit stelt je in staat om:</p>
+                                            <p>De ANVA verrijking functionaliteit stelt je in staat om:</p>
                                             <ul className="list-disc list-inside space-y-1 ml-4">
-                                                <li>Rhion premie en acceptatie CSV bestanden te uploaden</li>
+                                                <li>Product CSV bestanden (premie/acceptatie) te uploaden</li>
                                                 <li>Deze automatisch te combineren tot één dataset</li>
                                                 <li>ANVA codes toe te voegen aan elk AFD attribuut</li>
-                                                <li>Het resultaat te exporteren in SIVI AOS template formaat</li>
+                                                <li>Het resultaat te exporteren met complete ANVA informatie</li>
                                             </ul>
                                             <p className="mt-2"><strong>Gebruik:</strong> Klik op het upload icoon <Upload className="h-4 w-4 inline" /> in de header</p>
                                         </div>
@@ -1972,8 +2036,8 @@
                         </div>
                     )}
 
-                    {/* Rhion Import Modal */}
-                    <RhionImportModal 
+                    {/* ANVA Verrijking Modal */}
+                    <ANVAVerrijkingModal 
                         isOpen={showImport}
                         onClose={() => setShowImport(false)}
                         darkMode={darkMode}
