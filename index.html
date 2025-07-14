@@ -627,11 +627,7 @@
                     
                     // Verwerk ALLE premie rijen
                     premieParsed.data.forEach((row, index) => {
-                        const path = row.Pad;
-                        if (!path) {
-                            console.warn(`Premie rij ${index} heeft geen pad`);
-                            return;
-                        }
+                        const path = row.Pad || `row_${index}`;
                         
                         const existing = rowsByPath.get(path) || {
                             Pad: path,
@@ -640,16 +636,13 @@
                             Omschrijving: row.Omschrijving || '',
                             Codelijst: row.Codelijst || '',
                             CodelijstSubset: row.CodelijstSubset || '',
-                            EigenOmschrijving: row.EigenOmschrijving || ''
+                            EigenOmschrijving: row.EigenOmschrijving || '',
+                            // Bewaar alle originele kolommen
+                            ...row
                         };
                         
                         existing.VerplichtPremie = row.Verplicht || '';
                         existing.InPremie = 'X';
-                        
-                        // Zet de geparseerde waarden en AFD key
-                        if (row.ParsedEntiteit) existing.ParsedEntiteit = row.ParsedEntiteit;
-                        if (row.ParsedAttribuutCode) existing.ParsedAttribuutCode = row.ParsedAttribuutCode;
-                        if (row.AFDKey) existing.AFDKey = row.AFDKey;
                         
                         rowsByPath.set(path, existing);
                     });
@@ -672,22 +665,20 @@
                                 Omschrijving: row.Omschrijving || '',
                                 Codelijst: row.Codelijst || '',
                                 CodelijstSubset: row.CodelijstSubset || '',
-                                EigenOmschrijving: row.EigenOmschrijving || ''
+                                EigenOmschrijving: row.EigenOmschrijving || '',
+                                // Bewaar alle originele kolommen
+                                ...row
                             };
                             
                             existing.VerplichtAcceptatie = row.Verplicht || '';
                             existing.InAcceptatie = 'X';
                             
-                            // Update velden als ze in acceptatie gevuld zijn
-                            if (row.Naam) existing.Naam = row.Naam;
-                            if (row.Omschrijving) existing.Omschrijving = row.Omschrijving;
-                            if (row.Codelijst) existing.Codelijst = row.Codelijst;
-                            if (row.Attribuut) existing.Attribuut = row.Attribuut;
-                            
-                            // Zet de geparseerde waarden en AFD key
-                            if (row.ParsedEntiteit) existing.ParsedEntiteit = row.ParsedEntiteit;
-                            if (row.ParsedAttribuutCode) existing.ParsedAttribuutCode = row.ParsedAttribuutCode;
-                            if (row.AFDKey) existing.AFDKey = row.AFDKey;
+                            // Update velden alleen als ze gevuld zijn
+                            Object.keys(row).forEach(key => {
+                                if (row[key] && !existing[key]) {
+                                    existing[key] = row[key];
+                                }
+                            });
                             
                             rowsByPath.set(path, existing);
                         });
