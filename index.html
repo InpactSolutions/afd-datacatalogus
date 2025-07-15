@@ -1,19 +1,4 @@
-// Available datatypes
-            const availableDatatypes = useMemo(() => {
-                const datatypes = new Set();
-                data.forEach(row => {
-                    if (row.Datatype) {
-                        datatypes.add(row.Datatype);
-                    }
-                });
-                return Array.from(datatypes).sort();
-            }, [data]);
-
-            // Handle codelist selection
-            const handleCodelistSelect = useCallback((codelistCode) => {
-                setAdvancedSearch(prev => ({ ...prev, codelistFilter: codelistCode }));
-                setShowCodelistDropdown(false);
-            }, []);<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="nl">
 <head>
     <meta charset="UTF-8">
@@ -548,7 +533,6 @@
             const [keyboardActive, setKeyboardActive] = useState(false);
             const [showInfo, setShowInfo] = useState(false);
             const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
-            const [showCodelistDropdown, setShowCodelistDropdown] = useState(false);
             const [advancedSearch, setAdvancedSearch] = useState({
                 searchWords: '',
                 entiteitFilter: 'all',
@@ -579,7 +563,7 @@
             useEffect(() => {
                 const handleKeyDown = (e) => {
                     // Don't interfere with modals or inputs
-                    if (selectedCodelist || showInfo || showAdvancedSearch || showCodelistDropdown || e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') {
+                    if (selectedCodelist || showInfo || showAdvancedSearch || e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') {
                         return;
                     }
 
@@ -636,19 +620,7 @@
 
                 document.addEventListener('keydown', handleKeyDown);
                 return () => document.removeEventListener('keydown', handleKeyDown);
-            }, [paginatedData, selectedItemIndex, selectedCodelist, showInfo, showAdvancedSearch, showCodelistDropdown]);
-
-            // Close dropdown when clicking outside
-            useEffect(() => {
-                const handleClickOutside = (event) => {
-                    if (showCodelistDropdown && !event.target.closest('.codelist-dropdown')) {
-                        setShowCodelistDropdown(false);
-                    }
-                };
-
-                document.addEventListener('mousedown', handleClickOutside);
-                return () => document.removeEventListener('mousedown', handleClickOutside);
-            }, [showCodelistDropdown]);
+            }, [paginatedData, selectedItemIndex, selectedCodelist, showInfo, showAdvancedSearch]);
 
             // Scroll to selected item
             useEffect(() => {
@@ -955,27 +927,16 @@
                 return searchWords || entiteitFilter !== 'all' || datatypeFilter !== 'all' || codelistFilter || anvaCodeFilter;
             }, [advancedSearch]);
 
-            // Available codelist names
-            const availableCodelists = useMemo(() => {
-                const codelists = Object.keys(codelistData).map(code => ({
-                    code,
-                    // Get description from first item where column B is empty
-                    description: codelistData[code].find(item => !item.code || item.code === code)?.omschrijving || ''
-                })).sort((a, b) => a.code.localeCompare(b.code));
-                
-                return codelists;
-            }, [codelistData]);
-
-            // Filtered codelist options for dropdown
-            const filteredCodelists = useMemo(() => {
-                if (!advancedSearch.codelistFilter) return availableCodelists;
-                
-                const searchLower = advancedSearch.codelistFilter.toLowerCase();
-                return availableCodelists.filter(codelist => 
-                    codelist.code.toLowerCase().includes(searchLower) || 
-                    codelist.description.toLowerCase().includes(searchLower)
-                );
-            }, [availableCodelists, advancedSearch.codelistFilter]);
+            // Available datatypes
+            const availableDatatypes = useMemo(() => {
+                const datatypes = new Set();
+                data.forEach(row => {
+                    if (row.Datatype) {
+                        datatypes.add(row.Datatype);
+                    }
+                });
+                return Array.from(datatypes).sort();
+            }, [data]);
 
             // Clear advanced search
             const clearAdvancedSearch = useCallback(() => {
@@ -1334,62 +1295,19 @@
                                                 </select>
                                             </div>
                                             
-                                            <div className="relative">
+                                            <div>
                                                 <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
                                                     Codelijst
                                                 </label>
-                                                <div className="relative codelist-dropdown">
-                                                    <input
-                                                        type="text"
-                                                        value={advancedSearch.codelistFilter}
-                                                        onChange={(e) => {
-                                                            setAdvancedSearch(prev => ({ ...prev, codelistFilter: e.target.value }));
-                                                            setShowCodelistDropdown(true);
-                                                        }}
-                                                        onFocus={() => setShowCodelistDropdown(true)}
-                                                        placeholder="Zoek codelijst..."
-                                                        className={`w-full px-3 py-2 pr-8 border rounded-lg text-sm ${
-                                                            darkMode ? 'bg-gray-800 border-gray-600 text-gray-100 placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
-                                                        }`}
-                                                    />
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => setShowCodelistDropdown(!showCodelistDropdown)}
-                                                        className="absolute inset-y-0 right-0 flex items-center px-2 text-gray-400 hover:text-gray-600"
-                                                    >
-                                                        <ChevronDown className="h-4 w-4" />
-                                                    </button>
-                                                    
-                                                    {showCodelistDropdown && (
-                                                        <div className={`absolute z-10 w-full mt-1 max-h-60 overflow-auto border rounded-lg shadow-lg ${
-                                                            darkMode ? 'bg-gray-800 border-gray-600' : 'bg-white border-gray-300'
-                                                        }`}>
-                                                            {filteredCodelists.length === 0 ? (
-                                                                <div className="px-3 py-2 text-sm text-gray-500">
-                                                                    Geen codelijsten gevonden
-                                                                </div>
-                                                            ) : (
-                                                                filteredCodelists.map((codelist, index) => (
-                                                                    <button
-                                                                        key={codelist.code}
-                                                                        type="button"
-                                                                        onClick={() => handleCodelistSelect(codelist.code)}
-                                                                        className={`w-full px-3 py-2 text-left text-sm hover:bg-gray-100 focus:bg-gray-100 focus:outline-none ${
-                                                                            darkMode ? 'hover:bg-gray-700 focus:bg-gray-700' : ''
-                                                                        }`}
-                                                                    >
-                                                                        <div className="font-medium">{codelist.code}</div>
-                                                                        {codelist.description && (
-                                                                            <div className={`text-xs truncate ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                                                                                {codelist.description}
-                                                                            </div>
-                                                                        )}
-                                                                    </button>
-                                                                ))
-                                                            )}
-                                                        </div>
-                                                    )}
-                                                </div>
+                                                <input
+                                                    type="text"
+                                                    value={advancedSearch.codelistFilter}
+                                                    onChange={(e) => setAdvancedSearch(prev => ({ ...prev, codelistFilter: e.target.value }))}
+                                                    placeholder="bijv. ADNABS"
+                                                    className={`w-full px-3 py-2 border rounded-lg text-sm ${
+                                                        darkMode ? 'bg-gray-800 border-gray-600 text-gray-100 placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
+                                                    }`}
+                                                />
                                             </div>
                                             
                                             <div>
@@ -1771,7 +1689,7 @@
                                                 <li>Entiteitcode (bijv. OB, XA, RI)</li>
                                                 <li>Attribuutcode of volledige codes (bijv. DA_VERZSOM)</li>
                                                 <li>ANVA code (bijv. 13689)</li>
-                                                <li>Codelijst naam (bijv. PORMAA, ISOLAN)</li>
+                                                <li>Codelijst naam (bijv. ADNABS, SECTCOD)</li>
                                             </ul>
                                         </div>
                                     </div>
