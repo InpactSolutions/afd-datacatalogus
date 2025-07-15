@@ -861,15 +861,24 @@
                                 header: false,
                                 dynamicTyping: true,
                                 skipEmptyLines: true,
-                                delimiter: ';'
+                                delimitersToGuess: [',', ';', '\t', '|']
                             });
 
                             const codelistGroups = {};
                             const codelistDescriptions = {};
                             let codelistCount = 0;
                             
-                            parsedCodelist.data.slice(1).forEach(row => {
+                            console.log('📊 Codelist raw data sample:', parsedCodelist.data.slice(0, 5));
+                            console.log('📊 Detected delimiter:', parsedCodelist.meta.delimiter);
+                            
+                            parsedCodelist.data.slice(1).forEach((row, index) => {
                                 const [type, codelijst, code, omschrijving] = row;
+                                
+                                // Debug eerste paar rijen
+                                if (index < 5) {
+                                    console.log(`📋 Row ${index}:`, { type, codelijst, code, omschrijving });
+                                }
+                                
                                 if (codelijst) {
                                     if (!codelistGroups[codelijst]) {
                                         codelistGroups[codelijst] = [];
@@ -878,6 +887,7 @@
                                     // Als type 'L' is, dan is dit de lijstomschrijving
                                     if (type === 'L') {
                                         codelistDescriptions[codelijst] = String(omschrijving || '');
+                                        console.log(`📝 Found description for ${codelijst}: ${omschrijving}`);
                                     } else if (type === 'C') {
                                         // Type 'C' is een normale codelijst item
                                         codelistGroups[codelijst].push({
