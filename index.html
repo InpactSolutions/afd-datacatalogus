@@ -526,8 +526,6 @@
             const [keyboardActive, setKeyboardActive] = useState(false);
             const [showInfo, setShowInfo] = useState(false);
             const [searchHistory, setSearchHistory] = useState([]);
-            const [showAutocomplete, setShowAutocomplete] = useState(false);
-            const [autocompleteItems, setAutocompleteItems] = useState([]);
             const searchInputRef = useRef(null);
             const itemRefs = useRef([]);
             
@@ -1173,8 +1171,6 @@
                                         type="text"
                                         value={searchTerm}
                                         onChange={(e) => setSearchTerm(e.target.value)}
-                                        onFocus={() => setShowAutocomplete(autocompleteItems.length > 0)}
-                                        onBlur={() => setTimeout(() => setShowAutocomplete(false), 200)}
                                         placeholder="Zoek op naam, omschrijving, AFD code, ANVA code of codelijst... (druk / voor focus)"
                                         className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 text-lg ${
                                             darkMode ? 'bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
@@ -1187,34 +1183,6 @@
                                         >
                                             ✕
                                         </button>
-                                    )}
-                                    
-                                    {/* Autocomplete dropdown */}
-                                    {showAutocomplete && (
-                                        <div className={`absolute z-20 w-full mt-1 ${darkMode ? 'bg-gray-800 border-gray-600' : 'bg-white border-gray-200'} border rounded-lg shadow-lg max-h-60 overflow-y-auto`}>
-                                            {autocompleteItems.map((item, index) => (
-                                                <button
-                                                    key={index}
-                                                    onClick={() => {
-                                                        setSearchTerm(item.code);
-                                                        setShowAutocomplete(false);
-                                                    }}
-                                                    className={`w-full px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center space-x-2 ${
-                                                        index === 0 ? 'rounded-t-lg' : ''
-                                                    } ${index === autocompleteItems.length - 1 ? 'rounded-b-lg' : ''}`}
-                                                >
-                                                    {item.type === 'E' ? (
-                                                        <Database className="h-4 w-4 text-blue-600 flex-shrink-0" />
-                                                    ) : (
-                                                        <Package className="h-4 w-4 text-green-600 flex-shrink-0" />
-                                                    )}
-                                                    <div className="flex-1 min-w-0">
-                                                        <div className="font-mono text-sm font-medium">{item.code}</div>
-                                                        <div className="text-xs text-gray-500 truncate">{item.name}</div>
-                                                    </div>
-                                                </button>
-                                            ))}
-                                        </div>
                                     )}
                                 </div>
                                 <div className="flex flex-wrap gap-4">
@@ -1267,47 +1235,6 @@
                             </div>
                         </div>
                     </div>
-
-                    {/* Breadcrumbs */}
-                    {(debouncedSearchTerm || typeFilter !== 'all' || entityFilter !== 'all') && (
-                        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
-                            <div className={`flex items-center space-x-2 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                                <span>AFD Catalogus</span>
-                                <span>›</span>
-                                {entityFilter !== 'all' && (
-                                    <>
-                                        <button
-                                            onClick={() => setEntityFilter('all')}
-                                            className={`px-2 py-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700 ${
-                                                darkMode ? 'text-blue-400' : 'text-blue-600'
-                                            }`}
-                                        >
-                                            {entityFilter} entiteit
-                                        </button>
-                                        <span>›</span>
-                                    </>
-                                )}
-                                {typeFilter !== 'all' && (
-                                    <>
-                                        <button
-                                            onClick={() => setTypeFilter('all')}
-                                            className={`px-2 py-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700 ${
-                                                darkMode ? 'text-blue-400' : 'text-blue-600'
-                                            }`}
-                                        >
-                                            {typeFilter === 'E' ? 'Entiteiten' : 'Attributen'}
-                                        </button>
-                                        <span>›</span>
-                                    </>
-                                )}
-                                {debouncedSearchTerm && (
-                                    <span className="font-medium">
-                                        "{debouncedSearchTerm}"
-                                    </span>
-                                )}
-                            </div>
-                        </div>
-                    )}
 
                     {/* Results */}
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
