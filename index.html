@@ -872,11 +872,24 @@
                             console.log('📊 Detected delimiter:', parsedCodelist.meta.delimiter);
                             
                             parsedCodelist.data.slice(1).forEach((row, index) => {
-                                const [type, codelijst, code, omschrijving] = row;
+                                // Check of we 3 of 4 kolommen hebben
+                                let type, codelijst, code, omschrijving;
+                                
+                                if (row.length === 3) {
+                                    // Format: codelijst, code, omschrijving (oude format)
+                                    [codelijst, code, omschrijving] = row;
+                                    type = code && String(code).trim() !== '' ? 'C' : 'L';
+                                } else if (row.length === 4) {
+                                    // Format: type, codelijst, code, omschrijving (nieuwe format)
+                                    [type, codelijst, code, omschrijving] = row;
+                                } else {
+                                    // Onbekend format, skip
+                                    return;
+                                }
                                 
                                 // Debug eerste paar rijen
                                 if (index < 5) {
-                                    console.log(`📋 Row ${index}:`, { type, codelijst, code, omschrijving });
+                                    console.log(`📋 Row ${index} (${row.length} cols):`, { type, codelijst, code, omschrijving, raw: row });
                                 }
                                 
                                 if (codelijst) {
