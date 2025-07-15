@@ -98,6 +98,7 @@
         .shadow-sm { box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); }
         .shadow-md { box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
         .shadow-xl { box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); }
+        .shadow-lg { box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
 
         .p-1 { padding: 0.25rem; }
         .p-2 { padding: 0.5rem; }
@@ -154,6 +155,8 @@
         .max-w-7xl { max-width: 80rem; }
         .max-w-lg { max-width: 32rem; }
         .max-h-\[90vh\] { max-height: 90vh; }
+        .max-h-60 { max-height: 15rem; }
+        .max-h-48 { max-height: 12rem; }
 
         .flex { display: flex; }
         .inline-flex { display: inline-flex; }
@@ -208,6 +211,11 @@
         .transform { transform: translateZ(0); }
         .translate-y-1\/2 { transform: translateY(-50%); }
         .-translate-y-1\/2 { transform: translateY(-50%); }
+        .rotate-180 { transform: rotate(180deg); }
+
+        .transition-colors { transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out; }
+        .transition-shadow { transition: box-shadow 0.15s ease-in-out; }
+        .transition-transform { transition: transform 0.15s ease-in-out; }
 
         .absolute { position: absolute; }
         .relative { position: relative; }
@@ -225,9 +233,6 @@
         .overflow-hidden { overflow: hidden; }
         .overflow-y-auto { overflow-y: auto; }
         .min-w-0 { min-width: 0; }
-
-        .transition-colors { transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out; }
-        .transition-shadow { transition: box-shadow 0.15s ease-in-out; }
 
         .hover\:bg-gray-50:hover { background-color: #f9fafb; }
         .hover\:bg-gray-100:hover { background-color: #f3f4f6; }
@@ -358,6 +363,7 @@
         @media (min-width: 640px) {
             .sm\:px-6 { padding-left: 1.5rem; padding-right: 1.5rem; }
             .sm\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .sm\:col-span-2 { grid-column: span 2 / span 2; }
         }
 
         @media (min-width: 1024px) {
@@ -389,6 +395,148 @@
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
             </svg>
         );
+
+        // Searchable Select Component
+        const SearchableSelect = ({ options, value, onChange, placeholder, className, darkMode }) => {
+            const [isOpen, setIsOpen] = useState(false);
+            const [searchTerm, setSearchTerm] = useState('');
+            const [selectedIndex, setSelectedIndex] = useState(-1);
+            const dropdownRef = useRef(null);
+            const inputRef = useRef(null);
+
+            const filteredOptions = useMemo(() => {
+                if (!searchTerm) return options;
+                return options.filter(option => 
+                    option.label.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    option.value.toLowerCase().includes(searchTerm.toLowerCase())
+                );
+            }, [options, searchTerm]);
+
+            const selectedOption = options.find(opt => opt.value === value);
+
+            useEffect(() => {
+                const handleClickOutside = (event) => {
+                    if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+                        setIsOpen(false);
+                        setSearchTerm('');
+                        setSelectedIndex(-1);
+                    }
+                };
+
+                document.addEventListener('mousedown', handleClickOutside);
+                return () => document.removeEventListener('mousedown', handleClickOutside);
+            }, []);
+
+            const handleKeyDown = (e) => {
+                if (!isOpen) {
+                    if (e.key === 'Enter' || e.key === ' ' || e.key === 'ArrowDown') {
+                        e.preventDefault();
+                        setIsOpen(true);
+                        setSelectedIndex(0);
+                    }
+                    return;
+                }
+
+                switch (e.key) {
+                    case 'ArrowDown':
+                        e.preventDefault();
+                        setSelectedIndex(prev => 
+                            prev < filteredOptions.length - 1 ? prev + 1 : 0
+                        );
+                        break;
+                    case 'ArrowUp':
+                        e.preventDefault();
+                        setSelectedIndex(prev => 
+                            prev > 0 ? prev - 1 : filteredOptions.length - 1
+                        );
+                        break;
+                    case 'Enter':
+                        e.preventDefault();
+                        if (selectedIndex >= 0 && filteredOptions[selectedIndex]) {
+                            onChange(filteredOptions[selectedIndex].value);
+                            setIsOpen(false);
+                            setSearchTerm('');
+                            setSelectedIndex(-1);
+                        }
+                        break;
+                    case 'Escape':
+                        setIsOpen(false);
+                        setSearchTerm('');
+                        setSelectedIndex(-1);
+                        break;
+                }
+            };
+
+            const handleOptionClick = (optionValue) => {
+                onChange(optionValue);
+                setIsOpen(false);
+                setSearchTerm('');
+                setSelectedIndex(-1);
+            };
+
+            return (
+                <div className="relative" ref={dropdownRef}>
+                    <button
+                        type="button"
+                        className={`${className} w-full text-left flex items-center justify-between`}
+                        onClick={() => {
+                            setIsOpen(!isOpen);
+                            if (!isOpen) {
+                                setTimeout(() => inputRef.current?.focus(), 50);
+                            }
+                        }}
+                        onKeyDown={handleKeyDown}
+                    >
+                        <span className={selectedOption ? '' : (darkMode ? 'text-gray-400' : 'text-gray-500')}>
+                            {selectedOption ? selectedOption.label : placeholder}
+                        </span>
+                        <ChevronDown className={`h-4 w-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+                    </button>
+
+                    {isOpen && (
+                        <div className={`absolute z-50 w-full mt-1 rounded-lg shadow-lg border ${
+                            darkMode ? 'bg-gray-800 border-gray-600' : 'bg-white border-gray-300'
+                        } max-h-60 overflow-hidden`}>
+                            <div className="p-2 border-b border-gray-200">
+                                <input
+                                    ref={inputRef}
+                                    type="text"
+                                    value={searchTerm}
+                                    onChange={(e) => {
+                                        setSearchTerm(e.target.value);
+                                        setSelectedIndex(-1);
+                                    }}
+                                    placeholder="Type om te zoeken..."
+                                    className={`w-full px-3 py-2 border rounded text-sm ${
+                                        darkMode ? 'bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
+                                    } focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
+                                    onKeyDown={handleKeyDown}
+                                />
+                            </div>
+                            <div className="max-h-48 overflow-y-auto">
+                                {filteredOptions.length === 0 ? (
+                                    <div className="px-3 py-2 text-sm text-gray-500">
+                                        Geen resultaten gevonden
+                                    </div>
+                                ) : (
+                                    filteredOptions.map((option, index) => (
+                                        <button
+                                            key={option.value}
+                                            className={`w-full px-3 py-2 text-left text-sm hover:bg-gray-100 transition-colors ${
+                                                index === selectedIndex ? (darkMode ? 'bg-gray-700' : 'bg-gray-100') : ''
+                                            } ${option.value === value ? 'font-medium' : ''}`}
+                                            onClick={() => handleOptionClick(option.value)}
+                                        >
+                                            {option.label}
+                                        </button>
+                                    ))
+                                )}
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        };
 
         const Database = ({ className }) => (
             <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -897,7 +1045,7 @@
                     }
                     
                     // Codelist filter
-                    if (codelistFilter && (!row.Codelijst || !row.Codelijst.toLowerCase().includes(codelistFilter.toLowerCase()))) {
+                    if (codelistFilter && row.Codelijst !== codelistFilter) {
                         return false;
                     }
                     
@@ -936,6 +1084,17 @@
                     }
                 });
                 return Array.from(datatypes).sort();
+            }, [data]);
+
+            // Available codelists
+            const availableCodelists = useMemo(() => {
+                const codelistSet = new Set();
+                data.forEach(row => {
+                    if (row.Codelijst) {
+                        codelistSet.add(row.Codelijst);
+                    }
+                });
+                return Array.from(codelistSet).sort();
             }, [data]);
 
             // Clear advanced search
@@ -1259,54 +1418,65 @@
                                                 <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
                                                     Entiteit
                                                 </label>
-                                                <select
+                                                <SearchableSelect
+                                                    options={[
+                                                        { value: 'all', label: 'Alle entiteiten' },
+                                                        ...availableEntities.map(entity => ({
+                                                            value: entity.code,
+                                                            label: `${entity.code} - ${entity.naam}`
+                                                        }))
+                                                    ]}
                                                     value={advancedSearch.entiteitFilter}
-                                                    onChange={(e) => setAdvancedSearch(prev => ({ ...prev, entiteitFilter: e.target.value }))}
-                                                    className={`w-full px-3 py-2 border rounded-lg text-sm ${
+                                                    onChange={(value) => setAdvancedSearch(prev => ({ ...prev, entiteitFilter: value }))}
+                                                    placeholder="Selecteer entiteit"
+                                                    className={`px-3 py-2 border rounded-lg text-sm ${
                                                         darkMode ? 'bg-gray-800 border-gray-600 text-gray-100' : 'bg-white border-gray-300 text-gray-900'
                                                     }`}
-                                                >
-                                                    <option value="all">Alle entiteiten</option>
-                                                    {availableEntities.map(entity => (
-                                                        <option key={entity.code} value={entity.code}>
-                                                            {entity.code} - {entity.naam}
-                                                        </option>
-                                                    ))}
-                                                </select>
+                                                    darkMode={darkMode}
+                                                />
                                             </div>
                                             
                                             <div>
                                                 <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
                                                     Datatype
                                                 </label>
-                                                <select
+                                                <SearchableSelect
+                                                    options={[
+                                                        { value: 'all', label: 'Alle datatypes' },
+                                                        ...availableDatatypes.map(datatype => ({
+                                                            value: datatype,
+                                                            label: `${datatype} - ${datatypeInfo[datatype]?.label || datatype}`
+                                                        }))
+                                                    ]}
                                                     value={advancedSearch.datatypeFilter}
-                                                    onChange={(e) => setAdvancedSearch(prev => ({ ...prev, datatypeFilter: e.target.value }))}
-                                                    className={`w-full px-3 py-2 border rounded-lg text-sm ${
+                                                    onChange={(value) => setAdvancedSearch(prev => ({ ...prev, datatypeFilter: value }))}
+                                                    placeholder="Selecteer datatype"
+                                                    className={`px-3 py-2 border rounded-lg text-sm ${
                                                         darkMode ? 'bg-gray-800 border-gray-600 text-gray-100' : 'bg-white border-gray-300 text-gray-900'
                                                     }`}
-                                                >
-                                                    <option value="all">Alle datatypes</option>
-                                                    {availableDatatypes.map(datatype => (
-                                                        <option key={datatype} value={datatype}>
-                                                            {datatype} - {datatypeInfo[datatype]?.label || datatype}
-                                                        </option>
-                                                    ))}
-                                                </select>
+                                                    darkMode={darkMode}
+                                                />
                                             </div>
                                             
                                             <div>
                                                 <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
                                                     Codelijst
                                                 </label>
-                                                <input
-                                                    type="text"
+                                                <SearchableSelect
+                                                    options={[
+                                                        { value: '', label: 'Alle codelijsten' },
+                                                        ...availableCodelists.map(codelist => ({
+                                                            value: codelist,
+                                                            label: codelist
+                                                        }))
+                                                    ]}
                                                     value={advancedSearch.codelistFilter}
-                                                    onChange={(e) => setAdvancedSearch(prev => ({ ...prev, codelistFilter: e.target.value }))}
-                                                    placeholder="bijv. ADNABS"
-                                                    className={`w-full px-3 py-2 border rounded-lg text-sm ${
-                                                        darkMode ? 'bg-gray-800 border-gray-600 text-gray-100 placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
+                                                    onChange={(value) => setAdvancedSearch(prev => ({ ...prev, codelistFilter: value }))}
+                                                    placeholder="Selecteer codelijst"
+                                                    className={`px-3 py-2 border rounded-lg text-sm ${
+                                                        darkMode ? 'bg-gray-800 border-gray-600 text-gray-100' : 'bg-white border-gray-300 text-gray-900'
                                                     }`}
+                                                    darkMode={darkMode}
                                                 />
                                             </div>
                                             
@@ -1356,35 +1526,40 @@
                                 <div className="flex flex-wrap gap-4">
                                     <div className="flex items-center space-x-2">
                                         <Filter className={`h-5 w-5 ${darkMode ? 'text-gray-300' : 'text-gray-400'}`} />
-                                        <select
+                                        <SearchableSelect
+                                            options={[
+                                                { value: 'all', label: 'Alle types' },
+                                                { value: 'E', label: 'Alleen entiteiten' },
+                                                { value: 'A', label: 'Alleen attributen' }
+                                            ]}
                                             value={typeFilter}
-                                            onChange={(e) => setTypeFilter(e.target.value)}
+                                            onChange={setTypeFilter}
+                                            placeholder="Type selecteren"
                                             className={`border rounded-lg px-3 py-2 ${
                                                 darkMode ? 'bg-gray-700 border-gray-600 text-gray-100' : 'bg-white border-gray-300 text-gray-900'
                                             }`}
-                                        >
-                                            <option value="all">Alle types</option>
-                                            <option value="E">Alleen entiteiten</option>
-                                            <option value="A">Alleen attributen</option>
-                                        </select>
+                                            darkMode={darkMode}
+                                        />
                                     </div>
                                     {availableEntities.length > 0 && (
                                         <div className="flex items-center space-x-2">
                                             <Database className={`h-5 w-5 ${darkMode ? 'text-gray-300' : 'text-gray-400'}`} />
-                                            <select
+                                            <SearchableSelect
+                                                options={[
+                                                    { value: 'all', label: `Alle entiteiten (${availableEntities.length})` },
+                                                    ...availableEntities.map(entity => ({
+                                                        value: entity.code,
+                                                        label: `${entity.code} - ${entity.naam}`
+                                                    }))
+                                                ]}
                                                 value={entityFilter}
-                                                onChange={(e) => setEntityFilter(e.target.value)}
+                                                onChange={setEntityFilter}
+                                                placeholder="Entiteit selecteren"
                                                 className={`border rounded-lg px-3 py-2 ${
                                                     darkMode ? 'bg-gray-700 border-gray-600 text-gray-100' : 'bg-white border-gray-300 text-gray-900'
                                                 }`}
-                                            >
-                                                <option value="all">Alle entiteiten ({availableEntities.length})</option>
-                                                {availableEntities.map(entity => (
-                                                    <option key={entity.code} value={entity.code}>
-                                                        {entity.code} - {entity.naam}
-                                                    </option>
-                                                ))}
-                                            </select>
+                                                darkMode={darkMode}
+                                            />
                                         </div>
                                     )}
                                 </div>
@@ -1704,6 +1879,7 @@
                                                 <li><strong>Zoekwoorden:</strong> Zoek records die alle opgegeven woorden bevatten</li>
                                                 <li><strong>Filters:</strong> Filter op entiteit, datatype, codelijst of ANVA code</li>
                                                 <li><strong>Combinaties:</strong> Combineer tekst zoeken met specifieke filters</li>
+                                                <li><strong>Searchable dropdowns:</strong> Type in alle dropdowns om snel te zoeken</li>
                                             </ul>
                                         </div>
                                     </div>
@@ -1779,6 +1955,10 @@
                                             <div className="flex items-start space-x-2">
                                                 <Database className={`h-4 w-4 mt-0.5 ${darkMode ? 'text-gray-400' : 'text-gray-400'}`} />
                                                 <span><strong>Entiteit filter:</strong> Toon alleen attributen van een specifieke entiteit</span>
+                                            </div>
+                                            <div className="flex items-start space-x-2">
+                                                <Search className={`h-4 w-4 mt-0.5 ${darkMode ? 'text-gray-400' : 'text-gray-400'}`} />
+                                                <span><strong>Searchable dropdowns:</strong> Type in alle dropdowns om snel te zoeken</span>
                                             </div>
                                         </div>
                                     </div>
