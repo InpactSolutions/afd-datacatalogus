@@ -869,21 +869,21 @@
                             let codelistCount = 0;
                             
                             parsedCodelist.data.slice(1).forEach(row => {
-                                const [codelijst, code, omschrijving, actief] = row;
+                                const [type, codelijst, code, omschrijving] = row;
                                 if (codelijst) {
                                     if (!codelistGroups[codelijst]) {
                                         codelistGroups[codelijst] = [];
                                     }
                                     
-                                    // Als er geen code is (kolom B leeg), dan is dit de beschrijving van de codelijst
-                                    if (!code || String(code).trim() === '') {
+                                    // Als type 'L' is, dan is dit de lijstomschrijving
+                                    if (type === 'L') {
                                         codelistDescriptions[codelijst] = String(omschrijving || '');
-                                    } else {
-                                        // Anders is het een normale codelijst item
+                                    } else if (type === 'C') {
+                                        // Type 'C' is een normale codelijst item
                                         codelistGroups[codelijst].push({
                                             code: String(code || ''),
                                             omschrijving: String(omschrijving || ''),
-                                            actief: String(actief || '')
+                                            actief: 'J' // Standaard actief sinds kolom niet meer aanwezig
                                         });
                                         codelistCount++;
                                     }
@@ -1961,7 +1961,6 @@
                                             <ul className="list-disc list-inside space-y-1 ml-4">
                                                 <li>Zoeken naar specifieke codes of omschrijvingen</li>
                                                 <li>Codes kopiëren naar het klembord</li>
-                                                <li>Status zien (Actief/Inactief)</li>
                                             </ul>
                                         </div>
                                     </div>
@@ -2099,16 +2098,6 @@
                                                             }`}>
                                                                 {highlightText(String(item.code), codelistSearch)}
                                                             </code>
-                                                            {item.actief === 'J' && (
-                                                                <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-green-100 text-green-800">
-                                                                    Actief
-                                                                </span>
-                                                            )}
-                                                            {item.actief === 'N' && (
-                                                                <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-red-100 text-red-800">
-                                                                    Inactief
-                                                                </span>
-                                                            )}
                                                         </div>
                                                         <p className={`text-sm break-words ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
                                                             {highlightText(String(item.omschrijving), codelistSearch)}
