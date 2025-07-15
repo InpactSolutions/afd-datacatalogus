@@ -506,607 +506,6 @@
             }
         };
 
-        // ANVA Verrijking Modal Component
-        function ANVAVerrijkingModal({ isOpen, onClose, darkMode, anvaData, data }) {
-            const [premieFile, setPremieFile] = useState(null);
-            const [acceptatieFile, setAcceptatieFile] = useState(null);
-            const [processing, setProcessing] = useState(false);
-            const [error, setError] = useState(null);
-            const [result, setResult] = useState(null);
-            const [dragActive, setDragActive] = useState({ premie: false, acceptatie: false });
-
-            const handleDrag = (e, type) => {
-                e.preventDefault();
-                e.stopPropagation();
-                if (e.type === "dragenter" || e.type === "dragover") {
-                    setDragActive(prev => ({ ...prev, [type]: true }));
-                } else if (e.type === "dragleave") {
-                    setDragActive(prev => ({ ...prev, [type]: false }));
-                }
-            };
-
-            const handleDrop = (e, type) => {
-                e.preventDefault();
-                e.stopPropagation();
-                setDragActive(prev => ({ ...prev, [type]: false }));
-                
-                const file = e.dataTransfer.files[0];
-                if (file && file.name.endsWith('.csv')) {
-                    if (type === 'premie') {
-                        setPremieFile(file);
-                    } else {
-                        setAcceptatieFile(file);
-                    }
-                }
-            };
-
-            const handleFileSelect = (e, type) => {
-                const file = e.target.files[0];
-                if (file) {
-                    if (type === 'premie') {
-                        setPremieFile(file);
-                    } else {
-                        setAcceptatieFile(file);
-                    }
-                }
-            };
-
-            const parseRhionCSV = (content, type) => {
-                const lines = content.split('\n');
-                const dataStart = lines.findIndex(line => line.includes('Pad;Attribuut;'));
-                
-                if (dataStart === -1) {
-                    throw new Error('Geen geldige Rhion CSV structuur gevonden');
-                }
-                
-                const headers = lines[dataStart].split(';').map(h => h.trim());
-                const data = [];
-                
-                // Vind de kolom met V/O waarden (premieBerekening_aanroep of Acceptatie_aanroep)
-                const verplichtheidKolom = headers.find(h => h.includes('_aanroep'));
-                
-                for (let i = dataStart + 1; i < lines.length; i++) {
-                    const line = lines[i].trim();
-                    if (line && !line.startsWith(';;')) {
-                        const values = line.split(';');
-                        const row = {};
-                        headers.forEach((header, index) => {
-                            row[header] = values[index] || '';
-                        });
-                        
-                        // Parse de Pad kolom om entiteit en attribuut te bepalen
-                        const pad = row.Pad || '';
-                        const parts = pad.split('/');
-                        if (parts.length >= 2) {
-                            // Neem het laatste deel voor attribuut, tweede laatste voor entiteit
-                            const attribuut = parts[parts.length - 1];
-                            const entiteit = parts[parts.length - 2];
-                            
-                            // Alleen verwerken als het een attribuut is (niet een entiteit)
-                            if (attribuut && attribuut !== entiteit) {
-                                row.Entiteit = entiteit;
-                                row.Attribuut = attribuut;
-                                
-                                // Verwerk V/O waarde
-                                if (verplichtheidKolom) {
-                                    row.Verplicht = row[verplichtheidKolom];
-                                }
-                                
-                                data.push(row);
-                            }
-                        }
-                    }
-                }
-                
-                return { headers, data, verplichtheidKolom };
-            };
-
-            const processFiles = async () => {
-                setProcessing(true);
-                setError(null);
-                setResult(null);
-
-                try {
-                    // Lees premie bestand
-                    const premieContent = await premieFile.text();
-                    const premieParsed = parseRhionCSV(premieContent, 'premie');
-                    
-                    // Optioneel: lees acceptatie bestand
-                    let acceptatieParsed = null;
-                    if (acceptatieFile) {
-                        const acceptatieContent = await acceptatieFile.text();
-                        acceptatieParsed = parseRhionCSV(acceptatieContent, 'acceptatie');
-                    }
-
-                    console.log('ANVA data beschikbaar:', Object.keys(anvaData).length);
-                    console.log('ANVA keys voorbeeld:', Object.keys(anvaData).slice(0, 10));
-                    console.log('AFD data records:', data.length);
-
-                    // Gebruik Map met pad als key om duplicaten te voorkomen
-                    const rowsByPath = new Map();
-                    
-                    // Verwerk ALLE premie rijen
-                    premieParsed.data.forEach((row, index) => {
-                        const path = row.Pad || `row_${index}`;
-                        
-                        const existing = rowsByPath.get(path) || {
-                            Pad: path,
-                            Attribuut: row.Attribuut || '',
-                            Naam: row.Naam || '',
-                            Omschrijving: row.Omschrijving || '',
-                            Codelijst: row.Codelijst || '',
-                            CodelijstSubset: row.CodelijstSubset || '',
-                            EigenOmschrijving: row.EigenOmschrijving || '',
-                            // Bewaar alle originele kolommen
-                            ...row
-                        };
-                        
-                        existing.VerplichtPremie = row.Verplicht || '';
-                        existing.InPremie = 'X';
-                        
-                        rowsByPath.set(path, existing);
-                    });
-
-                    console.log(`Na premie: ${rowsByPath.size} unieke paden`);
-
-                    // Verwerk acceptatie data
-                    if (acceptatieParsed) {
-                        acceptatieParsed.data.forEach((row, index) => {
-                            const path = row.Pad;
-                            if (!path) {
-                                console.warn(`Acceptatie rij ${index} heeft geen pad`);
-                                return;
-                            }
-                            
-                            const existing = rowsByPath.get(path) || {
-                                Pad: path,
-                                Attribuut: row.Attribuut || '',
-                                Naam: row.Naam || '',
-                                Omschrijving: row.Omschrijving || '',
-                                Codelijst: row.Codelijst || '',
-                                CodelijstSubset: row.CodelijstSubset || '',
-                                EigenOmschrijving: row.EigenOmschrijving || '',
-                                // Bewaar alle originele kolommen
-                                ...row
-                            };
-                            
-                            existing.VerplichtAcceptatie = row.Verplicht || '';
-                            existing.InAcceptatie = 'X';
-                            
-                            // Update velden alleen als ze gevuld zijn
-                            Object.keys(row).forEach(key => {
-                                if (row[key] && !existing[key]) {
-                                    existing[key] = row[key];
-                                }
-                            });
-                            
-                            rowsByPath.set(path, existing);
-                        });
-                        
-                        console.log(`Na acceptatie: ${rowsByPath.size} unieke paden`);
-                    }
-
-                    // Verrijk met AFD en ANVA data
-                    const enrichedData = [];
-                    let anvaFound = 0;
-                    let index = 0;
-                    
-                    for (const [path, row] of rowsByPath) {
-                        index++;
-                        // Bepaal entiteit en attribuutcode
-                        let entiteitCode = '';
-                        let attribuutCode = '';
-                        let afdKey = '';
-                        
-                        // Als we een volledig attribuut hebben (bijv. PP_INGDAT)
-                        if (row.Attribuut && row.Attribuut.includes('_')) {
-                            const parts = row.Attribuut.split('_');
-                            entiteitCode = parts[0];
-                            attribuutCode = parts.slice(1).join('_');
-                            afdKey = row.Attribuut; // Het volledige attribuut IS de AFD key
-                        } 
-                        // Gebruik geparseerde waarden als fallback
-                        else if (row.ParsedEntiteit && row.ParsedAttribuutCode) {
-                            entiteitCode = row.ParsedEntiteit;
-                            attribuutCode = row.ParsedAttribuutCode;
-                            afdKey = `${entiteitCode}_${attribuutCode}`;
-                        }
-                        // Als we alleen een attribuut hebben zonder underscore
-                        else if (row.Attribuut) {
-                            // Haal entiteit uit pad
-                            const padParts = path.split('/').filter(p => p);
-                            if (padParts.length > 0) {
-                                entiteitCode = padParts[padParts.length - 1];
-                                attribuutCode = row.Attribuut;
-                                afdKey = `${entiteitCode}_${attribuutCode}`;
-                            }
-                        }
-                        
-                        // Zoek AFD record
-                        let afdRecord = null;
-                        if (entiteitCode && attribuutCode) {
-                            afdRecord = data.find(d => 
-                                d.Entiteitcode === entiteitCode && 
-                                d.Attribuutcode === attribuutCode &&
-                                d['Entiteit/Attribuut'] === 'A'
-                            );
-                        }
-                        
-                        // ANVA lookup
-                        let anvaCode = '';
-                        let anvaOmschrijving = '';
-                        
-                        if (afdKey) {
-                            // Debug eerste paar lookups
-                            if (index < 5) {
-                                console.log(`ANVA lookup voor ${afdKey}`);
-                            }
-                            
-                            // Directe lookup
-                            if (anvaData[afdKey]) {
-                                anvaCode = anvaData[afdKey].code || '';
-                                anvaOmschrijving = anvaData[afdKey].omschrijving || '';
-                                anvaFound++;
-                            }
-                            // Probeer uppercase
-                            else if (anvaData[afdKey.toUpperCase()]) {
-                                anvaCode = anvaData[afdKey.toUpperCase()].code || '';
-                                anvaOmschrijving = anvaData[afdKey.toUpperCase()].omschrijving || '';
-                                anvaFound++;
-                            }
-                            // Probeer lowercase
-                            else if (anvaData[afdKey.toLowerCase()]) {
-                                anvaCode = anvaData[afdKey.toLowerCase()].code || '';
-                                anvaOmschrijving = anvaData[afdKey.toLowerCase()].omschrijving || '';
-                                anvaFound++;
-                            }
-                        }
-                        
-                        const enrichedRow = {
-                            Pad: path,
-                            Entiteit: entiteitCode,
-                            Attribuut: row.Attribuut || '',
-                            'AFD Attribuut': afdKey,
-                            Naam: row.Naam || (afdRecord ? afdRecord.Naam : ''),
-                            Omschrijving: row.Omschrijving || (afdRecord ? afdRecord.Omschrijving : ''),
-                            'ANVA Label': anvaCode,
-                            'ANVA Omschrijving': anvaOmschrijving,
-                            Datatype: afdRecord ? (afdRecord.Datatype || '') : '',
-                            Formaat: afdRecord ? (afdRecord.Formaat || '') : '',
-                            Lengte: afdRecord ? (afdRecord.Lengte || '') : '',
-                            Decimalen: afdRecord ? (afdRecord.Decimalen || '') : '',
-                            Premie: row.InPremie || '',
-                            Acceptatie: row.InAcceptatie || '',
-                            'Verplicht Premie': row.VerplichtPremie || '',
-                            'Verplicht Acceptatie': row.VerplichtAcceptatie || '',
-                            Codelijst: row.Codelijst || (afdRecord ? afdRecord.Codelijst : ''),
-                            CodelijstSubset: row.CodelijstSubset || '',
-                            'Default Waarde': afdRecord ? (afdRecord.Defaultwaarde || '') : '',
-                            'Eigen Omschrijving': row.EigenOmschrijving || ''
-                        };
-                        
-                        enrichedData.push(enrichedRow);
-                    }
-
-                    // Sorteer op pad
-                    enrichedData.sort((a, b) => (a.Pad || '').localeCompare(b.Pad || ''));
-
-                    console.log(`Totaal verrijkte rijen: ${enrichedData.length}`);
-                    console.log(`Rijen met ANVA: ${anvaFound}`);
-                    console.log('Voorbeeld verrijkte rij:', enrichedData[0]);
-                    
-                    setResult(enrichedData);
-                } catch (err) {
-                    console.error('Error in processing:', err);
-                    setError(err.message);
-                } finally {
-                    setProcessing(false);
-                }
-            };
-
-            const downloadCSV = () => {
-                if (!result) return;
-
-                // Maak CSV content zoals in Format Analyse bestand
-                const headers = [
-                    'Pad',
-                    'Entiteit', 
-                    'Attribuut',
-                    'AFD Attribuut',
-                    'Naam',
-                    'Omschrijving',
-                    'ANVA Label',
-                    'ANVA Omschrijving',
-                    'Datatype',
-                    'Formaat',
-                    'Lengte',
-                    'Decimalen',
-                    'Premie',
-                    'Acceptatie',
-                    'Verplicht Premie',
-                    'Verplicht Acceptatie',
-                    'Codelijst',
-                    'CodelijstSubset',
-                    'Default Waarde',
-                    'Eigen Omschrijving'
-                ];
-
-                const csvContent = [
-                    headers.join(';'),
-                    ...result.map(row => 
-                        headers.map(h => {
-                            const value = row[h] || '';
-                            // Escape quotes en semicolons
-                            if (value.includes(';') || value.includes('"') || value.includes('\n')) {
-                                return `"${value.replace(/"/g, '""')}"`;
-                            }
-                            return value;
-                        }).join(';')
-                    )
-                ].join('\n');
-
-                // Download
-                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-                const link = document.createElement('a');
-                const filename = `anva_verrijkt_${new Date().toISOString().slice(0,10)}.csv`;
-                link.href = URL.createObjectURL(blob);
-                link.download = filename;
-                link.click();
-            };
-
-            if (!isOpen) return null;
-
-            return (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                    <div className={`${darkMode ? 'bg-gray-800 text-gray-100' : 'bg-white'} rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col`}>
-                        <div className={`flex-shrink-0 p-6 border-b ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
-                            <div className="flex items-start justify-between">
-                                <div className="flex items-center space-x-3">
-                                    <Upload className="h-6 w-6 text-blue-600" />
-                                    <h2 className={`text-xl font-bold ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
-                                        ANVA Code Verrijking
-                                    </h2>
-                                </div>
-                                <button
-                                    onClick={onClose}
-                                    className={`p-2 rounded-lg flex-shrink-0 ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'}`}
-                                >
-                                    <X className="h-5 w-5" />
-                                </button>
-                            </div>
-                            <p className={`mt-2 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                                Upload product CSV bestanden om ze te verrijken met ANVA codes
-                            </p>
-                        </div>
-
-                        <div className="flex-1 overflow-y-auto p-6">
-                            {!result ? (
-                                <div className="space-y-6">
-                                    {/* Premie upload */}
-                                    <div>
-                                        <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                                            Premie bestand (verplicht)
-                                        </label>
-                                        <div
-                                            className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors ${
-                                                dragActive.premie ? 'drag-active' : ''
-                                            } ${
-                                                darkMode ? 'border-gray-600 hover:border-gray-500' : 'border-gray-300 hover:border-gray-400'
-                                            }`}
-                                            onDragEnter={(e) => handleDrag(e, 'premie')}
-                                            onDragLeave={(e) => handleDrag(e, 'premie')}
-                                            onDragOver={(e) => handleDrag(e, 'premie')}
-                                            onDrop={(e) => handleDrop(e, 'premie')}
-                                            onClick={() => document.getElementById('premie-upload').click()}
-                                        >
-                                            <input
-                                                id="premie-upload"
-                                                type="file"
-                                                accept=".csv"
-                                                onChange={(e) => handleFileSelect(e, 'premie')}
-                                                className="hidden"
-                                            />
-                                            {premieFile ? (
-                                                <div className="space-y-2">
-                                                    <FileText className="h-12 w-12 text-green-500 mx-auto" />
-                                                    <p className="font-medium">{premieFile.name}</p>
-                                                    <p className="text-sm text-gray-500">
-                                                        {(premieFile.size / 1024).toFixed(1)} KB
-                                                    </p>
-                                                </div>
-                                            ) : (
-                                                <div className="space-y-2">
-                                                    <Upload className="h-12 w-12 text-gray-400 mx-auto" />
-                                                    <p>Sleep bestand hierheen of klik om te selecteren</p>
-                                                    <p className="text-sm text-gray-500">CSV bestanden only</p>
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
-
-                                    {/* Acceptatie upload */}
-                                    <div>
-                                        <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                                            Acceptatie bestand (optioneel)
-                                        </label>
-                                        <div
-                                            className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors ${
-                                                dragActive.acceptatie ? 'drag-active' : ''
-                                            } ${
-                                                darkMode ? 'border-gray-600 hover:border-gray-500' : 'border-gray-300 hover:border-gray-400'
-                                            }`}
-                                            onDragEnter={(e) => handleDrag(e, 'acceptatie')}
-                                            onDragLeave={(e) => handleDrag(e, 'acceptatie')}
-                                            onDragOver={(e) => handleDrag(e, 'acceptatie')}
-                                            onDrop={(e) => handleDrop(e, 'acceptatie')}
-                                            onClick={() => document.getElementById('acceptatie-upload').click()}
-                                        >
-                                            <input
-                                                id="acceptatie-upload"
-                                                type="file"
-                                                accept=".csv"
-                                                onChange={(e) => handleFileSelect(e, 'acceptatie')}
-                                                className="hidden"
-                                            />
-                                            {acceptatieFile ? (
-                                                <div className="space-y-2">
-                                                    <FileText className="h-12 w-12 text-green-500 mx-auto" />
-                                                    <p className="font-medium">{acceptatieFile.name}</p>
-                                                    <p className="text-sm text-gray-500">
-                                                        {(acceptatieFile.size / 1024).toFixed(1)} KB
-                                                    </p>
-                                                </div>
-                                            ) : (
-                                                <div className="space-y-2">
-                                                    <Upload className="h-12 w-12 text-gray-400 mx-auto" />
-                                                    <p>Sleep bestand hierheen of klik om te selecteren</p>
-                                                    <p className="text-sm text-gray-500">CSV bestanden only</p>
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
-
-                                    {error && (
-                                        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-                                            <p className="font-bold">Fout</p>
-                                            <p>{error}</p>
-                                        </div>
-                                    )}
-
-                                    <div className="flex justify-end space-x-3">
-                                        <button
-                                            onClick={onClose}
-                                            className={`px-4 py-2 rounded-lg ${
-                                                darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-200 hover:bg-gray-300'
-                                            }`}
-                                        >
-                                            Annuleren
-                                        </button>
-                                        <button
-                                            onClick={processFiles}
-                                            disabled={!premieFile || processing}
-                                            className={`px-4 py-2 rounded-lg flex items-center space-x-2 ${
-                                                !premieFile || processing
-                                                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                                                    : 'bg-blue-500 text-white hover:bg-blue-600'
-                                            }`}
-                                        >
-                                            {processing ? (
-                                                <>
-                                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                                                    <span>Verwerken...</span>
-                                                </>
-                                            ) : (
-                                                <>
-                                                    <Package className="h-4 w-4" />
-                                                    <span>Verwerken</span>
-                                                </>
-                                            )}
-                                        </button>
-                                    </div>
-                                </div>
-                            ) : (
-                                <div className="space-y-4">
-                                    <div className={`p-4 rounded-lg ${darkMode ? 'bg-gray-700' : 'bg-green-50'}`}>
-                                        <h3 className="font-semibold mb-2">Verwerking succesvol!</h3>
-                                        <div className="text-sm space-y-1">
-                                            <p>{result.length} totaal attributen verwerkt</p>
-                                            <p>{result.filter(r => r.Premie === 'X').length} in premie bestand</p>
-                                            <p>{result.filter(r => r.Acceptatie === 'X').length} in acceptatie bestand</p>
-                                            <p>{result.filter(r => r['ANVA Label']).length} met ANVA code</p>
-                                        </div>
-                                    </div>
-
-                                    <div className="overflow-x-auto">
-                                        <table className="min-w-full divide-y divide-gray-200">
-                                            <thead className={darkMode ? 'bg-gray-700' : 'bg-gray-50'}>
-                                                <tr>
-                                                    <th className="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider">Pad</th>
-                                                    <th className="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider">Attribuut</th>
-                                                    <th className="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider">ANVA</th>
-                                                    <th className="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider">Premie</th>
-                                                    <th className="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider">Accept</th>
-                                                    <th className="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider">In CSV</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody className={`divide-y ${darkMode ? 'divide-gray-700' : 'divide-gray-200'}`}>
-                                                {result.slice(0, 10).map((row, index) => (
-                                                    <tr key={index}>
-                                                        <td className="px-3 py-2 text-sm">{row.Pad}</td>
-                                                        <td className="px-3 py-2 text-sm font-mono">{row.Entiteit}_{row.Attribuut}</td>
-                                                        <td className="px-3 py-2 text-sm">{row['ANVA Label']}</td>
-                                                        <td className="px-3 py-2 text-sm">
-                                                            {row['Verplicht Premie'] && (
-                                                                <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium ${
-                                                                    row['Verplicht Premie'] === 'V' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800'
-                                                                }`}>
-                                                                    {row['Verplicht Premie']}
-                                                                </span>
-                                                            )}
-                                                        </td>
-                                                        <td className="px-3 py-2 text-sm">
-                                                            {row['Verplicht Acceptatie'] && (
-                                                                <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium ${
-                                                                    row['Verplicht Acceptatie'] === 'V' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800'
-                                                                }`}>
-                                                                    {row['Verplicht Acceptatie']}
-                                                                </span>
-                                                            )}
-                                                        </td>
-                                                        <td className="px-3 py-2 text-sm">
-                                                            <div className="flex items-center space-x-1">
-                                                                {row.Premie === 'X' && (
-                                                                    <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
-                                                                        P
-                                                                    </span>
-                                                                )}
-                                                                {row.Acceptatie === 'X' && (
-                                                                    <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
-                                                                        A
-                                                                    </span>
-                                                                )}
-                                                            </div>
-                                                        </td>
-                                                    </tr>
-                                                ))}
-                                            </tbody>
-                                        </table>
-                                        {result.length > 10 && (
-                                            <p className="text-sm text-gray-500 mt-2 text-center">
-                                                ... en {result.length - 10} meer rijen
-                                            </p>
-                                        )}
-                                    </div>
-
-                                    <div className="flex justify-end space-x-3">
-                                        <button
-                                            onClick={() => {
-                                                setResult(null);
-                                                setPremieFile(null);
-                                                setAcceptatieFile(null);
-                                            }}
-                                            className={`px-4 py-2 rounded-lg ${
-                                                darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-200 hover:bg-gray-300'
-                                            }`}
-                                        >
-                                            Nieuwe import
-                                        </button>
-                                        <button
-                                            onClick={downloadCSV}
-                                            className="px-4 py-2 rounded-lg bg-blue-500 text-white hover:bg-blue-600 flex items-center space-x-2"
-                                        >
-                                            <Download className="h-4 w-4" />
-                                            <span>Download CSV</span>
-                                        </button>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                </div>
-            );
-        }
-
         function AFDSearchTool() {
             const [data, setData] = useState([]);
             const [codelistData, setCodelistData] = useState({});
@@ -1126,7 +525,6 @@
             const [selectedItemIndex, setSelectedItemIndex] = useState(-1);
             const [keyboardActive, setKeyboardActive] = useState(false);
             const [showInfo, setShowInfo] = useState(false);
-            const [showImport, setShowImport] = useState(false);
             const searchInputRef = useRef(null);
             const itemRefs = useRef([]);
             
@@ -1150,7 +548,7 @@
             useEffect(() => {
                 const handleKeyDown = (e) => {
                     // Don't interfere with modals or inputs
-                    if (selectedCodelist || showInfo || showImport || e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') {
+                    if (selectedCodelist || showInfo || e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') {
                         return;
                     }
 
@@ -1217,7 +615,7 @@
 
                 document.addEventListener('keydown', handleKeyDown);
                 return () => document.removeEventListener('keydown', handleKeyDown);
-            }, [paginatedData, selectedItemIndex, selectedCodelist, debouncedSearchTerm, showInfo, showImport]);
+            }, [paginatedData, selectedItemIndex, selectedCodelist, debouncedSearchTerm, showInfo]);
 
             // Scroll to selected item
             useEffect(() => {
@@ -1338,33 +736,111 @@
                         // Load ANVA mapping data (optional)
                         try {
                             console.log('🔄 Attempting to load ANVA mapping data...');
-                            const anvaResponse = await window.fs.readFile('ANVA AFD.xlsx');
+                            const anvaResponse = await window.fs.readFile('ANVA_AFD.xlsx');
                             console.log('✅ ANVA Excel loaded, parsing...');
                             
+                            // Check if XLSX is available
+                            if (typeof XLSX === 'undefined') {
+                                console.error('❌ XLSX library not available');
+                                throw new Error('XLSX library not loaded');
+                            }
+                            
                             const anvaWorkbook = XLSX.read(anvaResponse, {
-                                cellStyles: true,
-                                cellFormulas: true,
+                                type: 'array',
+                                cellStyles: false,
+                                cellFormulas: false,
                                 cellDates: true
                             });
                             
-                            const anvaSheet = anvaWorkbook.Sheets[anvaWorkbook.SheetNames[0]];
-                            const anvaJsonData = XLSX.utils.sheet_to_json(anvaSheet);
+                            console.log('📊 ANVA worksheets:', anvaWorkbook.SheetNames);
                             
-                            const anvaMapping = {};
-                            anvaJsonData.forEach(row => {
-                                if (row.AFD && row.ANVA) {
-                                    anvaMapping[row.AFD] = {
-                                        code: String(row.ANVA || ''),
-                                        omschrijving: String(row['ANVA Omschrijving'] || ''),
-                                        afwijkendNietToegestaan: String(row['Afwijkend niet toegestaan'] || '')
-                                    };
-                                }
+                            const anvaSheet = anvaWorkbook.Sheets[anvaWorkbook.SheetNames[0]];
+                            
+                            // Convert to raw array format first to find headers
+                            const rawData = XLSX.utils.sheet_to_json(anvaSheet, {
+                                header: 1,
+                                defval: '',
+                                blankrows: false
                             });
                             
-                            setAnvaData(anvaMapping);
-                            console.log(`📋 ANVA mapping loaded: ${Object.keys(anvaMapping).length} mappings`);
+                            console.log('📊 Raw ANVA data rows:', rawData.length);
+                            
+                            // Find header row
+                            let headerRowIndex = -1;
+                            for (let i = 0; i < Math.min(5, rawData.length); i++) {
+                                if (rawData[i].some(cell => String(cell).includes('AFD'))) {
+                                    headerRowIndex = i;
+                                    break;
+                                }
+                            }
+                            
+                            if (headerRowIndex === -1) {
+                                console.warn('⚠️ No AFD header found, trying standard JSON conversion');
+                                // Fallback to standard JSON conversion
+                                const anvaJsonData = XLSX.utils.sheet_to_json(anvaSheet);
+                                console.log('📊 Standard conversion rows:', anvaJsonData.length);
+                                
+                                const anvaMapping = {};
+                                anvaJsonData.forEach(row => {
+                                    if (row.AFD && row.ANVA) {
+                                        anvaMapping[row.AFD] = {
+                                            code: String(row.ANVA || ''),
+                                            omschrijving: String(row['ANVA Omschrijving'] || ''),
+                                            afwijkendNietToegestaan: String(row['Afwijkend niet toegestaan'] || '')
+                                        };
+                                    }
+                                });
+                                
+                                setAnvaData(anvaMapping);
+                                console.log(`📋 ANVA mapping loaded (fallback): ${Object.keys(anvaMapping).length} mappings`);
+                            } else {
+                                // Process with found headers
+                                const headers = rawData[headerRowIndex];
+                                console.log('📊 ANVA headers:', headers);
+                                
+                                const afdCol = headers.findIndex(h => String(h).includes('AFD'));
+                                const anvaCol = headers.findIndex(h => String(h).includes('ANVA') && !String(h).includes('Omschrijving'));
+                                const omschrijvingCol = headers.findIndex(h => String(h).includes('Omschrijving'));
+                                const afwijkendCol = headers.findIndex(h => String(h).includes('Afwijkend') || String(h).includes('toegestaan'));
+                                
+                                console.log('📊 Column indices - AFD:', afdCol, 'ANVA:', anvaCol, 'Omschrijving:', omschrijvingCol);
+                                
+                                const dataRows = rawData.slice(headerRowIndex + 1);
+                                const anvaMapping = {};
+                                let validCount = 0;
+                                
+                                dataRows.forEach((row, index) => {
+                                    const afd = row[afdCol];
+                                    const anva = row[anvaCol];
+                                    const omschrijving = row[omschrijvingCol];
+                                    const afwijkend = row[afwijkendCol];
+                                    
+                                    if (afd && anva) {
+                                        anvaMapping[String(afd)] = {
+                                            code: String(anva),
+                                            omschrijving: String(omschrijving || ''),
+                                            afwijkendNietToegestaan: String(afwijkend || '')
+                                        };
+                                        validCount++;
+                                    }
+                                });
+                                
+                                setAnvaData(anvaMapping);
+                                console.log(`📋 ANVA mapping loaded: ${validCount} mappings from ${dataRows.length} rows`);
+                                
+                                // Test some common mappings
+                                const testCodes = ['PP_NAAM', 'OB_NAAM', 'DA_VERZSOM'];
+                                testCodes.forEach(code => {
+                                    if (anvaMapping[code]) {
+                                        console.log(`✅ ${code} -> ${anvaMapping[code].code}`);
+                                    } else {
+                                        console.log(`❌ ${code} -> NOT FOUND`);
+                                    }
+                                });
+                            }
                         } catch (err) {
                             console.warn('⚠️ ANVA mapping data not found or could not be loaded:', err.message);
+                            console.warn('⚠️ Error details:', err);
                         }
 
                         setData(cleanedData);
@@ -1614,13 +1090,6 @@
                                     </div>
                                 </div>
                                 <div className="flex items-center space-x-2">
-                                    <button
-                                        onClick={() => setShowImport(true)}
-                                        className={`p-2 rounded-lg ${darkMode ? 'hover:bg-gray-700 text-gray-300' : 'hover:bg-gray-100 text-gray-600'}`}
-                                        title="ANVA Code Verrijking"
-                                    >
-                                        <Upload className="h-5 w-5" />
-                                    </button>
                                     <button
                                         onClick={() => setShowInfo(true)}
                                         className={`p-2 rounded-lg ${darkMode ? 'hover:bg-gray-700 text-gray-300' : 'hover:bg-gray-100 text-gray-600'}`}
@@ -2008,22 +1477,6 @@
 
                                     <div>
                                         <h3 className={`text-lg font-semibold mb-3 ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
-                                            📤 ANVA Verrijking
-                                        </h3>
-                                        <div className={`space-y-2 text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                                            <p>De ANVA verrijking functionaliteit stelt je in staat om:</p>
-                                            <ul className="list-disc list-inside space-y-1 ml-4">
-                                                <li>Product CSV bestanden (premie/acceptatie) te uploaden</li>
-                                                <li>Deze automatisch te combineren tot één dataset</li>
-                                                <li>ANVA codes toe te voegen aan elk AFD attribuut</li>
-                                                <li>Het resultaat te exporteren met complete ANVA informatie</li>
-                                            </ul>
-                                            <p className="mt-2"><strong>Gebruik:</strong> Klik op het upload icoon <Upload className="h-4 w-4 inline" /> in de header</p>
-                                        </div>
-                                    </div>
-
-                                    <div>
-                                        <h3 className={`text-lg font-semibold mb-3 ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
                                             ⌨️ Sneltoetsen
                                         </h3>
                                         <div className="space-y-2 text-sm">
@@ -2135,15 +1588,6 @@
                             </div>
                         </div>
                     )}
-
-                    {/* ANVA Verrijking Modal */}
-                    <ANVAVerrijkingModal 
-                        isOpen={showImport}
-                        onClose={() => setShowImport(false)}
-                        darkMode={darkMode}
-                        anvaData={anvaData}
-                        data={data}
-                    />
 
                     {/* Codelist Modal */}
                     {selectedCodelist && (
