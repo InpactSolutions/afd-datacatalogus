@@ -496,7 +496,7 @@
                     {isOpen && (
                         <div className={`absolute z-50 w-full mt-1 rounded-lg shadow-lg border ${
                             darkMode ? 'bg-gray-800 border-gray-600' : 'bg-white border-gray-300'
-                        } max-h-60 overflow-hidden`}>
+                        } max-h-60 overflow-hidden`} style={{ minWidth: '280px' }}>
                             <div className="p-2 border-b border-gray-200">
                                 <input
                                     ref={inputRef}
@@ -526,6 +526,7 @@
                                                 index === selectedIndex ? (darkMode ? 'bg-gray-700' : 'bg-gray-100') : ''
                                             } ${option.value === value ? 'font-medium' : ''}`}
                                             onClick={() => handleOptionClick(option.value)}
+                                            style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}
                                         >
                                             {option.label}
                                         </button>
@@ -864,24 +865,36 @@
                             });
 
                             const codelistGroups = {};
+                            const codelistDescriptions = {};
                             let codelistCount = 0;
+                            
                             parsedCodelist.data.slice(1).forEach(row => {
                                 const [codelijst, code, omschrijving, actief] = row;
                                 if (codelijst) {
                                     if (!codelistGroups[codelijst]) {
                                         codelistGroups[codelijst] = [];
                                     }
-                                    codelistGroups[codelijst].push({
-                                        code: String(code || ''),
-                                        omschrijving: String(omschrijving || ''),
-                                        actief: String(actief || '')
-                                    });
-                                    codelistCount++;
+                                    
+                                    // Als er geen code is (kolom B leeg), dan is dit de beschrijving van de codelijst
+                                    if (!code || String(code).trim() === '') {
+                                        codelistDescriptions[codelijst] = String(omschrijving || '');
+                                    } else {
+                                        // Anders is het een normale codelijst item
+                                        codelistGroups[codelijst].push({
+                                            code: String(code || ''),
+                                            omschrijving: String(omschrijving || ''),
+                                            actief: String(actief || '')
+                                        });
+                                        codelistCount++;
+                                    }
                                 }
                             });
 
                             setCodelistData(codelistGroups);
                             console.log(`📚 Codelist loaded: ${Object.keys(codelistGroups).length} lists, ${codelistCount} total items`);
+                            
+                            // Store codelist descriptions in a separate state or combine with codelistData
+                            window.codelistDescriptions = codelistDescriptions;
                         } catch (err) {
                             console.warn('⚠️ Codelist data not found or could not be loaded:', err.message);
                         }
@@ -1465,10 +1478,13 @@
                                                 <SearchableSelect
                                                     options={[
                                                         { value: '', label: 'Alle codelijsten' },
-                                                        ...availableCodelists.map(codelist => ({
-                                                            value: codelist,
-                                                            label: codelist
-                                                        }))
+                                                        ...availableCodelists.map(codelist => {
+                                                            const description = window.codelistDescriptions?.[codelist];
+                                                            return {
+                                                                value: codelist,
+                                                                label: description ? `${codelist} - ${description}` : codelist
+                                                            };
+                                                        })
                                                     ]}
                                                     value={advancedSearch.codelistFilter}
                                                     onChange={(value) => setAdvancedSearch(prev => ({ ...prev, codelistFilter: value }))}
@@ -1524,42 +1540,46 @@
                                 )}
                                 
                                 <div className="flex flex-wrap gap-4">
-                                    <div className="flex items-center space-x-2">
-                                        <Filter className={`h-5 w-5 ${darkMode ? 'text-gray-300' : 'text-gray-400'}`} />
-                                        <SearchableSelect
-                                            options={[
-                                                { value: 'all', label: 'Alle types' },
-                                                { value: 'E', label: 'Alleen entiteiten' },
-                                                { value: 'A', label: 'Alleen attributen' }
-                                            ]}
-                                            value={typeFilter}
-                                            onChange={setTypeFilter}
-                                            placeholder="Type selecteren"
-                                            className={`border rounded-lg px-3 py-2 ${
-                                                darkMode ? 'bg-gray-700 border-gray-600 text-gray-100' : 'bg-white border-gray-300 text-gray-900'
-                                            }`}
-                                            darkMode={darkMode}
-                                        />
-                                    </div>
-                                    {availableEntities.length > 0 && (
-                                        <div className="flex items-center space-x-2">
-                                            <Database className={`h-5 w-5 ${darkMode ? 'text-gray-300' : 'text-gray-400'}`} />
+                                    <div className="flex items-center space-x-2 min-w-0">
+                                        <Filter className={`h-5 w-5 ${darkMode ? 'text-gray-300' : 'text-gray-400'} flex-shrink-0`} />
+                                        <div className="min-w-[140px]">
                                             <SearchableSelect
                                                 options={[
-                                                    { value: 'all', label: `Alle entiteiten (${availableEntities.length})` },
-                                                    ...availableEntities.map(entity => ({
-                                                        value: entity.code,
-                                                        label: `${entity.code} - ${entity.naam}`
-                                                    }))
+                                                    { value: 'all', label: 'Alle types' },
+                                                    { value: 'E', label: 'Alleen entiteiten' },
+                                                    { value: 'A', label: 'Alleen attributen' }
                                                 ]}
-                                                value={entityFilter}
-                                                onChange={setEntityFilter}
-                                                placeholder="Entiteit selecteren"
+                                                value={typeFilter}
+                                                onChange={setTypeFilter}
+                                                placeholder="Type selecteren"
                                                 className={`border rounded-lg px-3 py-2 ${
                                                     darkMode ? 'bg-gray-700 border-gray-600 text-gray-100' : 'bg-white border-gray-300 text-gray-900'
                                                 }`}
                                                 darkMode={darkMode}
                                             />
+                                        </div>
+                                    </div>
+                                    {availableEntities.length > 0 && (
+                                        <div className="flex items-center space-x-2 min-w-0">
+                                            <Database className={`h-5 w-5 ${darkMode ? 'text-gray-300' : 'text-gray-400'} flex-shrink-0`} />
+                                            <div className="min-w-[200px]">
+                                                <SearchableSelect
+                                                    options={[
+                                                        { value: 'all', label: `Alle entiteiten (${availableEntities.length})` },
+                                                        ...availableEntities.map(entity => ({
+                                                            value: entity.code,
+                                                            label: `${entity.code} - ${entity.naam}`
+                                                        }))
+                                                    ]}
+                                                    value={entityFilter}
+                                                    onChange={setEntityFilter}
+                                                    placeholder="Entiteit selecteren"
+                                                    className={`border rounded-lg px-3 py-2 ${
+                                                        darkMode ? 'bg-gray-700 border-gray-600 text-gray-100' : 'bg-white border-gray-300 text-gray-900'
+                                                    }`}
+                                                    darkMode={darkMode}
+                                                />
+                                            </div>
                                         </div>
                                     )}
                                 </div>
@@ -1669,9 +1689,12 @@
                                                                 )}
                                                                 {item.Codelijst && codelistData[item.Codelijst] && (
                                                                     <button
-                                                                        onClick={() => openCodelist(item.Codelijst, item.Naam)}
+                                                                        onClick={() => {
+                                                                            const description = window.codelistDescriptions?.[item.Codelijst];
+                                                                            openCodelist(item.Codelijst, description || item.Codelijst);
+                                                                        }}
                                                                         className="inline-flex items-center space-x-1 text-xs text-blue-600 hover:text-blue-800 underline"
-                                                                        title={`Bekijk codelijst ${item.Codelijst} (${codelistData[item.Codelijst].length} items)`}
+                                                                        title={`Bekijk codelijst ${item.Codelijst}${window.codelistDescriptions?.[item.Codelijst] ? ` - ${window.codelistDescriptions[item.Codelijst]}` : ''} (${codelistData[item.Codelijst].length} items)`}
                                                                     >
                                                                         <BookOpen className="h-3 w-3" />
                                                                         <span>{highlightText(item.Codelijst, searchTerm)}</span>
@@ -2009,8 +2032,12 @@
                                             <h2 className={`text-xl font-bold ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
                                                 Codelijst: {selectedCodelist.codelijst}
                                             </h2>
-                                            <p className="text-sm text-gray-500 mt-1 truncate">{selectedCodelist.naam}</p>
-                                            <p className="text-sm text-gray-500">
+                                            {window.codelistDescriptions?.[selectedCodelist.codelijst] && (
+                                                <p className={`text-sm mt-1 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                                                    {window.codelistDescriptions[selectedCodelist.codelijst]}
+                                                </p>
+                                            )}
+                                            <p className={`text-sm mt-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
                                                 {codelistItems.length} van {codelistData[selectedCodelist.codelijst]?.length || 0} items
                                             </p>
                                         </div>
