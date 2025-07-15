@@ -1,4 +1,4 @@
-// Debounce search term and add to history<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="nl">
 <head>
     <meta charset="UTF-8">
@@ -525,7 +525,6 @@
             const [selectedItemIndex, setSelectedItemIndex] = useState(-1);
             const [keyboardActive, setKeyboardActive] = useState(false);
             const [showInfo, setShowInfo] = useState(false);
-            const [searchHistory, setSearchHistory] = useState([]);
             const searchInputRef = useRef(null);
             const itemRefs = useRef([]);
             
@@ -628,41 +627,16 @@
                 }
             }, [selectedItemIndex, keyboardActive]);
 
-            // Autocomplete suggestions
-            useEffect(() => {
-                if (searchTerm.length >= 2) {
-                    const suggestions = data
-                        .filter(row => {
-                            const fullCode = row.Entiteitcode && row.Attribuutcode ? `${row.Entiteitcode}_${row.Attribuutcode}` : row.Entiteitcode;
-                            return fullCode && fullCode.toLowerCase().includes(searchTerm.toLowerCase());
-                        })
-                        .slice(0, 8)
-                        .map(row => ({
-                            code: row.Entiteitcode && row.Attribuutcode ? `${row.Entiteitcode}_${row.Attribuutcode}` : row.Entiteitcode,
-                            name: row.Naam,
-                            type: row['Entiteit/Attribuut']
-                        }));
-                    
-                    setAutocompleteItems(suggestions);
-                    setShowAutocomplete(suggestions.length > 0);
-                } else {
-                    setShowAutocomplete(false);
-                }
-            }, [searchTerm, data]);
+            // Debounce search term
             useEffect(() => {
                 const timer = setTimeout(() => {
                     setDebouncedSearchTerm(searchTerm);
                     setCurrentPage(1);
                     setSelectedItemIndex(-1);
                     setKeyboardActive(false);
-                    
-                    // Add to search history if not empty and not already present
-                    if (searchTerm.trim() && !searchHistory.includes(searchTerm.trim())) {
-                        setSearchHistory(prev => [searchTerm.trim(), ...prev.slice(0, 4)]); // Keep last 5 searches
-                    }
                 }, 300);
                 return () => clearTimeout(timer);
-            }, [searchTerm, searchHistory]);
+            }, [searchTerm]);
 
             // Reset page when filters change
             useEffect(() => {
@@ -891,28 +865,17 @@
                 loadData();
             }, []);
 
-            // Enhanced search filter with fuzzy matching and related field search
+            // Enhanced search filter with codelist support
             const searchFilter = useCallback((row, term) => {
                 if (!term) return true;
 
-                const searchTerm = term.toLowerCase().trim();
-                
-                // Common typo corrections
-                const typoCorrections = {
-                    'wh_sbispcc': 'wh_sbispc',
-                    'pp_naam': 'pp_naam',
-                    'ob_naam': 'ob_naam'
-                };
-                
-                const correctedTerm = typoCorrections[searchTerm] || searchTerm;
-                
                 const basicFields = [
                     row.Naam,
                     row.Omschrijving,
                     row.Entiteitcode,
                     row.Attribuutcode,
                     row.Entiteitcode && row.Attribuutcode ? `${row.Entiteitcode}_${row.Attribuutcode}` : null,
-                    row.Codelijst
+                    row.Codelijst  // Now also search in codelist field
                 ];
 
                 // Add ANVA information if available
@@ -923,19 +886,9 @@
                     basicFields.push(anvaInfo.omschrijving);  
                 }
 
-                // Add related fields: if searching for a codelist, include attributes that use it
-                if (row.Codelijst && codelistData[row.Codelijst]) {
-                    const codelistItems = codelistData[row.Codelijst];
-                    const codelistCodes = codelistItems.map(item => item.code).join(' ');
-                    basicFields.push(codelistCodes);
-                }
-
-                // Join all fields and search
-                const searchContent = basicFields.filter(Boolean).join(' ').toLowerCase();
-                
-                // Search with both original and corrected term
-                return searchContent.includes(correctedTerm) || searchContent.includes(searchTerm);
-            }, [anvaData, codelistData]);
+                const searchFields = basicFields.filter(Boolean).join(' ').toLowerCase();
+                return searchFields.includes(term.toLowerCase());
+            }, [anvaData]);
 
             // Filtered data
             const filteredData = useMemo(() => {
@@ -1254,7 +1207,7 @@
                                             <li>Naam van een entiteit of attribuut</li>
                                             <li>Omschrijving</li>
                                             <li>Entiteitcode (bijv. OB, XA, RI)</li>
-                                            <li>Attribuutcode of volledige codes (bijv. DA_VERZSOM, WH_SBISPC)</li>
+                                            <li>Attribuutcode of volledige codes (bijv. DA_VERZSOM)</li>
                                             <li>ANVA code (bijv. 13689)</li>
                                             <li>Codelijst naam (bijv. ADNABS, SECTCOD)</li>
                                         </ul>
@@ -1515,7 +1468,7 @@
                                                 <li>Naam van een entiteit of attribuut</li>
                                                 <li>Omschrijving</li>
                                                 <li>Entiteitcode (bijv. OB, XA, RI)</li>
-                                                <li>Attribuutcode of volledige codes (bijv. DA_VERZSOM, WH_SBISPC)</li>
+                                                <li>Attribuutcode of volledige codes (bijv. DA_VERZSOM)</li>
                                                 <li>ANVA code (bijv. 13689)</li>
                                                 <li>Codelijst naam (bijv. ADNABS, SECTCOD)</li>
                                             </ul>
