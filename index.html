@@ -534,9 +534,7 @@
             const [showInfo, setShowInfo] = useState(false);
             const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
             const [advancedSearch, setAdvancedSearch] = useState({
-                allWords: '',
-                exactPhrase: '',
-                anyWords: '',
+                searchWords: '',
                 entiteitFilter: 'all',
                 datatypeFilter: 'all',
                 codelistFilter: '',
@@ -886,7 +884,7 @@
 
                 // Advanced search logic
                 if (isAdvanced) {
-                    const { allWords, exactPhrase, anyWords, entiteitFilter, datatypeFilter, codelistFilter, anvaCodeFilter } = advancedSearch;
+                    const { searchWords, entiteitFilter, datatypeFilter, codelistFilter, anvaCodeFilter } = advancedSearch;
                     
                     // Entity filter
                     if (entiteitFilter !== 'all' && row.Entiteitcode !== entiteitFilter) {
@@ -908,23 +906,10 @@
                         return false;
                     }
                     
-                    // Text search filters
-                    if (allWords) {
-                        const words = allWords.toLowerCase().split(/\s+/).filter(w => w.length > 0);
+                    // Search words filter (all words must be present)
+                    if (searchWords) {
+                        const words = searchWords.toLowerCase().split(/\s+/).filter(w => w.length > 0);
                         if (!words.every(word => searchFields.includes(word))) {
-                            return false;
-                        }
-                    }
-                    
-                    if (exactPhrase) {
-                        if (!searchFields.includes(exactPhrase.toLowerCase())) {
-                            return false;
-                        }
-                    }
-                    
-                    if (anyWords) {
-                        const words = anyWords.toLowerCase().split(/\s+/).filter(w => w.length > 0);
-                        if (words.length > 0 && !words.some(word => searchFields.includes(word))) {
                             return false;
                         }
                     }
@@ -938,8 +923,8 @@
 
             // Check if advanced search is active
             const isAdvancedSearchActive = useMemo(() => {
-                const { allWords, exactPhrase, anyWords, entiteitFilter, datatypeFilter, codelistFilter, anvaCodeFilter } = advancedSearch;
-                return allWords || exactPhrase || anyWords || entiteitFilter !== 'all' || datatypeFilter !== 'all' || codelistFilter || anvaCodeFilter;
+                const { searchWords, entiteitFilter, datatypeFilter, codelistFilter, anvaCodeFilter } = advancedSearch;
+                return searchWords || entiteitFilter !== 'all' || datatypeFilter !== 'all' || codelistFilter || anvaCodeFilter;
             }, [advancedSearch]);
 
             // Available datatypes
@@ -956,9 +941,7 @@
             // Clear advanced search
             const clearAdvancedSearch = useCallback(() => {
                 setAdvancedSearch({
-                    allWords: '',
-                    exactPhrase: '',
-                    anyWords: '',
+                    searchWords: '',
                     entiteitFilter: 'all',
                     datatypeFilter: 'all',
                     codelistFilter: '',
@@ -1254,49 +1237,22 @@
                                         </div>
                                         
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                            <div>
+                                            <div className="sm:col-span-2">
                                                 <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                                                    Alle woorden
+                                                    Zoekwoorden
                                                 </label>
                                                 <input
                                                     type="text"
-                                                    value={advancedSearch.allWords}
-                                                    onChange={(e) => setAdvancedSearch(prev => ({ ...prev, allWords: e.target.value }))}
-                                                    placeholder="woord1 woord2 woord3"
+                                                    value={advancedSearch.searchWords}
+                                                    onChange={(e) => setAdvancedSearch(prev => ({ ...prev, searchWords: e.target.value }))}
+                                                    placeholder="Typ meerdere woorden - alle woorden moeten voorkomen"
                                                     className={`w-full px-3 py-2 border rounded-lg text-sm ${
                                                         darkMode ? 'bg-gray-800 border-gray-600 text-gray-100 placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
                                                     }`}
                                                 />
-                                            </div>
-                                            
-                                            <div>
-                                                <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                                                    Exacte phrase
-                                                </label>
-                                                <input
-                                                    type="text"
-                                                    value={advancedSearch.exactPhrase}
-                                                    onChange={(e) => setAdvancedSearch(prev => ({ ...prev, exactPhrase: e.target.value }))}
-                                                    placeholder="exacte phrase"
-                                                    className={`w-full px-3 py-2 border rounded-lg text-sm ${
-                                                        darkMode ? 'bg-gray-800 border-gray-600 text-gray-100 placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
-                                                    }`}
-                                                />
-                                            </div>
-                                            
-                                            <div>
-                                                <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                                                    Een van de woorden
-                                                </label>
-                                                <input
-                                                    type="text"
-                                                    value={advancedSearch.anyWords}
-                                                    onChange={(e) => setAdvancedSearch(prev => ({ ...prev, anyWords: e.target.value }))}
-                                                    placeholder="woord1 woord2 woord3"
-                                                    className={`w-full px-3 py-2 border rounded-lg text-sm ${
-                                                        darkMode ? 'bg-gray-800 border-gray-600 text-gray-100 placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
-                                                    }`}
-                                                />
+                                                <p className={`text-xs mt-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                                    Bijvoorbeeld: "naam verzekering" vindt records die beide woorden bevatten
+                                                </p>
                                             </div>
                                             
                                             <div>
@@ -1745,10 +1701,9 @@
                                         <div className={`space-y-2 text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
                                             <p>Voor complexe zoekopdrachten kun je geavanceerd zoeken gebruiken:</p>
                                             <ul className="list-disc list-inside space-y-1 ml-4">
-                                                <li><strong>Alle woorden:</strong> Zoek records die alle opgegeven woorden bevatten</li>
-                                                <li><strong>Exacte phrase:</strong> Zoek naar een exacte woordcombinatie</li>
-                                                <li><strong>Een van de woorden:</strong> Zoek records die minstens één van de woorden bevatten</li>
+                                                <li><strong>Zoekwoorden:</strong> Zoek records die alle opgegeven woorden bevatten</li>
                                                 <li><strong>Filters:</strong> Filter op entiteit, datatype, codelijst of ANVA code</li>
+                                                <li><strong>Combinaties:</strong> Combineer tekst zoeken met specifieke filters</li>
                                             </ul>
                                         </div>
                                     </div>
