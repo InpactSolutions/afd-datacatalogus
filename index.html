@@ -525,6 +525,7 @@
             const [selectedItemIndex, setSelectedItemIndex] = useState(-1);
             const [keyboardActive, setKeyboardActive] = useState(false);
             const [showInfo, setShowInfo] = useState(false);
+            const [searchHistory, setSearchHistory] = useState([]);
             const searchInputRef = useRef(null);
             const itemRefs = useRef([]);
             
@@ -627,16 +628,21 @@
                 }
             }, [selectedItemIndex, keyboardActive]);
 
-            // Debounce search term
+            // Debounce search term and add to history
             useEffect(() => {
                 const timer = setTimeout(() => {
                     setDebouncedSearchTerm(searchTerm);
                     setCurrentPage(1);
                     setSelectedItemIndex(-1);
                     setKeyboardActive(false);
+                    
+                    // Add to search history if not empty and not already present
+                    if (searchTerm.trim() && !searchHistory.includes(searchTerm.trim())) {
+                        setSearchHistory(prev => [searchTerm.trim(), ...prev.slice(0, 4)]); // Keep last 5 searches
+                    }
                 }, 300);
                 return () => clearTimeout(timer);
-            }, [searchTerm]);
+            }, [searchTerm, searchHistory]);
 
             // Reset page when filters change
             useEffect(() => {
@@ -865,17 +871,28 @@
                 loadData();
             }, []);
 
-            // Enhanced search filter with codelist support
+            // Enhanced search filter with fuzzy matching
             const searchFilter = useCallback((row, term) => {
                 if (!term) return true;
 
+                const searchTerm = term.toLowerCase().trim();
+                
+                // Common typo corrections
+                const typoCorrections = {
+                    'wh_sbispcc': 'wh_sbispc',
+                    'pp_naam': 'pp_naam',
+                    'ob_naam': 'ob_naam'
+                };
+                
+                const correctedTerm = typoCorrections[searchTerm] || searchTerm;
+                
                 const basicFields = [
                     row.Naam,
                     row.Omschrijving,
                     row.Entiteitcode,
                     row.Attribuutcode,
                     row.Entiteitcode && row.Attribuutcode ? `${row.Entiteitcode}_${row.Attribuutcode}` : null,
-                    row.Codelijst  // Now also search in codelist field
+                    row.Codelijst
                 ];
 
                 // Add ANVA information if available
@@ -886,8 +903,11 @@
                     basicFields.push(anvaInfo.omschrijving);  
                 }
 
-                const searchFields = basicFields.filter(Boolean).join(' ').toLowerCase();
-                return searchFields.includes(term.toLowerCase());
+                // Join all fields and search
+                const searchContent = basicFields.filter(Boolean).join(' ').toLowerCase();
+                
+                // Search with both original and corrected term
+                return searchContent.includes(correctedTerm) || searchContent.includes(searchTerm);
             }, [anvaData]);
 
             // Filtered data
@@ -1138,6 +1158,41 @@
                                         </button>
                                     )}
                                 </div>
+                                {/* Quick search suggestions */}
+                                {!searchTerm && (
+                                    <div className="mt-2">
+                                        <div className="flex flex-wrap gap-2 items-center">
+                                            <span className="text-xs text-gray-500">Snel zoeken:</span>
+                                            {['PP_NAAM', 'OB_NAAM', 'WH_SBISPCC', 'DA_VERZSOM', 'ADNABS'].map(term => (
+                                                <button
+                                                    key={term}
+                                                    onClick={() => setSearchTerm(term)}
+                                                    className={`px-2 py-1 text-xs rounded ${
+                                                        darkMode ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                                    }`}
+                                                >
+                                                    {term}
+                                                </button>
+                                            ))}
+                                        </div>
+                                        {searchHistory.length > 0 && (
+                                            <div className="flex flex-wrap gap-2 items-center mt-2">
+                                                <span className="text-xs text-gray-500">Recent:</span>
+                                                {searchHistory.map(term => (
+                                                    <button
+                                                        key={term}
+                                                        onClick={() => setSearchTerm(term)}
+                                                        className={`px-2 py-1 text-xs rounded ${
+                                                            darkMode ? 'bg-gray-600 text-gray-300 hover:bg-gray-500' : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
+                                                        }`}
+                                                    >
+                                                        {term}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
                                 <div className="flex flex-wrap gap-4">
                                     <div className="flex items-center space-x-2">
                                         <Filter className={`h-5 w-5 ${darkMode ? 'text-gray-300' : 'text-gray-400'}`} />
@@ -1170,6 +1225,23 @@
                                                     </option>
                                                 ))}
                                             </select>
+                                        </div>
+                                    )}
+                                    {/* Popular entity quick buttons */}
+                                    {!searchTerm && entityFilter === 'all' && (
+                                        <div className="flex items-center space-x-2">
+                                            <span className="text-sm text-gray-500">Populair:</span>
+                                            {['PP', 'OB', 'WH', 'DA', 'XG'].map(entityCode => (
+                                                <button
+                                                    key={entityCode}
+                                                    onClick={() => setEntityFilter(entityCode)}
+                                                    className={`px-2 py-1 text-xs rounded ${
+                                                        darkMode ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                                    }`}
+                                                >
+                                                    {entityCode}
+                                                </button>
+                                            ))}
                                         </div>
                                     )}
                                 </div>
@@ -1207,10 +1279,13 @@
                                             <li>Naam van een entiteit of attribuut</li>
                                             <li>Omschrijving</li>
                                             <li>Entiteitcode (bijv. OB, XA, RI)</li>
-                                            <li>Attribuutcode of volledige codes (bijv. DA_VERZSOM)</li>
+                                            <li>Attribuutcode of volledige codes (bijv. DA_VERZSOM, WH_SBISPC)</li>
                                             <li>ANVA code (bijv. 13689)</li>
                                             <li>Codelijst naam (bijv. ADNABS, SECTCOD)</li>
                                         </ul>
+                                        <p className="mt-2 text-xs text-blue-600">
+                                            💡 <strong>Let op:</strong> Zoek naar WH_SBISPC (met één C), niet WH_SBISPCC
+                                        </p>
                                     </div>
                                     <div className="mt-6 flex justify-center">
                                         <kbd className={`px-3 py-1 rounded text-sm ${
@@ -1229,9 +1304,28 @@
                         ) : (
                             <div>
                                 <div className="flex justify-between items-center mb-4">
-                                    <p className="text-gray-600">
-                                        {filteredData.length} {filteredData.length === 1 ? "resultaat" : "resultaten"}
-                                    </p>
+                                    <div className="flex items-center space-x-4">
+                                        <p className="text-gray-600">
+                                            {filteredData.length} {filteredData.length === 1 ? "resultaat" : "resultaten"}
+                                        </p>
+                                        {debouncedSearchTerm && (
+                                            <div className="flex items-center space-x-2 text-sm text-gray-500">
+                                                <span>•</span>
+                                                <span>{filteredData.filter(r => r['Entiteit/Attribuut'] === 'E').length} entiteiten</span>
+                                                <span>•</span>
+                                                <span>{filteredData.filter(r => r['Entiteit/Attribuut'] === 'A').length} attributen</span>
+                                                {Object.keys(anvaData).length > 0 && (
+                                                    <>
+                                                        <span>•</span>
+                                                        <span>{filteredData.filter(r => {
+                                                            const fullCode = r.Entiteitcode && r.Attribuutcode ? `${r.Entiteitcode}_${r.Attribuutcode}` : null;
+                                                            return fullCode && anvaData[fullCode];
+                                                        }).length} met ANVA</span>
+                                                    </>
+                                                )}
+                                            </div>
+                                        )}
+                                    </div>
                                     {totalPages > 1 && (
                                         <p className="text-sm text-gray-500">
                                             Pagina {currentPage} van {totalPages}
@@ -1468,10 +1562,20 @@
                                                 <li>Naam van een entiteit of attribuut</li>
                                                 <li>Omschrijving</li>
                                                 <li>Entiteitcode (bijv. OB, XA, RI)</li>
-                                                <li>Attribuutcode of volledige codes (bijv. DA_VERZSOM)</li>
+                                                <li>Attribuutcode of volledige codes (bijv. DA_VERZSOM, WH_SBISPC)</li>
                                                 <li>ANVA code (bijv. 13689)</li>
                                                 <li>Codelijst naam (bijv. ADNABS, SECTCOD)</li>
                                             </ul>
+                                            <div className="mt-3 p-3 bg-blue-50 rounded-lg">
+                                                <p className="text-sm text-blue-800">
+                                                    💡 <strong>Veel voorkomende zoektermen:</strong>
+                                                </p>
+                                                <ul className="text-sm text-blue-700 mt-1 space-y-1">
+                                                    <li>• WH_SBISPC (niet WH_SBISPCC)</li>
+                                                    <li>• PP_NAAM, OB_NAAM, DA_VERZSOM</li>
+                                                    <li>• ADNABS, SECTCOD (codelijsten)</li>
+                                                </ul>
+                                            </div>
                                         </div>
                                     </div>
 
