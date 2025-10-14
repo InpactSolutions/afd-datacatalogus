@@ -922,7 +922,108 @@
                             console.warn('⚠️ Codelist data not found or could not be loaded:', err.message);
                         }
 
-                            console.log('✅ ANVA Excel loaded, parsing...');
+// Load ANVA mapping data (optional) - MET OAI FILTERING
+try {
+    console.log('📄 Attempting to load ANVA mapping data...');
+    const anvaResponse = await window.fs.readFile('ANVA_AFD.xlsx');
+    console.log('✅ ANVA Excel loaded, parsing...');
+    
+    if (typeof XLSX === 'undefined') {
+        console.error('❌ XLSX library not available');
+        throw new Error('XLSX library not loaded');
+    }
+    
+    const anvaWorkbook = XLSX.read(anvaResponse, {
+        type: 'array',
+        cellStyles: false,
+        cellFormulas: false,
+        cellDates: true
+    });
+    
+    const anvaSheet = anvaWorkbook.Sheets[anvaWorkbook.SheetNames[0]];
+    const rawData = XLSX.utils.sheet_to_json(anvaSheet, {
+        header: 1,
+        defval: '',
+        blankrows: false
+    });
+    
+    console.log('📊 Raw ANVA data rows:', rawData.length);
+    
+    // Find header row
+    let headerRowIndex = -1;
+    for (let i = 0; i < Math.min(5, rawData.length); i++) {
+        if (rawData[i].some(cell => String(cell).includes('AFD'))) {
+            headerRowIndex = i;
+            break;
+        }
+    }
+    
+    if (headerRowIndex === -1) {
+        console.warn('⚠️ No AFD header found, trying standard JSON conversion');
+        const anvaJsonData = XLSX.utils.sheet_to_json(anvaSheet);
+        
+        const anvaMapping = {};
+        let skippedCount = 0;
+        anvaJsonData.forEach(row => {
+            const oaiValue = row.OAI || row.oai;
+            if (row.AFD && row.ANVA && (oaiValue === 1 || oaiValue === '1' || oaiValue === 'J')) {
+                anvaMapping[row.AFD] = {
+                    code: String(row.ANVA || ''),
+                    omschrijving: String(row['ANVA Omschrijving'] || ''),
+                    afwijkendNietToegestaan: String(row['Afwijkend niet toegestaan'] || '')
+                };
+            } else if (row.AFD && row.ANVA) {
+                skippedCount++;
+            }
+        });
+        
+        setAnvaData(anvaMapping);
+        console.log(`📋 ANVA mapping loaded (fallback): ${Object.keys(anvaMapping).length} mappings (${skippedCount} skipped without OAI=1)`);
+    } else {
+        const headers = rawData[headerRowIndex];
+        console.log('📊 ANVA headers:', headers);
+        
+        const afdCol = headers.findIndex(h => String(h).includes('AFD'));
+        const anvaCol = headers.findIndex(h => String(h).includes('ANVA') && !String(h).includes('Omschrijving'));
+        const omschrijvingCol = headers.findIndex(h => String(h).includes('Omschrijving'));
+        const afwijkendCol = headers.findIndex(h => String(h).includes('Afwijkend') || String(h).includes('toegestaan'));
+        const oaiCol = headers.findIndex(h => String(h).toUpperCase().includes('OAI'));
+        
+        console.log('📊 Column indices - AFD:', afdCol, 'ANVA:', anvaCol, 'Omschrijving:', omschrijvingCol, 'OAI:', oaiCol);
+        
+        const dataRows = rawData.slice(headerRowIndex + 1);
+        const anvaMapping = {};
+        let validCount = 0;
+        let skippedCount = 0;
+        
+        dataRows.forEach((row, index) => {
+            const afd = row[afdCol];
+            const anva = row[anvaCol];
+            const omschrijving = row[omschrijvingCol];
+            const afwijkend = row[afwijkendCol];
+            const oai = oaiCol >= 0 ? row[oaiCol] : null;
+            
+            // Only use rows where OAI = 1 (or if OAI column doesn't exist, use all)
+            const shouldUse = oaiCol === -1 || oai === 1 || oai === '1' || oai === 'J';
+            
+            if (afd && anva && shouldUse) {
+                anvaMapping[String(afd)] = {
+                    code: String(anva),
+                    omschrijving: String(omschrijving || ''),
+                    afwijkendNietToegestaan: String(afwijkend || '')
+                };
+                validCount++;
+            } else if (afd && anva) {
+                skippedCount++;
+            }
+        });
+        
+        setAnvaData(anvaMapping);
+        console.log(`📋 ANVA mapping loaded: ${validCount} mappings from ${dataRows.length} rows (${skippedCount} skipped without OAI=1)`);
+    }
+} catch (err) {
+    console.warn('⚠️ ANVA mapping data not found or could not be loaded:', err.message);
+}
 
                         setData(cleanedData);
                         
