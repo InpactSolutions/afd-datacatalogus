@@ -376,6 +376,14 @@
 
     <script type="text/babel">
         const { useState, useEffect, useMemo, useCallback, useRef } = React;
+        // Helper: bepaal of OAI '1' is (ondersteunt 1/'1'/true/J/Y)
+        const isOAI1 = (v) => {
+          if (v === undefined || v === null) return false;
+          if (v === 1 || v === '1' || v === true) return true;
+          const s = String(v).trim().toUpperCase();
+          return s === 'J' || s === 'Y';
+        };
+
 
         // SVG Icons als React componenten
         const Search = ({ className }) => (
@@ -961,23 +969,43 @@ try {
     if (headerRowIndex === -1) {
         console.warn('⚠️ No AFD header found, trying standard JSON conversion');
         const anvaJsonData = XLSX.utils.sheet_to_json(anvaSheet);
-        
-        const anvaMapping = {};
-        let skippedCount = 0;
-        anvaJsonData.forEach(row => {
-            const oaiValue = row.OAI || row.oai;
-            if (row.AFD && row.ANVA && (oaiValue === 1 || oaiValue === '1' || oaiValue === 'J')) {
-                anvaMapping[row.AFD] = {
-                    code: String(row.ANVA || ''),
-                    omschrijving: String(row['ANVA Omschrijving'] || ''),
-                    afwijkendNietToegestaan: String(row['Afwijkend niet toegestaan'] || '')
-                };
-            } else if (row.AFD && row.ANVA) {
-                skippedCount++;
-            }
-        });
-        
-        setAnvaData(anvaMapping);
+
+// Groepeer per AFD
+const rowsByAfd = new Map();
+anvaJsonData.forEach(row => {
+  if (!row.AFD || !row.ANVA) return;
+  const afd = String(row.AFD);
+  const arr = rowsByAfd.get(afd) || [];
+  arr.push({
+    afd,
+    anva: String(row.ANVA || ''),
+    oms: String(row['ANVA Omschrijving'] || ''),
+    afwijkend: String(row['Afwijkend niet toegestaan'] || ''),
+    oai: row.OAI ?? row.oai
+  });
+  rowsByAfd.set(afd, arr);
+});
+
+// Selectie per AFD
+const anvaMapping = {};
+let used = 0, skipped = 0;
+for (const [afd, rows] of rowsByAfd.entries()) {
+  let chosen;
+  if (rows.length > 1) {
+    chosen = rows.find(r => isOAI1(r.oai)) ?? rows[0];
+    skipped += (rows.length - 1);
+  } else {
+    chosen = rows[0];
+  }
+  anvaMapping[afd] = {
+    code: chosen.anva,
+    omschrijving: chosen.oms,
+    afwijkendNietToegestaan: chosen.afwijkend
+  };
+  used++;
+}
+
+setAnvaData(anvaMapping);
         console.log(`📋 ANVA mapping loaded (fallback): ${Object.keys(anvaMapping).length} mappings (${skippedCount} skipped without OAI=1)`);
     } else {
         const headers = rawData[headerRowIndex];
@@ -992,33 +1020,52 @@ try {
         console.log('📊 Column indices - AFD:', afdCol, 'ANVA:', anvaCol, 'Omschrijving:', omschrijvingCol, 'OAI:', oaiCol);
         
         const dataRows = rawData.slice(headerRowIndex + 1);
-        const anvaMapping = {};
-        let validCount = 0;
-        let skippedCount = 0;
-        
-        dataRows.forEach((row, index) => {
-            const afd = row[afdCol];
-            const anva = row[anvaCol];
-            const omschrijving = row[omschrijvingCol];
-            const afwijkend = row[afwijkendCol];
-            const oai = oaiCol >= 0 ? row[oaiCol] : null;
-            
-            // Only use rows where OAI = 1 (or if OAI column doesn't exist, use all)
-            const shouldUse = oaiCol === -1 || oai === 1 || oai === '1' || oai === 'J';
-            
-            if (afd && anva && shouldUse) {
-                anvaMapping[String(afd)] = {
-                    code: String(anva),
-                    omschrijving: String(omschrijving || ''),
-                    afwijkendNietToegestaan: String(afwijkend || '')
-                };
-                validCount++;
-            } else if (afd && anva) {
-                skippedCount++;
-            }
-        });
-        
-        setAnvaData(anvaMapping);
+
+// Bouw nette rijobjecten
+const rows = [];
+dataRows.forEach((row) => {
+  const afd = row[afdCol];
+  const anva = row[anvaCol];
+  if (!afd || !anva) return;
+  rows.push({
+    afd: String(afd),
+    anva: String(anva),
+    oms: String((omschrijvingCol >= 0 ? row[omschrijvingCol] : '') || ''),
+    afwijkend: String((afwijkendCol >= 0 ? row[afwijkendCol] : '') || ''),
+    oai: (oaiCol >= 0 ? row[oaiCol] : undefined)
+  });
+});
+
+// Groepeer per AFD
+const rowsByAfd = new Map();
+for (const r of rows) {
+  const arr = rowsByAfd.get(r.afd) || [];
+  arr.push(r);
+  rowsByAfd.set(r.afd, arr);
+}
+
+// Selectie-regel met OAI alleen bij duplicaten
+const anvaMapping = {};
+let validCount = 0;
+let extraRowsSkipped = 0;
+
+for (const [afd, arr] of rowsByAfd.entries()) {
+  let chosen;
+  if (arr.length > 1) {
+    chosen = arr.find(r => isOAI1(r.oai)) ?? arr[0];
+    extraRowsSkipped += (arr.length - 1);
+  } else {
+    chosen = arr[0];
+  }
+  anvaMapping[afd] = {
+    code: chosen.anva,
+    omschrijving: chosen.oms,
+    afwijkendNietToegestaan: chosen.afwijkend
+  };
+  validCount++;
+}
+
+setAnvaData(anvaMapping);
         console.log(`📋 ANVA mapping loaded: ${validCount} mappings from ${dataRows.length} rows (${skippedCount} skipped without OAI=1)`);
     }
 } catch (err) {
