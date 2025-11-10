@@ -1,263 +1,2168 @@
 <!DOCTYPE html>
 <html lang="nl">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>AFD→ANVA Mapping Tool</title>
-  <style>
-    :root{
-      --bg:#0b0f14; --panel:#121821; --muted:#7b8aa0; --text:#e8edf4; --accent:#82d1ff; --accent2:#a2ffdf;
-      --ok:#34d399; --warn:#f59e0b; --err:#ef4444; --chip:#1e293b;
-    }
-    html,body{height:100%}
-    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Inter,sans-serif;background:linear-gradient(180deg,#081018, #0c121b);color:var(--text)}
-    .wrap{max-width:1100px;margin:32px auto;padding:0 16px}
-    h1{font-size:28px;margin:0 0 6px}
-    p.subtitle{margin:0 0 18px;color:var(--muted)}
-    .card{background:var(--panel);border:1px solid #1b2533;border-radius:16px;box-shadow:0 6px 30px rgb(0 0 0 / .25)}
-    .row{display:grid;grid-template-columns:1fr;gap:12px}
-    @media(min-width:860px){.row{grid-template-columns:1fr 1fr}}
-    .section{padding:16px;border-top:1px solid #1b2533}
-    .section:first-child{border-top:0}
-    label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px}
-    input[type=file]{width:100%;padding:10px;border:1px dashed #2a3649;background:#0e1520;color:var(--text);border-radius:12px}
-    button{appearance:none;border:0;background:linear-gradient(90deg,var(--accent),var(--accent2));color:#051218;font-weight:600;padding:10px 14px;border-radius:12px;cursor:pointer}
-    button:disabled{opacity:.5;cursor:not-allowed}
-    .ghost{background:#172130;color:var(--text);border:1px solid #2a3649}
-    .muted{color:var(--muted)}
-    .stats{display:flex;gap:12px;flex-wrap:wrap;margin-top:8px}
-    .chip{background:var(--chip);border:1px solid #2a3649;color:var(--text);padding:6px 10px;border-radius:999px;font-size:12px}
-    .log{font-family:ui-monospace, SFMono-Regular, Menlo, monospace;background:#0c121b;border:1px solid #1b2533;border-radius:12px;padding:10px;max-height:200px;overflow:auto}
-    table{width:100%;border-collapse:collapse}
-    th,td{padding:10px;border-bottom:1px solid #1b2533;text-align:left}
-    th{position:sticky;top:0;background:#101827;z-index:1}
-    .scroll{max-height:420px;overflow:auto;border:1px solid #1b2533;border-radius:12px}
-    .right{float:right}
-    .success{color:var(--ok)}.warn{color:var(--warn)}.err{color:var(--err)}
-  </style>
-  <!-- Libraries -->
-  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AFD 1.0 Datacatalogus</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="favicon.png">
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    
+    <!-- React -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel voor JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- XLSX voor Excel bestanden -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    
+    <!-- PapaParse voor CSV -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    
+    <!-- Inline CSS styling (geen externe dependencies) -->
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #374151;
+        }
+
+        .bg-gray-50 { background-color: #f9fafb; }
+        .bg-white { background-color: #ffffff; }
+        .bg-gray-100 { background-color: #f3f4f6; }
+        .bg-gray-200 { background-color: #e5e7eb; }
+        .bg-gray-700 { background-color: #374151; }
+        .bg-gray-800 { background-color: #1f2937; }
+        .bg-gray-900 { background-color: #111827; }
+        .bg-blue-500 { background-color: #3b82f6; }
+        .bg-blue-600 { background-color: #2563eb; }
+        .bg-blue-700 { background-color: #1d4ed8; }
+        .bg-blue-100 { background-color: #dbeafe; }
+        .bg-blue-50 { background-color: #eff6ff; }
+        .bg-green-100 { background-color: #dcfce7; }
+        .bg-yellow-200 { background-color: #fef08a; }
+        .bg-yellow-800 { background-color: #92400e; }
+        .bg-red-100 { background-color: #fee2e2; }
+        .bg-red-600 { background-color: #dc2626; }
+        .bg-red-800 { background-color: #991b1b; }
+
+        .text-white { color: #ffffff; }
+        .text-gray-100 { color: #f3f4f6; }
+        .text-gray-200 { color: #e5e7eb; }
+        .text-gray-300 { color: #d1d5db; }
+        .text-gray-400 { color: #9ca3af; }
+        .text-gray-500 { color: #6b7280; }
+        .text-gray-600 { color: #4b5563; }
+        .text-gray-700 { color: #374151; }
+        .text-gray-800 { color: #1f2937; }
+        .text-gray-900 { color: #111827; }
+        .text-blue-400 { color: #60a5fa; }
+        .text-blue-500 { color: #3b82f6; }
+        .text-blue-600 { color: #2563eb; }
+        .text-blue-700 { color: #1d4ed8; }
+        .text-blue-800 { color: #1e40af; }
+        .text-green-500 { color: #22c55e; }
+        .text-green-600 { color: #16a34a; }
+        .text-green-800 { color: #166534; }
+        .text-purple-600 { color: #9333ea; }
+        .text-yellow-600 { color: #ca8a04; }
+        .text-yellow-800 { color: #92400e; }
+        .text-indigo-600 { color: #4f46e5; }
+        .text-orange-600 { color: #ea580c; }
+        .text-red-600 { color: #dc2626; }
+        .text-red-800 { color: #991b1b; }
+
+        .border { border: 1px solid #e5e7eb; }
+        .border-gray-200 { border-color: #e5e7eb; }
+        .border-gray-300 { border-color: #d1d5db; }
+        .border-gray-500 { border-color: #6b7280; }
+        .border-gray-600 { border-color: #4b5563; }
+        .border-gray-700 { border-color: #374151; }
+        .border-blue-500 { border-color: #3b82f6; }
+        .border-b { border-bottom: 1px solid #e5e7eb; }
+        .border-t { border-top: 1px solid #e5e7eb; }
+
+        .rounded { border-radius: 0.25rem; }
+        .rounded-lg { border-radius: 0.5rem; }
+        .rounded-full { border-radius: 9999px; }
+
+        .shadow-sm { box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); }
+        .shadow-md { box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+        .shadow-xl { box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); }
+        .shadow-lg { box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
+
+        .p-1 { padding: 0.25rem; }
+        .p-2 { padding: 0.5rem; }
+        .p-3 { padding: 0.75rem; }
+        .p-4 { padding: 1rem; }
+        .p-6 { padding: 1.5rem; }
+        .p-8 { padding: 2rem; }
+        .p-12 { padding: 3rem; }
+        .px-1 { padding-left: 0.25rem; padding-right: 0.25rem; }
+        .px-2 { padding-left: 0.5rem; padding-right: 0.5rem; }
+        .px-3 { padding-left: 0.75rem; padding-right: 0.75rem; }
+        .px-4 { padding-left: 1rem; padding-right: 1rem; }
+        .py-1 { padding-top: 0.25rem; padding-bottom: 0.25rem; }
+        .py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
+        .py-3 { padding-top: 0.75rem; padding-bottom: 0.75rem; }
+        .py-4 { padding-top: 1rem; padding-bottom: 1rem; }
+        .py-6 { padding-top: 1.5rem; padding-bottom: 1.5rem; }
+        .py-8 { padding-top: 2rem; padding-bottom: 2rem; }
+        .py-12 { padding-top: 3rem; padding-bottom: 3rem; }
+        .pl-10 { padding-left: 2.5rem; }
+        .pr-4 { padding-right: 1rem; }
+        .pr-3 { padding-right: 0.75rem; }
+        .pt-3 { padding-top: 0.75rem; }
+        .pt-4 { padding-top: 1rem; }
+        .mt-1 { margin-top: 0.25rem; }
+        .mt-2 { margin-top: 0.5rem; }
+        .mt-3 { margin-top: 0.75rem; }
+        .mt-4 { margin-top: 1rem; }
+        .mt-6 { margin-top: 1.5rem; }
+        .mb-1 { margin-bottom: 0.25rem; }
+        .mb-2 { margin-bottom: 0.5rem; }
+        .mb-3 { margin-bottom: 0.75rem; }
+        .mb-4 { margin-bottom: 1rem; }
+        .mb-6 { margin-bottom: 1.5rem; }
+        .ml-2 { margin-left: 0.5rem; }
+        .ml-4 { margin-left: 1rem; }
+        .mx-auto { margin-left: auto; margin-right: auto; }
+
+        .w-full { width: 100%; }
+        .w-2 { width: 0.5rem; }
+        .w-3 { width: 0.75rem; }
+        .h-2 { height: 0.5rem; }
+        .h-3 { height: 0.75rem; }
+        .h-4 { height: 1rem; }
+        .h-5 { height: 1.25rem; }
+        .h-6 { height: 1.5rem; }
+        .h-8 { height: 2rem; }
+        .h-12 { height: 3rem; }
+        .h-16 { height: 4rem; }
+        .h-screen { height: 100vh; }
+        .min-h-screen { min-height: 100vh; }
+        .min-h-0 { min-height: 0; }
+        .max-w-2xl { max-width: 42rem; }
+        .max-w-7xl { max-width: 80rem; }
+        .max-w-lg { max-width: 32rem; }
+        .max-h-\[90vh\] { max-height: 90vh; }
+        .max-h-60 { max-height: 15rem; }
+        .max-h-48 { max-height: 12rem; }
+
+        .flex { display: flex; }
+        .inline-flex { display: inline-flex; }
+        .items-center { align-items: center; }
+        .items-start { align-items: flex-start; }
+        .justify-center { justify-content: center; }
+        .justify-between { justify-content: space-between; }
+        .flex-1 { flex: 1 1 0%; }
+        .flex-shrink-0 { flex-shrink: 0; }
+        .flex-wrap { flex-wrap: wrap; }
+        .flex-col { flex-direction: column; }
+
+        .space-x-1 > * + * { margin-left: 0.25rem; }
+        .space-x-2 > * + * { margin-left: 0.5rem; }
+        .space-x-3 > * + * { margin-left: 0.75rem; }
+        .space-x-4 > * + * { margin-left: 1rem; }
+        .space-y-1 > * + * { margin-top: 0.25rem; }
+        .space-y-2 > * + * { margin-top: 0.5rem; }
+        .space-y-3 > * + * { margin-top: 0.75rem; }
+        .space-y-4 > * + * { margin-top: 1rem; }
+        .space-y-6 > * + * { margin-top: 1.5rem; }
+
+        .gap-2 { gap: 0.5rem; }
+        .gap-3 { gap: 0.75rem; }
+        .gap-4 { gap: 1rem; }
+
+        .text-xs { font-size: 0.75rem; }
+        .text-sm { font-size: 0.875rem; }
+        .text-lg { font-size: 1.125rem; }
+        .text-xl { font-size: 1.25rem; }
+        .text-2xl { font-size: 1.5rem; }
+        .text-6xl { font-size: 3.75rem; }
+
+        .font-mono { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; }
+        .font-medium { font-weight: 500; }
+        .font-semibold { font-weight: 600; }
+        .font-bold { font-weight: 700; }
+
+        .text-center { text-align: center; }
+        .text-left { text-align: left; }
+
+        .list-disc { list-style-type: disc; }
+        .list-inside { list-style-position: inside; }
+
+        .underline { text-decoration: underline; }
+        .break-words { word-wrap: break-word; }
+        .truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+        .cursor-not-allowed { cursor: not-allowed; }
+        .cursor-pointer { cursor: pointer; }
+
+        .transform { transform: translateZ(0); }
+        .translate-y-1\/2 { transform: translateY(-50%); }
+        .-translate-y-1\/2 { transform: translateY(-50%); }
+        .rotate-180 { transform: rotate(180deg); }
+
+        .transition-colors { transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out; }
+        .transition-shadow { transition: box-shadow 0.15s ease-in-out; }
+        .transition-transform { transition: transform 0.15s ease-in-out; }
+
+        .absolute { position: absolute; }
+        .relative { position: relative; }
+        .fixed { position: fixed; }
+        .sticky { position: sticky; }
+        .top-0 { top: 0; }
+        .top-1\/2 { top: 50%; }
+        .left-3 { left: 0.75rem; }
+        .right-3 { right: 0.75rem; }
+        .inset-0 { top: 0; right: 0; bottom: 0; left: 0; }
+
+        .z-10 { z-index: 10; }
+        .z-50 { z-index: 50; }
+
+        .overflow-hidden { overflow: hidden; }
+        .overflow-y-auto { overflow-y: auto; }
+        .min-w-0 { min-width: 0; }
+
+        .hover\:bg-gray-50:hover { background-color: #f9fafb; }
+        .hover\:bg-gray-100:hover { background-color: #f3f4f6; }
+        .hover\:bg-gray-200:hover { background-color: #e5e7eb; }
+        .hover\:bg-gray-600:hover { background-color: #4b5563; }
+        .hover\:bg-gray-700:hover { background-color: #374151; }
+        .hover\:bg-gray-800:hover { background-color: #1f2937; }
+        .hover\:bg-blue-700:hover { background-color: #1d4ed8; }
+        .hover\:text-gray-300:hover { color: #d1d5db; }
+        .hover\:text-gray-600:hover { color: #4b5563; }
+        .hover\:text-gray-700:hover { color: #374151; }
+        .hover\:text-blue-800:hover { color: #1e40af; }
+        .hover\:shadow-md:hover { box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+        .hover\:shadow-sm:hover { box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); }
+
+        .focus\:ring-2:focus { 
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5); 
+        }
+        .focus\:border-transparent:focus { border-color: transparent; }
+
+        .disabled\:bg-gray-100:disabled { background-color: #f3f4f6; }
+        .disabled\:text-gray-400:disabled { color: #9ca3af; }
+        .bg-opacity-50 { background-color: rgba(0, 0, 0, 0.5); }
+
+        .animate-spin {
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Dark mode styles */
+        .dark .bg-gray-50 { background-color: #111827; }
+        .dark .bg-white { background-color: #1f2937; }
+        .dark .bg-gray-100 { background-color: #374151; }
+        .dark .bg-gray-700 { background-color: #4b5563; }
+        .dark .bg-gray-800 { background-color: #1f2937; }
+        .dark .bg-gray-900 { background-color: #111827; }
+        .dark .text-gray-100 { color: #f3f4f6; }
+        .dark .text-gray-200 { color: #e5e7eb; }
+        .dark .text-gray-300 { color: #d1d5db; }
+        .dark .text-gray-400 { color: #9ca3af; }
+        .dark .text-gray-500 { color: #6b7280; }
+        .dark .border-gray-200 { border-color: #374151; }
+        .dark .border-gray-600 { border-color: #4b5563; }
+        .dark .border-gray-700 { border-color: #374151; }
+        .dark .placeholder-gray-400::placeholder { color: #9ca3af; }
+        .dark .hover\:bg-gray-600:hover { background-color: #4b5563; }
+        .dark .hover\:bg-gray-700:hover { background-color: #374151; }
+        .dark .bg-yellow-800 { background-color: #92400e; }
+
+        /* Input styling */
+        input, select {
+            appearance: none;
+            background-color: white;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            padding: 0.5rem 0.75rem;
+            font-size: 1rem;
+            line-height: 1.5;
+            color: #111827;
+        }
+
+        .dark input, .dark select {
+            background-color: #374151;
+            border-color: #4b5563;
+            color: #f3f4f6;
+        }
+
+        button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-family: inherit;
+        }
+
+        button:disabled {
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        /* Mark styling */
+        mark {
+            background-color: #fef08a;
+            padding: 0.125rem;
+            border-radius: 0.125rem;
+        }
+
+        .dark mark {
+            background-color: #92400e;
+            color: #fef3c7;
+        }
+
+        /* Code styling */
+        code {
+            font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+            font-size: 0.875rem;
+            background-color: #f3f4f6;
+            padding: 0.125rem 0.25rem;
+            border-radius: 0.25rem;
+        }
+
+        .dark code {
+            background-color: #374151;
+        }
+
+        /* Selection highlight for keyboard navigation */
+        .selected-item {
+            background-color: #dbeafe !important;
+            border: 2px solid #3b82f6 !important;
+            box-shadow: 0 0 0 1px #3b82f6;
+        }
+
+        .dark .selected-item {
+            background-color: #1e3a8a !important;
+            border: 2px solid #60a5fa !important;
+            box-shadow: 0 0 0 1px #60a5fa;
+        }
+
+        /* Grid layout */
+        .grid { display: grid; }
+        .grid-cols-1 { grid-template-columns: repeat(1, minmax(0, 1fr)); }
+        .grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+        /* Responsive */
+        @media (min-width: 640px) {
+            .sm\:px-6 { padding-left: 1.5rem; padding-right: 1.5rem; }
+            .sm\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .sm\:col-span-2 { grid-column: span 2 / span 2; }
+        }
+
+        @media (min-width: 1024px) {
+            .lg\:px-8 { padding-left: 2rem; padding-right: 2rem; }
+        }
+    </style>
 </head>
 <body>
-  <div class="wrap">
-    <h1>AFD → ANVA Mapping Tool</h1>
-    <p class="subtitle">Selecteer je bestanden en bouw de mapping. Bij <b>dubbele AFD-waarden</b> krijgt de rij met <b>OAI=1</b> prioriteit; bij <b>unieke</b> AFD wordt de rij altijd gebruikt (OAI genegeerd).</p>
+    <div id="root"></div>
 
-    <div class="card">
-      <div class="section row">
-        <div>
-          <label>ANVA_AFD.xlsx (verplicht)</label>
-          <input type="file" id="anvaFile" accept=".xlsx,.xls" />
-        </div>
-        <div>
-          <label>Codelist.afm.csv (optioneel)</label>
-          <input type="file" id="codelistFile" accept=".csv" />
-        </div>
-        <div>
-          <label>data.csv (optioneel)</label>
-          <input type="file" id="dataFile" accept=".csv" />
-        </div>
-        <div style="align-self:end;display:flex;gap:8px;flex-wrap:wrap">
-          <button id="buildBtn" disabled>Bouwen</button>
-          <button id="resetBtn" class="ghost">Reset</button>
-          <span class="muted" id="readyLbl">Bestanden selecteren…</span>
-        </div>
-      </div>
+    <script type="text/babel">
+        const { useState, useEffect, useMemo, useCallback, useRef } = React;
 
-      <div class="section">
-        <div class="stats" id="stats"></div>
-        <div class="log" id="log" hidden></div>
-      </div>
+        // SVG Icons als React componenten
+        const Search = ({ className }) => (
+            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="m21 21-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+        );
 
-      <div class="section">
-        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
-          <button id="dlCsvBtn" class="ghost" disabled>Download mapping (CSV)</button>
-          <button id="dlJsonBtn" class="ghost" disabled>Download mapping (JSON)</button>
-          <span class="muted">Voorbeeld van de eerste 250 regels hieronder.</span>
-        </div>
-        <div class="scroll">
-          <table id="tbl" hidden>
-            <thead>
-              <tr>
-                <th>AFD</th>
-                <th>ANVA</th>
-                <th>ANVA Omschrijving</th>
-                <th>Afwijkend niet toegestaan</th>
-                <th>Bron (OAI)</th>
-              </tr>
-            </thead>
-            <tbody></tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-  </div>
+        const ChevronDown = ({ className }) => (
+            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+        );
 
-  <script>
-    const qs = (s, r=document) => r.querySelector(s);
-    const qsa = (s, r=document) => Array.from(r.querySelectorAll(s));
-    const logEl = qs('#log');
-    const statsEl = qs('#stats');
-    const tbl = qs('#tbl');
-    const tbody = tbl.querySelector('tbody');
+        const ChevronUp = ({ className }) => (
+            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+            </svg>
+        );
 
-    let anvaRows = [];
-    let mapping = new Map();
+        // Searchable Select Component
+        const SearchableSelect = ({ options, value, onChange, placeholder, className, darkMode }) => {
+            const [isOpen, setIsOpen] = useState(false);
+            const [searchTerm, setSearchTerm] = useState('');
+            const [selectedIndex, setSelectedIndex] = useState(-1);
+            const dropdownRef = useRef(null);
+            const inputRef = useRef(null);
 
-    const isOAI1 = (v) => {
-      if (v === undefined || v === null) return false;
-      if (v === 1 || v === '1' || v === true) return true;
-      const s = String(v).trim().toUpperCase();
-      return s === 'J' || s === 'Y';
-    };
+            const filteredOptions = useMemo(() => {
+                if (!searchTerm) return options;
+                return options.filter(option => 
+                    option.label.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    option.value.toLowerCase().includes(searchTerm.toLowerCase())
+                );
+            }, [options, searchTerm]);
 
-    const normalizeHeaders = (obj) => {
-      const map = {};
-      for (const [k, v] of Object.entries(obj)) {
-        if (v == null) continue;
-        const kk = String(k).trim().toLowerCase();
-        map[kk] = v;
-      }
-      // Kandidaten
-      const afd = map['afd'] ?? map['afd-code'] ?? map['afd code'];
-      const anva = map['anva'] ?? map['anva code'] ?? map['code'];
-      const oms = map['anva omschrijving'] ?? map['omschrijving'] ?? map['anva_omschrijving'];
-      const afwijk = map['afwijkend niet toegestaan'] ?? map['afwijkend_niet_toegestaan'] ?? map['afwijkend'];
-      const oai = map['oai'] ?? map['o.a.i'] ?? map['oai-voorkeur'] ?? map['voorkeur'] ?? map['is default'];
-      return { afd, anva, oms, afwijk, oai };
-    };
+            const selectedOption = options.find(opt => opt.value === value);
 
-    function addStat(label, value, cls=''){
-      const el = document.createElement('div');
-      el.className = 'chip ' + cls;
-      el.textContent = `${label}: ${value}`;
-      statsEl.appendChild(el);
+            useEffect(() => {
+                const handleClickOutside = (event) => {
+                    if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+                        setIsOpen(false);
+                        setSearchTerm('');
+                        setSelectedIndex(-1);
+                    }
+                };
+
+                document.addEventListener('mousedown', handleClickOutside);
+                return () => document.removeEventListener('mousedown', handleClickOutside);
+            }, []);
+
+            const handleKeyDown = (e) => {
+                if (!isOpen) {
+                    if (e.key === 'Enter' || e.key === ' ' || e.key === 'ArrowDown') {
+                        e.preventDefault();
+                        setIsOpen(true);
+                        setSelectedIndex(0);
+                    }
+                    return;
+                }
+
+                switch (e.key) {
+                    case 'ArrowDown':
+                        e.preventDefault();
+                        setSelectedIndex(prev => 
+                            prev < filteredOptions.length - 1 ? prev + 1 : 0
+                        );
+                        break;
+                    case 'ArrowUp':
+                        e.preventDefault();
+                        setSelectedIndex(prev => 
+                            prev > 0 ? prev - 1 : filteredOptions.length - 1
+                        );
+                        break;
+                    case 'Enter':
+                        e.preventDefault();
+                        if (selectedIndex >= 0 && filteredOptions[selectedIndex]) {
+                            onChange(filteredOptions[selectedIndex].value);
+                            setIsOpen(false);
+                            setSearchTerm('');
+                            setSelectedIndex(-1);
+                        }
+                        break;
+                    case 'Escape':
+                        setIsOpen(false);
+                        setSearchTerm('');
+                        setSelectedIndex(-1);
+                        break;
+                }
+            };
+
+            const handleOptionClick = (optionValue) => {
+                onChange(optionValue);
+                setIsOpen(false);
+                setSearchTerm('');
+                setSelectedIndex(-1);
+            };
+
+            return (
+                <div className="relative" ref={dropdownRef}>
+                    <button
+                        type="button"
+                        className={`${className} w-full text-left flex items-center justify-between`}
+                        onClick={() => {
+                            setIsOpen(!isOpen);
+                            if (!isOpen) {
+                                setTimeout(() => inputRef.current?.focus(), 50);
+                            }
+                        }}
+                        onKeyDown={handleKeyDown}
+                    >
+                        <span className={selectedOption ? '' : (darkMode ? 'text-gray-400' : 'text-gray-500')}>
+                            {selectedOption ? selectedOption.label : placeholder}
+                        </span>
+                        <ChevronDown className={`h-4 w-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+                    </button>
+
+                    {isOpen && (
+                        <div className={`absolute z-50 w-full mt-1 rounded-lg shadow-lg border ${
+                            darkMode ? 'bg-gray-800 border-gray-600' : 'bg-white border-gray-300'
+                        } max-h-60 overflow-hidden`} style={{ minWidth: '280px' }}>
+                            <div className="p-2 border-b border-gray-200">
+                                <input
+                                    ref={inputRef}
+                                    type="text"
+                                    value={searchTerm}
+                                    onChange={(e) => {
+                                        setSearchTerm(e.target.value);
+                                        setSelectedIndex(-1);
+                                    }}
+                                    placeholder="Type om te zoeken..."
+                                    className={`w-full px-3 py-2 border rounded text-sm ${
+                                        darkMode ? 'bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
+                                    } focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
+                                    onKeyDown={handleKeyDown}
+                                />
+                            </div>
+                            <div className="max-h-48 overflow-y-auto">
+                                {filteredOptions.length === 0 ? (
+                                    <div className="px-3 py-2 text-sm text-gray-500">
+                                        Geen resultaten gevonden
+                                    </div>
+                                ) : (
+                                    filteredOptions.map((option, index) => (
+                                        <button
+                                            key={option.value}
+                                            className={`w-full px-3 py-2 text-left text-sm hover:bg-gray-100 transition-colors ${
+                                                index === selectedIndex ? (darkMode ? 'bg-gray-700' : 'bg-gray-100') : ''
+                                            } ${option.value === value ? 'font-medium' : ''}`}
+                                            onClick={() => handleOptionClick(option.value)}
+                                            style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}
+                                        >
+                                            {option.label}
+                                        </button>
+                                    ))
+                                )}
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        const Database = ({ className }) => (
+            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <ellipse cx="12" cy="5" rx="9" ry="3"/>
+                <path d="m21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/>
+                <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
+            </svg>
+        );
+
+        const Package = ({ className }) => (
+            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path d="m7.5 4.27 9 5.15"/>
+                <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/>
+                <path d="m3.3 7 8.7 5 8.7-5"/>
+                <path d="M12 22V12"/>
+            </svg>
+        );
+
+        const Filter = ({ className }) => (
+            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <polygon points="22,3 2,3 10,12.46 10,19 14,21 14,12.46"/>
+            </svg>
+        );
+
+        const Copy = ({ className }) => (
+            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <rect width="14" height="14" x="8" y="8" rx="2" ry="2"/>
+                <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>
+            </svg>
+        );
+
+        const Check = ({ className }) => (
+            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <polyline points="20,6 9,17 4,12"/>
+            </svg>
+        );
+
+        const Sun = ({ className }) => (
+            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="5"/>
+                <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+            </svg>
+        );
+
+        const Moon = ({ className }) => (
+            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+            </svg>
+        );
+
+        const BookOpen = ({ className }) => (
+            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+                <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+            </svg>
+        );
+
+        const X = ({ className }) => (
+            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+        );
+
+        const ClipboardList = ({ className }) => (
+            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+            </svg>
+        );
+
+        const Info = ({ className }) => (
+            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10"/>
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="m12 16v-4"/>
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="m12 8h.01"/>
+            </svg>
+        );
+
+        const Upload = ({ className }) => (
+            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4m4-5l5-5m0 0l5 5m-5-5v12" />
+            </svg>
+        );
+
+        const Download = ({ className }) => (
+            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4m4-5l5 5m0 0l5-5m-5 5V3" />
+            </svg>
+        );
+
+        const FileText = ({ className }) => (
+            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14,2 14,8 20,8"/>
+                <line x1="16" y1="13" x2="8" y2="13"/>
+                <line x1="16" y1="17" x2="8" y2="17"/>
+                <polyline points="10,9 9,9 8,9"/>
+            </svg>
+        );
+
+        // Mock file system voor GitHub Pages
+        window.fs = {
+            readFile: async (filename, options = {}) => {
+                try {
+                    console.log(`Attempting to load: ${filename}`);
+                    const response = await fetch(filename);
+                    if (!response.ok) {
+                        throw new Error(`Bestand niet gevonden: ${filename} (Status: ${response.status})`);
+                    }
+                    
+                    if (options.encoding === 'utf8') {
+                        const text = await response.text();
+                        console.log(`Successfully loaded: ${filename} (${text.length} characters)`);
+                        return text;
+                    }
+                    
+                    const arrayBuffer = await response.arrayBuffer();
+                    return new Uint8Array(arrayBuffer);
+                } catch (error) {
+                    console.error('Error reading file:', filename, error);
+                    throw error;
+                }
+            }
+        };
+
+        function AFDSearchTool() {
+            const [data, setData] = useState([]);
+            const [codelistData, setCodelistData] = useState({});
+            const [anvaData, setAnvaData] = useState({});
+            const [searchTerm, setSearchTerm] = useState('');
+            const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
+            const [typeFilter, setTypeFilter] = useState('all');
+            const [entityFilter, setEntityFilter] = useState('all');
+            const [loading, setLoading] = useState(true);
+            const [error, setError] = useState(null);
+            const [stats, setStats] = useState({ total: 0, entities: 0, attributes: 0 });
+            const [darkMode, setDarkMode] = useState(false);
+            const [copiedItem, setCopiedItem] = useState(null);
+            const [currentPage, setCurrentPage] = useState(1);
+            const [selectedCodelist, setSelectedCodelist] = useState(null);
+            const [codelistSearch, setCodelistSearch] = useState('');
+            const [selectedItemIndex, setSelectedItemIndex] = useState(-1);
+            const [keyboardActive, setKeyboardActive] = useState(false);
+            const [showInfo, setShowInfo] = useState(false);
+            const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
+            const [advancedSearch, setAdvancedSearch] = useState({
+                searchWords: '',
+                entiteitFilter: 'all',
+                datatypeFilter: 'all',
+                codelistFilter: '',
+                anvaCodeFilter: ''
+            });
+            const searchInputRef = useRef(null);
+            const itemRefs = useRef([]);
+            
+            const ITEMS_PER_PAGE = 25;
+
+            // Datatype info
+            const datatypeInfo = {
+                'JN': { label: 'Ja/Nee', color: 'text-blue-600' },
+                'A0': { label: 'Alfanumeriek', color: 'text-green-600' },
+                'A1': { label: 'Alfanumeriek', color: 'text-green-600' },
+                'A2': { label: 'Alfanumeriek', color: 'text-green-600' },
+                'D1': { label: 'Datum', color: 'text-purple-600' },
+                'D3': { label: 'Datum', color: 'text-purple-600' },
+                'B2': { label: 'Bedrag', color: 'text-yellow-600' },
+                'T1': { label: 'Tijd', color: 'text-indigo-600' },
+                'P3': { label: 'Percentage', color: 'text-orange-600' },
+                'ME': { label: 'Memo', color: 'text-gray-600' }
+            };
+
+            // Simple keyboard navigation
+            useEffect(() => {
+                const handleKeyDown = (e) => {
+                    // Don't interfere with modals or inputs
+                    if (selectedCodelist || showInfo || showAdvancedSearch || e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') {
+                        return;
+                    }
+
+                    if (e.key === '/') {
+                        e.preventDefault();
+                        searchInputRef.current?.focus();
+                        return;
+                    }
+
+                    if (e.key === 'Escape') {
+                        setSelectedItemIndex(-1);
+                        setKeyboardActive(false);
+                        setSearchTerm('');
+                        return;
+                    }
+
+                    if (paginatedData.length > 0) {
+                        if (e.key === 'ArrowDown') {
+                            e.preventDefault();
+                            setKeyboardActive(true);
+                            setSelectedItemIndex(prev => {
+                                const newIndex = prev >= paginatedData.length - 1 ? 0 : prev + 1;
+                                return newIndex;
+                            });
+                        }
+
+                        if (e.key === 'ArrowUp') {
+                            e.preventDefault();
+                            setKeyboardActive(true);
+                            setSelectedItemIndex(prev => {
+                                const newIndex = prev <= 0 ? paginatedData.length - 1 : prev - 1;
+                                return newIndex;
+                            });
+                        }
+
+                        if (e.key === 'Enter' && selectedItemIndex >= 0) {
+                            e.preventDefault();
+                            const item = paginatedData[selectedItemIndex];
+                            if (item) {
+                                const isEntity = item['Entiteit/Attribuut'] === 'E';
+                                
+                                if (e.shiftKey && !isEntity) {
+                                    // Shift+Enter: Copy full attribute info
+                                    copyFullAttributeInfo(item, `full-${item.Entiteitcode}_${item.Attribuutcode}`);
+                                } else {
+                                    // Regular Enter: Copy just the code
+                                    const itemId = isEntity ? item.Entiteitcode : `${item.Entiteitcode}_${item.Attribuutcode}`;
+                                    copyToClipboard(itemId, itemId);
+                                }
+                            }
+                        }
+                    }
+                };
+
+                document.addEventListener('keydown', handleKeyDown);
+                return () => document.removeEventListener('keydown', handleKeyDown);
+            }, [paginatedData, selectedItemIndex, selectedCodelist, showInfo, showAdvancedSearch]);
+
+            // Scroll to selected item
+            useEffect(() => {
+                if (selectedItemIndex >= 0 && keyboardActive && itemRefs.current[selectedItemIndex]) {
+                    itemRefs.current[selectedItemIndex].scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'center'
+                    });
+                }
+            }, [selectedItemIndex, keyboardActive]);
+
+            // Debounce search term
+            useEffect(() => {
+                const timer = setTimeout(() => {
+                    setDebouncedSearchTerm(searchTerm);
+                    setCurrentPage(1);
+                    setSelectedItemIndex(-1);
+                    setKeyboardActive(false);
+                }, 300);
+                return () => clearTimeout(timer);
+            }, [searchTerm]);
+
+            // Reset page when filters change
+            useEffect(() => {
+                setCurrentPage(1);
+                setSelectedItemIndex(-1);
+                setKeyboardActive(false);
+            }, [typeFilter, entityFilter]);
+
+            // Reset selected item when page changes
+            useEffect(() => {
+                setSelectedItemIndex(-1);
+                setKeyboardActive(false);
+                itemRefs.current = [];
+            }, [currentPage]);
+
+            // Load preferences
+            useEffect(() => {
+                try {
+                    const savedDarkMode = localStorage.getItem('afd-darkmode') === 'true';
+                    setDarkMode(savedDarkMode);
+                } catch (e) {
+                    console.warn('LocalStorage not available');
+                }
+            }, []);
+
+            // Save preferences
+            useEffect(() => {
+                try {
+                    localStorage.setItem('afd-darkmode', darkMode);
+                    document.documentElement.classList.toggle('dark', darkMode);
+                } catch (e) {
+                    console.warn('LocalStorage not available');
+                }
+            }, [darkMode]);
+
+            // Load data
+            useEffect(() => {
+                const loadData = async () => {
+                    try {
+                        console.log('🔄 Starting to load AFD data...');
+                        const csvContent = await window.fs.readFile('data.csv', { encoding: 'utf8' });
+                        console.log('✅ CSV loaded successfully, parsing...');
+                        
+                        const parsed = Papa.parse(csvContent, {
+                            header: true,
+                            dynamicTyping: true,
+                            skipEmptyLines: true,
+                            delimitersToGuess: [',', '\t', '|', ';']
+                        });
+
+                        console.log(`📊 Parsed ${parsed.data.length} rows`);
+
+                        const cleanedData = parsed.data.map(row => {
+                            const cleanRow = {};
+                            Object.keys(row).forEach(key => {
+                                cleanRow[key.trim()] = row[key];
+                            });
+                            return cleanRow;
+                        });
+
+                        // Load codelist data (optional)
+                        try {
+                            console.log('🔄 Attempting to load codelist data...');
+                            const codelistContent = await window.fs.readFile('Codelist.afm.csv', { encoding: 'utf8' });
+                            console.log('✅ Codelist loaded, parsing...');
+                            
+                            const parsedCodelist = Papa.parse(codelistContent, {
+                                header: false,
+                                dynamicTyping: true,
+                                skipEmptyLines: true,
+                                delimitersToGuess: [',', ';', '\t', '|']
+                            });
+
+                            const codelistGroups = {};
+                            const codelistDescriptions = {};
+                            let codelistCount = 0;
+                            
+                            console.log('📊 Codelist raw data sample:', parsedCodelist.data.slice(0, 5));
+                            console.log('📊 Detected delimiter:', parsedCodelist.meta.delimiter);
+                            
+                            parsedCodelist.data.slice(1).forEach((row, index) => {
+                                // Check of we 3 of 4 kolommen hebben
+                                let type, codelijst, code, omschrijving;
+                                
+                                if (row.length === 3) {
+                                    // Format: codelijst, code, omschrijving (oude format)
+                                    [codelijst, code, omschrijving] = row;
+                                    type = code && String(code).trim() !== '' ? 'C' : 'L';
+                                } else if (row.length === 4) {
+                                    // Format: type, codelijst, code, omschrijving (nieuwe format)
+                                    [type, codelijst, code, omschrijving] = row;
+                                } else {
+                                    // Onbekend format, skip
+                                    return;
+                                }
+                                
+                                // Debug eerste paar rijen
+                                if (index < 5) {
+                                    console.log(`📋 Row ${index} (${row.length} cols):`, { type, codelijst, code, omschrijving, raw: row });
+                                }
+                                
+                                if (codelijst) {
+                                    if (!codelistGroups[codelijst]) {
+                                        codelistGroups[codelijst] = [];
+                                    }
+                                    
+                                    // Als type 'L' is, dan is dit de lijstomschrijving
+                                    if (type === 'L') {
+                                        codelistDescriptions[codelijst] = String(omschrijving || '');
+                                        console.log(`📝 Found description for ${codelijst}: ${omschrijving}`);
+                                    } else if (type === 'C') {
+                                        // Type 'C' is een normale codelijst item
+                                        codelistGroups[codelijst].push({
+                                            code: String(code || ''),
+                                            omschrijving: String(omschrijving || ''),
+                                            actief: 'J' // Standaard actief sinds kolom niet meer aanwezig
+                                        });
+                                        codelistCount++;
+                                    }
+                                }
+                            });
+
+                            setCodelistData(codelistGroups);
+                            console.log(`📚 Codelist loaded: ${Object.keys(codelistGroups).length} lists, ${codelistCount} total items`);
+                            
+                            // Store codelist descriptions in a separate state or combine with codelistData
+                            window.codelistDescriptions = codelistDescriptions;
+                        } catch (err) {
+                            console.warn('⚠️ Codelist data not found or could not be loaded:', err.message);
+                        }
+
+// Load ANVA mapping data (optional) - MET OAI FILTERING
+try {
+    console.log('📄 Attempting to load ANVA mapping data...');
+    const anvaResponse = await window.fs.readFile('ANVA_AFD.xlsx');
+    console.log('✅ ANVA Excel loaded, parsing...');
+    
+    if (typeof XLSX === 'undefined') {
+        console.error('❌ XLSX library not available');
+        throw new Error('XLSX library not loaded');
     }
-
-    function setReadyState(){
-      const ready = !!qs('#anvaFile').files[0];
-      qs('#buildBtn').disabled = !ready;
-      qs('#readyLbl').textContent = ready ? 'Klaar om te bouwen' : 'Bestanden selecteren…';
-    }
-
-    qsa('input[type=file]').forEach(i => i.addEventListener('change', setReadyState));
-    qs('#resetBtn').addEventListener('click', () => location.reload());
-
-    async function readXlsx(file){
-      const data = await file.arrayBuffer();
-      const wb = XLSX.read(data, { type:'array' });
-      const ws = wb.Sheets[wb.SheetNames[0]];
-      const json = XLSX.utils.sheet_to_json(ws, { defval: '' });
-      return json;
-    }
-    function readCsv(file){
-      return new Promise((resolve, reject) => {
-        Papa.parse(file, { header:true, skipEmptyLines:true, complete: r => resolve(r.data), error: reject });
-      });
-    }
-
-    function buildMappingFromAnvaRows(rows){
-      // 1) Groepeer per AFD
-      const byAfd = new Map();
-      for (const raw of rows){
-        const { afd, anva, oms, afwijk, oai } = normalizeHeaders(raw);
-        if (!afd || !anva) continue;
-        const r = { afd:String(afd), anva:String(anva), oms:String(oms||''), afwijk:String(afwijk||''), oai };
-        const arr = byAfd.get(r.afd) || [];
-        arr.push(r); byAfd.set(r.afd, arr);
-      }
-
-      // 2) Selectie-regel
-      const out = new Map();
-      let used = 0, extras = 0, withDupes = 0;
-      for (const [afd, arr] of byAfd.entries()){
-        let chosen;
-        if (arr.length > 1){
-          withDupes++;
-          chosen = arr.find(x => isOAI1(x.oai)) ?? arr[0];
-          extras += (arr.length - 1);
-        } else {
-          chosen = arr[0];
-        }
-        out.set(afd, chosen);
-        used++;
-      }
-      return { out, used, extras, withDupes };
-    }
-
-    function renderTable(map){
-      tbody.innerHTML = '';
-      const rows = Array.from(map.values()).slice(0, 250);
-      for (const r of rows){
-        const tr = document.createElement('tr');
-        tr.innerHTML = `<td>${r.afd}</td><td>${r.anva}</td><td>${r.oms}</td><td>${r.afwijk}</td><td>${isOAI1(r.oai) ? 'OAI=1' : (r.oai ?? '')}</td>`;
-        tbody.appendChild(tr);
-      }
-      tbl.hidden = rows.length === 0;
-    }
-
-    function download(filename, text){
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(new Blob([text], {type:'text/plain'}));
-      a.download = filename; a.click();
-      setTimeout(()=>URL.revokeObjectURL(a.href), 2000);
-    }
-
-    function toCsv(map){
-      const rows = [['AFD','ANVA','ANVA Omschrijving','Afwijkend niet toegestaan','OAI']];
-      for (const r of map.values()){
-        rows.push([r.afd, r.anva, r.oms, r.afwijk, isOAI1(r.oai)?'1':(r.oai??'')]);
-      }
-      return rows.map(r => r.map(v => String(v).includes(',') ? '"'+String(v).replaceAll('"','""')+'"' : String(v)).join(',')).join('\n');
-    }
-
-    qs('#buildBtn').addEventListener('click', async () => {
-      logEl.hidden = false; logEl.textContent='⏳ Bezig met inlezen…'; statsEl.innerHTML = '';
-      mapping = new Map();
-      try{
-        const anvaFile = qs('#anvaFile').files[0];
-        const codelistFile = qs('#codelistFile').files[0];
-        const dataFile = qs('#dataFile').files[0];
-
-        // ANVA verplicht
-        anvaRows = await readXlsx(anvaFile);
-        const { out, used, extras, withDupes } = buildMappingFromAnvaRows(anvaRows);
-        mapping = out;
-
-        addStat('Mappings', used, 'success');
-        addStat('AFD met duplicaten', withDupes, withDupes ? 'warn' : '');
-        addStat('Extra rijen genegeerd (de-dupe)', extras, extras ? 'warn' : '');
-
-        if (codelistFile){
-          const codes = await readCsv(codelistFile);
-          addStat('Codelist regels', codes.length);
-        }
-        if (dataFile){
-          const dataRows = await readCsv(dataFile);
-          addStat('Data regels', dataRows.length);
-        }
-
-        renderTable(mapping);
-        qs('#dlCsvBtn').disabled = false;
-        qs('#dlJsonBtn').disabled = false;
-        logEl.textContent = '✅ Klaar. Toegepaste regel: bij duplicaten krijgt OAI=1 prioriteit; bij unieke AFD wordt OAI genegeerd.';
-      }catch(err){
-        console.error(err);
-        logEl.textContent = '❌ Fout: '+ err.message;
-      }
+    
+    const anvaWorkbook = XLSX.read(anvaResponse, {
+        type: 'array',
+        cellStyles: false,
+        cellFormulas: false,
+        cellDates: true
     });
-
-    qs('#dlCsvBtn').addEventListener('click', () => {
-      const csv = toCsv(mapping);
-      download('anva_mapping.csv', csv);
+    
+    const anvaSheet = anvaWorkbook.Sheets[anvaWorkbook.SheetNames[0]];
+    const rawData = XLSX.utils.sheet_to_json(anvaSheet, {
+        header: 1,
+        defval: '',
+        blankrows: false
     });
-    qs('#dlJsonBtn').addEventListener('click', () => {
-      const obj = Array.from(mapping.values());
-      download('anva_mapping.json', JSON.stringify(obj, null, 2));
-    });
+    
+    console.log('📊 Raw ANVA data rows:', rawData.length);
+    
+    // Find header row
+    let headerRowIndex = -1;
+    for (let i = 0; i < Math.min(5, rawData.length); i++) {
+        if (rawData[i].some(cell => String(cell).includes('AFD'))) {
+            headerRowIndex = i;
+            break;
+        }
+    }
+    
+    if (headerRowIndex === -1) {
+        console.warn('⚠️ No AFD header found, trying standard JSON conversion');
+        const anvaJsonData = XLSX.utils.sheet_to_json(anvaSheet);
+        
+        const anvaMapping = {};
+        let skippedCount = 0;
+        anvaJsonData.forEach(row => {
+            const oaiValue = row.OAI || row.oai;
+            if (row.AFD && row.ANVA && (oaiValue === 1 || oaiValue === '1' || oaiValue === 'J')) {
+                anvaMapping[row.AFD] = {
+                    code: String(row.ANVA || ''),
+                    omschrijving: String(row['ANVA Omschrijving'] || ''),
+                    afwijkendNietToegestaan: String(row['Afwijkend niet toegestaan'] || '')
+                };
+            } else if (row.AFD && row.ANVA) {
+                skippedCount++;
+            }
+        });
+        
+        setAnvaData(anvaMapping);
+        console.log(`📋 ANVA mapping loaded (fallback): ${Object.keys(anvaMapping).length} mappings (${skippedCount} skipped without OAI=1)`);
+    } else {
+        const headers = rawData[headerRowIndex];
+        console.log('📊 ANVA headers:', headers);
+        
+        const afdCol = headers.findIndex(h => String(h).includes('AFD'));
+        const anvaCol = headers.findIndex(h => String(h).includes('ANVA') && !String(h).includes('Omschrijving'));
+        const omschrijvingCol = headers.findIndex(h => String(h).includes('Omschrijving'));
+        const afwijkendCol = headers.findIndex(h => String(h).includes('Afwijkend') || String(h).includes('toegestaan'));
+        const oaiCol = headers.findIndex(h => String(h).toUpperCase().includes('OAI'));
+        
+        console.log('📊 Column indices - AFD:', afdCol, 'ANVA:', anvaCol, 'Omschrijving:', omschrijvingCol, 'OAI:', oaiCol);
+        
+        const dataRows = rawData.slice(headerRowIndex + 1);
+        const anvaMapping = {};
+        let validCount = 0;
+        let skippedCount = 0;
+        
+        dataRows.forEach((row, index) => {
+            const afd = row[afdCol];
+            const anva = row[anvaCol];
+            const omschrijving = row[omschrijvingCol];
+            const afwijkend = row[afwijkendCol];
+            const oai = oaiCol >= 0 ? row[oaiCol] : null;
+            
+            // Only use rows where OAI = 1 (or if OAI column doesn't exist, use all)
+            const shouldUse = oaiCol === -1 || oai === 1 || oai === '1' || oai === 'J';
+            
+            if (afd && anva && shouldUse) {
+                anvaMapping[String(afd)] = {
+                    code: String(anva),
+                    omschrijving: String(omschrijving || ''),
+                    afwijkendNietToegestaan: String(afwijkend || '')
+                };
+                validCount++;
+            } else if (afd && anva) {
+                skippedCount++;
+            }
+        });
+        
+        setAnvaData(anvaMapping);
+        console.log(`📋 ANVA mapping loaded: ${validCount} mappings from ${dataRows.length} rows (${skippedCount} skipped without OAI=1)`);
+    }
+} catch (err) {
+    console.warn('⚠️ ANVA mapping data not found or could not be loaded:', err.message);
+}
 
-    setReadyState();
-  </script>
+                        setData(cleanedData);
+                        
+                        const entities = cleanedData.filter(row => row['Entiteit/Attribuut'] === 'E').length;
+                        const attributes = cleanedData.filter(row => row['Entiteit/Attribuut'] === 'A').length;
+                        setStats({
+                            total: cleanedData.length,
+                            entities,
+                            attributes
+                        });
+                        
+                        console.log(`🎉 Data loaded: ${cleanedData.length} total, ${entities} entities, ${attributes} attributes`);
+                        setLoading(false);
+                    } catch (err) {
+                        console.error('❌ Error loading data:', err);
+                        setError(err.message);
+                        setLoading(false);
+                    }
+                };
+
+                loadData();
+            }, []);
+
+            // Enhanced search filter with advanced search support
+            const searchFilter = useCallback((row, term, isAdvanced = false) => {
+                if (!term && !isAdvanced) return true;
+
+                const basicFields = [
+                    row.Naam,
+                    row.Omschrijving,
+                    row.Entiteitcode,
+                    row.Attribuutcode,
+                    row.Entiteitcode && row.Attribuutcode ? `${row.Entiteitcode}_${row.Attribuutcode}` : null,
+                    row.Codelijst
+                ];
+
+                // Add ANVA information if available
+                const fullCode = row.Entiteitcode && row.Attribuutcode ? `${row.Entiteitcode}_${row.Attribuutcode}` : null;
+                const anvaInfo = fullCode ? anvaData[fullCode] : null;
+                if (anvaInfo) {
+                    basicFields.push(anvaInfo.code);
+                    basicFields.push(anvaInfo.omschrijving);  
+                }
+
+                const searchFields = basicFields.filter(Boolean).join(' ').toLowerCase();
+
+                // Advanced search logic
+                if (isAdvanced) {
+                    const { searchWords, entiteitFilter, datatypeFilter, codelistFilter, anvaCodeFilter } = advancedSearch;
+                    
+                    // Entity filter
+                    if (entiteitFilter !== 'all' && row.Entiteitcode !== entiteitFilter) {
+                        return false;
+                    }
+                    
+                    // Datatype filter
+                    if (datatypeFilter !== 'all' && row.Datatype !== datatypeFilter) {
+                        return false;
+                    }
+                    
+                    // Codelist filter
+                    if (codelistFilter && row.Codelijst !== codelistFilter) {
+                        return false;
+                    }
+                    
+                    // ANVA code filter
+                    if (anvaCodeFilter && (!anvaInfo || !anvaInfo.code.toLowerCase().includes(anvaCodeFilter.toLowerCase()))) {
+                        return false;
+                    }
+                    
+                    // Search words filter (all words must be present)
+                    if (searchWords) {
+                        const words = searchWords.toLowerCase().split(/\s+/).filter(w => w.length > 0);
+                        if (!words.every(word => searchFields.includes(word))) {
+                            return false;
+                        }
+                    }
+                    
+                    return true;
+                }
+
+                // Basic search
+                return searchFields.includes(term.toLowerCase());
+            }, [anvaData, advancedSearch]);
+
+            // Check if advanced search is active
+            const isAdvancedSearchActive = useMemo(() => {
+                const { searchWords, entiteitFilter, datatypeFilter, codelistFilter, anvaCodeFilter } = advancedSearch;
+                return searchWords || entiteitFilter !== 'all' || datatypeFilter !== 'all' || codelistFilter || anvaCodeFilter;
+            }, [advancedSearch]);
+
+            // Available datatypes
+            const availableDatatypes = useMemo(() => {
+                const datatypes = new Set();
+                data.forEach(row => {
+                    if (row.Datatype) {
+                        datatypes.add(row.Datatype);
+                    }
+                });
+                return Array.from(datatypes).sort();
+            }, [data]);
+
+            // Available codelists
+            const availableCodelists = useMemo(() => {
+                const codelistSet = new Set();
+                data.forEach(row => {
+                    if (row.Codelijst) {
+                        codelistSet.add(row.Codelijst);
+                    }
+                });
+                return Array.from(codelistSet).sort();
+            }, [data]);
+
+            // Clear advanced search
+            const clearAdvancedSearch = useCallback(() => {
+                setAdvancedSearch({
+                    searchWords: '',
+                    entiteitFilter: 'all',
+                    datatypeFilter: 'all',
+                    codelistFilter: '',
+                    anvaCodeFilter: ''
+                });
+            }, []);
+
+            // Apply advanced search
+            const applyAdvancedSearch = useCallback(() => {
+                setCurrentPage(1);
+                setSelectedItemIndex(-1);
+                setKeyboardActive(false);
+                // The search will be applied automatically through the filteredData useMemo
+            }, []);
+
+            // Filtered data
+            const filteredData = useMemo(() => {
+                let filtered = data;
+
+                if (typeFilter !== 'all') {
+                    filtered = filtered.filter(row => row['Entiteit/Attribuut'] === typeFilter);
+                }
+
+                if (entityFilter !== 'all') {
+                    filtered = filtered.filter(row => row.Entiteitcode === entityFilter);
+                }
+
+                if (isAdvancedSearchActive) {
+                    filtered = filtered.filter(row => searchFilter(row, null, true));
+                } else if (debouncedSearchTerm) {
+                    filtered = filtered.filter(row => searchFilter(row, debouncedSearchTerm));
+                }
+
+                return filtered;
+            }, [data, debouncedSearchTerm, typeFilter, entityFilter, searchFilter, isAdvancedSearchActive]);
+
+            // Available entities with descriptions
+            const availableEntities = useMemo(() => {
+                const entityMap = new Map();
+                filteredData.forEach(row => {
+                    if (row.Entiteitcode && !entityMap.has(row.Entiteitcode)) {
+                        const entityRecord = data.find(r => 
+                            r.Entiteitcode === row.Entiteitcode && 
+                            r['Entiteit/Attribuut'] === 'E'
+                        );
+                        entityMap.set(row.Entiteitcode, {
+                            code: row.Entiteitcode,
+                            naam: entityRecord ? entityRecord.Naam : row.Entiteitcode
+                        });
+                    }
+                });
+                return Array.from(entityMap.values()).sort((a, b) => a.code.localeCompare(b.code));
+            }, [filteredData, data]);
+
+            // Paginated data
+            const paginatedData = useMemo(() => {
+                const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;  
+                const endIndex = startIndex + ITEMS_PER_PAGE;
+                return filteredData.slice(startIndex, endIndex);
+            }, [filteredData, currentPage]);
+
+            // Filtered codelist items
+            const codelistItems = useMemo(() => {
+                if (!selectedCodelist || !codelistData[selectedCodelist.codelijst]) return [];
+                
+                let items = codelistData[selectedCodelist.codelijst];
+                
+                items = items.filter(item => {
+                    const code = String(item.code || '').trim();
+                    return code !== '' && code.toLowerCase() !== 'code';
+                });
+                
+                if (!codelistSearch) return items;
+                
+                const searchLower = codelistSearch.toLowerCase();
+                return items.filter(item => {
+                    const code = String(item.code || '').toLowerCase();
+                    const omschrijving = String(item.omschrijving || '').toLowerCase();
+                    
+                    return code.includes(searchLower) || omschrijving.includes(searchLower);
+                });
+            }, [selectedCodelist, codelistData, codelistSearch]);
+
+            const totalPages = Math.ceil(filteredData.length / ITEMS_PER_PAGE);
+
+            const openCodelist = useCallback((codelijst, naam) => {
+                setSelectedCodelist({ codelijst, naam });
+                setCodelistSearch('');
+            }, []);
+
+            const copyToClipboard = useCallback((text, id) => {
+                if (navigator.clipboard) {
+                    navigator.clipboard.writeText(text);
+                } else {
+                    const textArea = document.createElement('textarea');
+                    textArea.value = text;
+                    document.body.appendChild(textArea);
+                    textArea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textArea);
+                }
+                setCopiedItem(id);
+                setTimeout(() => setCopiedItem(null), 2000);
+            }, []);
+
+            // Copy full attribute info
+            const copyFullAttributeInfo = useCallback((item, id) => {
+                let entiteit = item.Entiteitcode || '';
+                
+                // Specifieke regels voor entiteit prefix
+                if (entiteit === 'WH') {
+                    // WH krijgt altijd PP/OG/ prefix
+                    entiteit = `PP/OG/${entiteit}`;
+                } else if (!['XG', 'XM', 'PP', 'AL'].includes(entiteit)) {
+                    // Alle andere entiteiten (behalve XG, XM, PP, AL) krijgen PP/ prefix
+                    entiteit = `PP/${entiteit}`;
+                }
+                // XG, XM, PP, AL blijven ongewijzigd
+                
+                const volledigAttribuut = item.Entiteitcode && item.Attribuutcode ? `${item.Entiteitcode}_${item.Attribuutcode}` : item.Entiteitcode || '';
+                const omschrijving = item.Naam || '';
+                const codelijst = item.Codelijst || '';
+                
+                const fullInfo = `${entiteit}\t${volledigAttribuut}\t${omschrijving}\t${codelijst}`;
+                
+                if (navigator.clipboard) {
+                    navigator.clipboard.writeText(fullInfo);
+                } else {
+                    const textArea = document.createElement('textarea');
+                    textArea.value = fullInfo;
+                    document.body.appendChild(textArea);
+                    textArea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textArea);
+                }
+                setCopiedItem(id);
+                setTimeout(() => setCopiedItem(null), 2000);
+            }, []);
+
+            const highlightText = (text, term) => {
+                if (!text || !term) return text;
+                
+                const parts = text.split(new RegExp(`(${term})`, 'gi'));
+                return parts.map((part, i) => 
+                    part.toLowerCase() === term.toLowerCase() 
+                        ? <mark key={i}>{part}</mark>
+                        : part
+                );
+            };
+
+            if (loading) {
+                return (
+                    <div className={`flex items-center justify-center h-screen ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
+                        <div className="text-center">
+                            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
+                            <p className={`mt-4 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                                AFD datacatalogus laden...
+                            </p>
+                        </div>
+                    </div>
+                );
+            }
+
+            if (error) {
+                return (
+                    <div className={`flex items-center justify-center h-screen ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
+                        <div className="text-center max-w-lg mx-auto p-6">
+                            <div className="text-red-600 mb-4">
+                                <div className="text-6xl mb-4">⚠️</div>
+                                <h2 className="text-xl font-bold mb-2">Fout bij laden</h2>
+                                <p className="text-sm mb-4">{error}</p>
+                            </div>
+                            <div className="text-sm text-gray-600 space-y-2">
+                                <p><strong>Controleer het volgende:</strong></p>
+                                <ul className="list-disc list-inside space-y-1 text-left">
+                                    <li>Het bestand <code>data.csv</code> staat in de root van je repository</li>
+                                    <li>Het bestand heeft exact de naam <code>data.csv</code> (let op hoofdletters)</li>
+                                    <li>Het CSV bestand is geldig en UTF-8 encoded</li>
+                                    <li>GitHub Pages is correct ingesteld</li>
+                                </ul>
+                                <p className="mt-4">
+                                    <strong>Test:</strong> <a 
+                                        href="data.csv" 
+                                        target="_blank" 
+                                        className="text-blue-600 underline"
+                                    >
+                                        Probeer data.csv direct te openen
+                                    </a>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            return (
+                <div className={`min-h-screen ${darkMode ? 'dark bg-gray-900 text-gray-100' : 'bg-gray-50'}`}>
+                    {/* Header */}
+                    <div className={`${darkMode ? 'bg-gray-800 text-gray-100' : 'bg-white'} shadow-sm border-b ${darkMode ? 'border-gray-700' : ''}`}>
+                        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center space-x-3">
+                                    <Database className="h-8 w-8 text-blue-600" />
+                                    <div>
+                                        <h1 className={`text-2xl font-bold ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
+                                            AFD 1.0 Datacatalogus
+                                        </h1>
+                                        <div className={`flex items-center space-x-4 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                            <span>{stats.total.toLocaleString()} items</span>
+                                            <span>•</span>
+                                            <span>{stats.entities} entiteiten</span>
+                                            <span>•</span>
+                                            <span>{stats.attributes.toLocaleString()} attributen</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                    <button
+                                        onClick={() => setShowInfo(true)}
+                                        className={`p-2 rounded-lg ${darkMode ? 'hover:bg-gray-700 text-gray-300' : 'hover:bg-gray-100 text-gray-600'}`}
+                                        title="Help & Instructies"
+                                    >
+                                        <Info className="h-5 w-5" />
+                                    </button>
+                                    <button
+                                        onClick={() => setDarkMode(!darkMode)}
+                                        className={`p-2 rounded-lg ${darkMode ? 'hover:bg-gray-700 text-gray-300' : 'hover:bg-gray-100 text-gray-600'}`}
+                                        title={darkMode ? 'Light mode' : 'Dark mode'}
+                                    >
+                                        {darkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Search section */}
+                    <div className={`${darkMode ? 'bg-gray-800 text-gray-100' : 'bg-white'} border-b ${darkMode ? 'border-gray-700' : ''} sticky top-0 z-10`}>
+                        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+                            <div className="space-y-4">
+                                <div className="flex items-center space-x-2">
+                                    <div className="relative flex-1">
+                                        <Search className={`absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 ${darkMode ? 'text-gray-300' : 'text-gray-400'}`} />
+                                        <input
+                                            ref={searchInputRef}
+                                            type="text"
+                                            value={searchTerm}
+                                            onChange={(e) => setSearchTerm(e.target.value)}
+                                            placeholder="Zoek op naam, omschrijving, AFD code, ANVA code of codelijst... (druk / voor focus)"
+                                            className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 text-lg ${
+                                                darkMode ? 'bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
+                                            }`}
+                                        />
+                                        {searchTerm && (
+                                            <button
+                                                onClick={() => setSearchTerm('')}
+                                                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                                            >
+                                                ✕
+                                            </button>
+                                        )}
+                                    </div>
+                                    <button
+                                        onClick={() => setShowAdvancedSearch(!showAdvancedSearch)}
+                                        className={`flex items-center space-x-2 px-4 py-3 rounded-lg border transition-colors ${
+                                            showAdvancedSearch || isAdvancedSearchActive
+                                                ? (darkMode ? 'bg-blue-600 border-blue-500 text-white' : 'bg-blue-600 border-blue-500 text-white')
+                                                : (darkMode ? 'bg-gray-700 border-gray-600 text-gray-300 hover:bg-gray-600' : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50')
+                                        }`}
+                                        title="Geavanceerd zoeken"
+                                    >
+                                        <span className="text-sm font-medium">Geavanceerd</span>
+                                        {showAdvancedSearch ? 
+                                            <ChevronUp className="h-4 w-4" /> : 
+                                            <ChevronDown className="h-4 w-4" />
+                                        }
+                                        {isAdvancedSearchActive && (
+                                            <div className="w-2 h-2 bg-current rounded-full" />
+                                        )}
+                                    </button>
+                                </div>
+                                
+                                {/* Advanced Search Panel */}
+                                {showAdvancedSearch && (
+                                    <div className={`border rounded-lg p-4 space-y-4 ${
+                                        darkMode ? 'bg-gray-700 border-gray-600' : 'bg-gray-50 border-gray-200'
+                                    }`}>
+                                        <div className="flex items-center space-x-2 mb-3">
+                                            <Search className={`h-5 w-5 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`} />
+                                            <h3 className={`font-medium ${darkMode ? 'text-gray-200' : 'text-gray-900'}`}>
+                                                Geavanceerd zoeken
+                                            </h3>
+                                        </div>
+                                        
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                            <div className="sm:col-span-2">
+                                                <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                                    Zoekwoorden
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    value={advancedSearch.searchWords}
+                                                    onChange={(e) => setAdvancedSearch(prev => ({ ...prev, searchWords: e.target.value }))}
+                                                    placeholder="Typ meerdere woorden - alle woorden moeten voorkomen"
+                                                    className={`w-full px-3 py-2 border rounded-lg text-sm ${
+                                                        darkMode ? 'bg-gray-800 border-gray-600 text-gray-100 placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
+                                                    }`}
+                                                />
+                                                <p className={`text-xs mt-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                                    Bijvoorbeeld: "naam verzekering" vindt records die beide woorden bevatten
+                                                </p>
+                                            </div>
+                                            
+                                            <div>
+                                                <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                                    Entiteit
+                                                </label>
+                                                <SearchableSelect
+                                                    options={[
+                                                        { value: 'all', label: 'Alle entiteiten' },
+                                                        ...availableEntities.map(entity => ({
+                                                            value: entity.code,
+                                                            label: `${entity.code} - ${entity.naam}`
+                                                        }))
+                                                    ]}
+                                                    value={advancedSearch.entiteitFilter}
+                                                    onChange={(value) => setAdvancedSearch(prev => ({ ...prev, entiteitFilter: value }))}
+                                                    placeholder="Selecteer entiteit"
+                                                    className={`px-3 py-2 border rounded-lg text-sm ${
+                                                        darkMode ? 'bg-gray-800 border-gray-600 text-gray-100' : 'bg-white border-gray-300 text-gray-900'
+                                                    }`}
+                                                    darkMode={darkMode}
+                                                />
+                                            </div>
+                                            
+                                            <div>
+                                                <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                                    Datatype
+                                                </label>
+                                                <SearchableSelect
+                                                    options={[
+                                                        { value: 'all', label: 'Alle datatypes' },
+                                                        ...availableDatatypes.map(datatype => ({
+                                                            value: datatype,
+                                                            label: `${datatype} - ${datatypeInfo[datatype]?.label || datatype}`
+                                                        }))
+                                                    ]}
+                                                    value={advancedSearch.datatypeFilter}
+                                                    onChange={(value) => setAdvancedSearch(prev => ({ ...prev, datatypeFilter: value }))}
+                                                    placeholder="Selecteer datatype"
+                                                    className={`px-3 py-2 border rounded-lg text-sm ${
+                                                        darkMode ? 'bg-gray-800 border-gray-600 text-gray-100' : 'bg-white border-gray-300 text-gray-900'
+                                                    }`}
+                                                    darkMode={darkMode}
+                                                />
+                                            </div>
+                                            
+                                            <div>
+                                                <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                                    Codelijst
+                                                </label>
+                                                <SearchableSelect
+                                                    options={[
+                                                        { value: '', label: 'Alle codelijsten' },
+                                                        ...availableCodelists.map(codelist => {
+                                                            const description = window.codelistDescriptions?.[codelist];
+                                                            return {
+                                                                value: codelist,
+                                                                label: description ? `${codelist} - ${description}` : codelist
+                                                            };
+                                                        })
+                                                    ]}
+                                                    value={advancedSearch.codelistFilter}
+                                                    onChange={(value) => setAdvancedSearch(prev => ({ ...prev, codelistFilter: value }))}
+                                                    placeholder="Selecteer codelijst"
+                                                    className={`px-3 py-2 border rounded-lg text-sm ${
+                                                        darkMode ? 'bg-gray-800 border-gray-600 text-gray-100' : 'bg-white border-gray-300 text-gray-900'
+                                                    }`}
+                                                    darkMode={darkMode}
+                                                />
+                                            </div>
+                                            
+                                            <div>
+                                                <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                                    ANVA code
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    value={advancedSearch.anvaCodeFilter}
+                                                    onChange={(e) => setAdvancedSearch(prev => ({ ...prev, anvaCodeFilter: e.target.value }))}
+                                                    placeholder="bijv. 13689"
+                                                    className={`w-full px-3 py-2 border rounded-lg text-sm ${
+                                                        darkMode ? 'bg-gray-800 border-gray-600 text-gray-100 placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
+                                                    }`}
+                                                />
+                                            </div>
+                                        </div>
+                                        
+                                        <div className="flex items-center justify-between pt-3 border-t border-gray-200">
+                                            <div className="flex items-center space-x-2">
+                                                <button
+                                                    onClick={clearAdvancedSearch}
+                                                    className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                                                        darkMode ? 'text-gray-300 hover:bg-gray-600' : 'text-gray-600 hover:bg-gray-200'
+                                                    }`}
+                                                >
+                                                    Wis filters
+                                                </button>
+                                                <button
+                                                    onClick={applyAdvancedSearch}
+                                                    className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
+                                                >
+                                                    Zoeken
+                                                </button>
+                                            </div>
+                                            <button
+                                                onClick={() => setShowAdvancedSearch(false)}
+                                                className={`text-sm ${darkMode ? 'text-gray-400 hover:text-gray-300' : 'text-gray-500 hover:text-gray-700'}`}
+                                            >
+                                                Sluiten
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
+                                
+                                <div className="flex flex-wrap gap-4">
+                                    <div className="flex items-center space-x-2 min-w-0">
+                                        <Filter className={`h-5 w-5 ${darkMode ? 'text-gray-300' : 'text-gray-400'} flex-shrink-0`} />
+                                        <div className="min-w-[140px]">
+                                            <SearchableSelect
+                                                options={[
+                                                    { value: 'all', label: 'Alle types' },
+                                                    { value: 'E', label: 'Alleen entiteiten' },
+                                                    { value: 'A', label: 'Alleen attributen' }
+                                                ]}
+                                                value={typeFilter}
+                                                onChange={setTypeFilter}
+                                                placeholder="Type selecteren"
+                                                className={`border rounded-lg px-3 py-2 ${
+                                                    darkMode ? 'bg-gray-700 border-gray-600 text-gray-100' : 'bg-white border-gray-300 text-gray-900'
+                                                }`}
+                                                darkMode={darkMode}
+                                            />
+                                        </div>
+                                    </div>
+                                    {availableEntities.length > 0 && (
+                                        <div className="flex items-center space-x-2 min-w-0">
+                                            <Database className={`h-5 w-5 ${darkMode ? 'text-gray-300' : 'text-gray-400'} flex-shrink-0`} />
+                                            <div className="min-w-[200px]">
+                                                <SearchableSelect
+                                                    options={[
+                                                        { value: 'all', label: `Alle entiteiten (${availableEntities.length})` },
+                                                        ...availableEntities.map(entity => ({
+                                                            value: entity.code,
+                                                            label: `${entity.code} - ${entity.naam}`
+                                                        }))
+                                                    ]}
+                                                    value={entityFilter}
+                                                    onChange={setEntityFilter}
+                                                    placeholder="Entiteit selecteren"
+                                                    className={`border rounded-lg px-3 py-2 ${
+                                                        darkMode ? 'bg-gray-700 border-gray-600 text-gray-100' : 'bg-white border-gray-300 text-gray-900'
+                                                    }`}
+                                                    darkMode={darkMode}
+                                                />
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                                {paginatedData.length > 0 && (
+                                    <div className={`text-xs space-y-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                        <div>
+                                            <strong>Sneltoetsen:</strong> ↑↓ navigeren • Enter kopieer code • Shift+Enter kopieer volledige info • / zoeken • Esc wissen
+                                        </div>
+                                        {keyboardActive && selectedItemIndex >= 0 && (
+                                            <div className="text-blue-400 font-medium">
+                                                <strong>📍 Geselecteerd:</strong> Item {selectedItemIndex + 1} van {paginatedData.length} • Enter = code • Shift+Enter = volledige info
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Results */}
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+                        {!searchTerm && typeFilter === 'all' && entityFilter === 'all' && !isAdvancedSearchActive ? (
+                            <div className="text-center py-12">
+                                <div className={`${darkMode ? 'bg-gray-800 text-gray-100' : 'bg-white'} rounded-lg shadow-sm p-12 max-w-2xl mx-auto`}>
+                                    <Search className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                                    <h2 className={`text-2xl font-semibold mb-2 ${darkMode ? 'text-gray-200' : 'text-gray-700'}`}>
+                                        Begin met zoeken
+                                    </h2>
+                                    <p className={`${darkMode ? 'text-gray-300' : 'text-gray-500'} mb-6`}>
+                                        Gebruik de zoekbalk hierboven om te zoeken in de AFD 1.0 datacatalogus met {stats.total.toLocaleString()} items
+                                    </p>
+                                    <div className={`space-y-2 text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                                        <p>Je kunt zoeken op:</p>
+                                        <ul className="list-disc list-inside space-y-1">
+                                            <li>Naam van een entiteit of attribuut</li>
+                                            <li>Omschrijving</li>
+                                            <li>Entiteitcode (bijv. OB, XA, RI)</li>
+                                            <li>Attribuutcode of volledige codes (bijv. DA_VERZSOM)</li>
+                                            <li>ANVA code (bijv. 13689)</li>
+                                            <li>Codelijst naam (bijv. ADNABS, SECTCOD)</li>
+                                        </ul>
+                                    </div>
+                                    <div className="mt-6 flex justify-center space-x-4">
+                                        <kbd className={`px-3 py-1 rounded text-sm ${
+                                            darkMode ? 'bg-gray-700 text-gray-200 border border-gray-600' : 'bg-gray-200 text-gray-800'
+                                        }`}>
+                                            Druk op / om te beginnen met typen
+                                        </kbd>
+                                        <button
+                                            onClick={() => setShowAdvancedSearch(true)}
+                                            className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
+                                                darkMode ? 'bg-blue-600 text-white hover:bg-blue-700' : 'bg-blue-600 text-white hover:bg-blue-700'
+                                            }`}
+                                        >
+                                            Geavanceerd zoeken
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        ) : filteredData.length === 0 ? (
+                            <div className="text-center py-12">
+                                <p className="text-gray-500 text-lg">Geen resultaten gevonden</p>
+                                <p className="text-gray-400 mt-2">Probeer een andere zoekterm of pas de filters aan</p>
+                            </div>
+                        ) : (
+                            <div>
+                                <div className="flex justify-between items-center mb-4">
+                                    <p className="text-gray-600">
+                                        {filteredData.length} {filteredData.length === 1 ? "resultaat" : "resultaten"}
+                                    </p>
+                                    {totalPages > 1 && (
+                                        <p className="text-sm text-gray-500">
+                                            Pagina {currentPage} van {totalPages}
+                                        </p>
+                                    )}
+                                </div>
+                                <div className="space-y-3">
+                                    {paginatedData.map((item, index) => {
+                                        const isEntity = item['Entiteit/Attribuut'] === 'E';
+                                        const itemId = isEntity ? item.Entiteitcode : `${item.Entiteitcode}_${item.Attribuutcode}`;
+                                        const isSelected = keyboardActive && selectedItemIndex === index;
+                                        
+                                        return (
+                                            <div 
+                                                key={index}
+                                                ref={el => itemRefs.current[index] = el}
+                                                className={`${darkMode ? 'bg-gray-800 text-gray-100' : 'bg-white'} rounded-lg shadow-sm p-4 hover:shadow-md transition-shadow ${
+                                                    isSelected ? 'selected-item' : ''
+                                                }`}
+                                            >
+                                                <div className="flex items-start justify-between">
+                                                    <div className="flex items-start space-x-3 flex-1">
+                                                        {isEntity ? (
+                                                            <Database className="h-5 w-5 text-blue-600 mt-1 flex-shrink-0" />
+                                                        ) : (
+                                                            <Package className="h-5 w-5 text-green-600 mt-1 flex-shrink-0" />
+                                                        )}
+                                                        <div className="flex-1 min-w-0">
+                                                            <div className="flex items-center space-x-2 flex-wrap mb-1">
+                                                                <span className="text-sm font-mono text-gray-500">
+                                                                    {itemId}
+                                                                </span>
+                                                                {item.Datatype && datatypeInfo[item.Datatype] && (
+                                                                    <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium ${datatypeInfo[item.Datatype].color} bg-gray-100`}>
+                                                                        {datatypeInfo[item.Datatype].label}
+                                                                    </span>
+                                                                )}
+                                                                {item.Codelijst && codelistData[item.Codelijst] && (
+                                                                    <button
+                                                                        onClick={() => {
+                                                                            const description = window.codelistDescriptions?.[item.Codelijst];
+                                                                            openCodelist(item.Codelijst, description || item.Codelijst);
+                                                                        }}
+                                                                        className="inline-flex items-center space-x-1 text-xs text-blue-600 hover:text-blue-800 underline"
+                                                                        title={`Bekijk codelijst ${item.Codelijst}${window.codelistDescriptions?.[item.Codelijst] ? ` - ${window.codelistDescriptions[item.Codelijst]}` : ''} (${codelistData[item.Codelijst].length} items)`}
+                                                                    >
+                                                                        <BookOpen className="h-3 w-3" />
+                                                                        <span>{highlightText(item.Codelijst, searchTerm)}</span>
+                                                                    </button>
+                                                                )}
+                                                            </div>
+                                                            <h3 className={`font-semibold ${darkMode ? 'text-gray-100' : 'text-gray-900'} mb-1`}>
+                                                                {highlightText(item.Naam, searchTerm)}
+                                                            </h3>
+                                                            {item.Omschrijving && (
+                                                                <p className={`${darkMode ? 'text-gray-300' : 'text-gray-600'} text-sm mb-2`}>
+                                                                    {highlightText(item.Omschrijving, searchTerm)}
+                                                                </p>
+                                                            )}
+                                                            
+                                                            {/* Extra attribuut informatie */}
+                                                            {!isEntity && (
+                                                                <div className="space-y-1 text-xs text-gray-500">
+                                                                    {item.Formaat && (
+                                                                        <div className="flex items-center space-x-2">
+                                                                            <span className="font-medium">Formaat:</span>
+                                                                            <code className={`px-1 py-0.5 rounded ${darkMode ? 'bg-gray-700' : 'bg-gray-100'}`}>
+                                                                                {item.Formaat}
+                                                                            </code>
+                                                                        </div>
+                                                                    )}
+                                                                    {(() => {
+                                                                        // ANVA code opzoeken
+                                                                        const fullCode = `${item.Entiteitcode}_${item.Attribuutcode}`;
+                                                                        const anvaInfo = anvaData[fullCode];
+                                                                        if (anvaInfo && anvaInfo.code) {
+                                                                            return (
+                                                                                <div className="flex items-center space-x-2">
+                                                                                    <span className="font-medium">ANVA:</span>
+                                                                                    <code className={`px-1 py-0.5 rounded ${darkMode ? 'bg-gray-700' : 'bg-gray-100'}`}>
+                                                                                        {highlightText(anvaInfo.code, searchTerm)}
+                                                                                    </code>
+                                                                                    {anvaInfo.afwijkendNietToegestaan === 'J' && (
+                                                                                        <span className="inline-flex items-center px-1 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">
+                                                                                            ⚠️
+                                                                                        </span>
+                                                                                    )}
+                                                                                </div>
+                                                                            );
+                                                                        }
+                                                                        return null;
+                                                                    })()}
+                                                                    {item.Lengte && (
+                                                                        <div className="flex items-center space-x-2">
+                                                                            <span className="font-medium">Lengte:</span>
+                                                                            <span>{item.Lengte}</span>
+                                                                        </div>
+                                                                    )}
+                                                                    {item.Decimalen && (
+                                                                        <div className="flex items-center space-x-2">
+                                                                            <span className="font-medium">Decimalen:</span>
+                                                                            <span>{item.Decimalen}</span>
+                                                                        </div>
+                                                                    )}
+                                                                    {item.Verplicht && (
+                                                                        <div className="flex items-center space-x-2">
+                                                                            <span className="font-medium">Verplicht:</span>
+                                                                            <span className={item.Verplicht === 'J' ? 'text-red-600' : 'text-green-600'}>
+                                                                                {item.Verplicht === 'J' ? 'Ja' : 'Nee'}
+                                                                            </span>
+                                                                        </div>
+                                                                    )}
+                                                                    {item.Primairesleutel && item.Primairesleutel === 'J' && (
+                                                                        <div className="flex items-center space-x-2">
+                                                                            <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-yellow-200 text-yellow-800">
+                                                                                🔑 Primaire sleutel
+                                                                            </span>
+                                                                        </div>
+                                                                    )}
+                                                                    {item.Vreemdessleutel && item.Vreemdessleutel === 'J' && (
+                                                                        <div className="flex items-center space-x-2">
+                                                                            <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                                                                                🔗 Vreemde sleutel
+                                                                            </span>
+                                                                        </div>
+                                                                    )}
+                                                                    {item.Defaultwaarde && (
+                                                                        <div className="flex items-center space-x-2">
+                                                                            <span className="font-medium">Default:</span>
+                                                                            <code className={`px-1 py-0.5 rounded ${darkMode ? 'bg-gray-700' : 'bg-gray-100'}`}>
+                                                                                {item.Defaultwaarde}
+                                                                            </code>
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex items-center space-x-1 ml-2">
+                                                        <button
+                                                            onClick={() => copyToClipboard(itemId, itemId)}
+                                                            className="p-1 hover:bg-gray-100 rounded"
+                                                            title="Kopieer code"
+                                                        >
+                                                            {copiedItem === itemId ? (
+                                                                <Check className="h-4 w-4 text-green-500" />
+                                                            ) : (
+                                                                <Copy className="h-4 w-4 text-gray-400" />
+                                                            )}
+                                                        </button>
+                                                        {!isEntity && (
+                                                            <button
+                                                                onClick={() => copyFullAttributeInfo(item, `full-${itemId}`)}
+                                                                className="p-1 hover:bg-gray-100 rounded"
+                                                                title="Kopieer volledige attribuut info (Entiteit, Code, Omschrijving, Codelijst)"
+                                                            >
+                                                                {copiedItem === `full-${itemId}` ? (
+                                                                    <Check className="h-4 w-4 text-green-500" />
+                                                                ) : (
+                                                                    <ClipboardList className="h-4 w-4 text-gray-400" />
+                                                                )}
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                                {/* Pagination */}
+                                {totalPages > 1 && (
+                                    <div className="flex items-center justify-center space-x-2 mt-6">
+                                        <button
+                                            onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                                            disabled={currentPage === 1}
+                                            className={`px-3 py-1 rounded border ${
+                                                currentPage === 1
+                                                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                                    : 'bg-white text-gray-700 hover:bg-gray-50'
+                                            }`}
+                                        >
+                                            Vorige
+                                        </button>
+                                        <span className="px-3 py-1">
+                                            {currentPage} / {totalPages}
+                                        </span>
+                                        <button
+                                            onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                                            disabled={currentPage === totalPages}
+                                            className={`px-3 py-1 rounded border ${
+                                                currentPage === totalPages
+                                                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                                    : 'bg-white text-gray-700 hover:bg-gray-50'
+                                            }`}
+                                        >
+                                            Volgende
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                        
+                        {/* Copyright */}
+                        <div className="mt-8 pt-4 border-t border-gray-200 text-center">
+                            <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                © 2025 Martin Hoogerbrugge • AFD 1.0 Datacatalogus
+                            </p>
+                        </div>
+                    </div>
+
+                    {/* Info Modal */}
+                    {showInfo && (
+                        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                            <div className={`${darkMode ? 'bg-gray-800 text-gray-100' : 'bg-white'} rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col`}>
+                                <div className="flex-shrink-0 p-6 border-b ${darkMode ? 'border-gray-700' : 'border-gray-200'}">
+                                    <div className="flex items-start justify-between">
+                                        <div className="flex items-center space-x-3">
+                                            <Info className="h-6 w-6 text-blue-600" />
+                                            <h2 className={`text-xl font-bold ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
+                                                Help & Instructies
+                                            </h2>
+                                        </div>
+                                        <button
+                                            onClick={() => setShowInfo(false)}
+                                            className={`p-2 rounded-lg flex-shrink-0 ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'}`}
+                                        >
+                                            <X className="h-5 w-5" />
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <div className="flex-1 overflow-y-auto p-6 space-y-6">
+                                    <div>
+                                        <h3 className={`text-lg font-semibold mb-3 ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
+                                            🔍 Zoeken
+                                        </h3>
+                                        <div className={`space-y-2 text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                                            <p>Je kunt zoeken op:</p>
+                                            <ul className="list-disc list-inside space-y-1 ml-4">
+                                                <li>Naam van een entiteit of attribuut</li>
+                                                <li>Omschrijving</li>
+                                                <li>Entiteitcode (bijv. OB, XA, RI)</li>
+                                                <li>Attribuutcode of volledige codes (bijv. DA_VERZSOM)</li>
+                                                <li>ANVA code (bijv. 13689)</li>
+                                                <li>Codelijst naam (bijv. ADNABS, SECTCOD)</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                    
+                                    <div>
+                                        <h3 className={`text-lg font-semibold mb-3 ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
+                                            🎯 Geavanceerd zoeken
+                                        </h3>
+                                        <div className={`space-y-2 text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                                            <p>Voor complexe zoekopdrachten kun je geavanceerd zoeken gebruiken:</p>
+                                            <ul className="list-disc list-inside space-y-1 ml-4">
+                                                <li><strong>Zoekwoorden:</strong> Zoek records die alle opgegeven woorden bevatten</li>
+                                                <li><strong>Filters:</strong> Filter op entiteit, datatype, codelijst of ANVA code</li>
+                                                <li><strong>Combinaties:</strong> Combineer tekst zoeken met specifieke filters</li>
+                                                <li><strong>Searchable dropdowns:</strong> Type in alle dropdowns om snel te zoeken</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <h3 className={`text-lg font-semibold mb-3 ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
+                                            ⌨️ Sneltoetsen
+                                        </h3>
+                                        <div className="space-y-2 text-sm">
+                                            <div className={`flex items-center justify-between p-2 rounded ${darkMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
+                                                <span><kbd className={`px-2 py-1 rounded text-xs ${darkMode ? 'bg-gray-600 text-gray-200' : 'bg-gray-200 text-gray-800'}`}>/</kbd></span>
+                                                <span className={darkMode ? 'text-gray-300' : 'text-gray-700'}>Focus op zoekbalk</span>
+                                            </div>
+                                            <div className={`flex items-center justify-between p-2 rounded ${darkMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
+                                                <span><kbd className={`px-2 py-1 rounded text-xs ${darkMode ? 'bg-gray-600 text-gray-200' : 'bg-gray-200 text-gray-800'}`}>↑ ↓</kbd></span>
+                                                <span className={darkMode ? 'text-gray-300' : 'text-gray-700'}>Navigeer door zoekresultaten</span>
+                                            </div>
+                                            <div className={`flex items-center justify-between p-2 rounded ${darkMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
+                                                <span><kbd className={`px-2 py-1 rounded text-xs ${darkMode ? 'bg-gray-600 text-gray-200' : 'bg-gray-200 text-gray-800'}`}>Enter</kbd></span>
+                                                <span className={darkMode ? 'text-gray-300' : 'text-gray-700'}>Kopieer geselecteerde code</span>
+                                            </div>
+                                            <div className={`flex items-center justify-between p-2 rounded ${darkMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
+                                                <span><kbd className={`px-2 py-1 rounded text-xs ${darkMode ? 'bg-gray-600 text-gray-200' : 'bg-gray-200 text-gray-800'}`}>Shift+Enter</kbd></span>
+                                                <span className={darkMode ? 'text-gray-300' : 'text-gray-700'}>Kopieer volledige attribuut info</span>
+                                            </div>
+                                            <div className={`flex items-center justify-between p-2 rounded ${darkMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
+                                                <span><kbd className={`px-2 py-1 rounded text-xs ${darkMode ? 'bg-gray-600 text-gray-200' : 'bg-gray-200 text-gray-800'}`}>Esc</kbd></span>
+                                                <span className={darkMode ? 'text-gray-300' : 'text-gray-700'}>Wis zoekterm en selectie</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <h3 className={`text-lg font-semibold mb-3 ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
+                                            📋 Kopiëren
+                                        </h3>
+                                        <div className={`space-y-2 text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                                            <div className="flex items-start space-x-2">
+                                                <Copy className={`h-4 w-4 mt-0.5 ${darkMode ? 'text-gray-400' : 'text-gray-400'}`} />
+                                                <span>Kopieer alleen de code (bijv. OB_NAAM)</span>
+                                            </div>
+                                            <div className="flex items-start space-x-2">
+                                                <ClipboardList className={`h-4 w-4 mt-0.5 ${darkMode ? 'text-gray-400' : 'text-gray-400'}`} />
+                                                <span>Kopieer volledige attribuut info (Entiteit, Code, Omschrijving, Codelijst)</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <h3 className={`text-lg font-semibold mb-3 ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
+                                            📚 Codelijsten
+                                        </h3>
+                                        <div className={`space-y-2 text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                                            <p>Klik op een codelijst link (bijv. <BookOpen className="h-3 w-3 inline" /> ADNABS) om alle waarden te bekijken.</p>
+                                            <p>In de codelijst kun je:</p>
+                                            <ul className="list-disc list-inside space-y-1 ml-4">
+                                                <li>Zoeken naar specifieke codes of omschrijvingen</li>
+                                                <li>Codes kopiëren naar het klembord</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <h3 className={`text-lg font-semibold mb-3 ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
+                                            🎯 Filters
+                                        </h3>
+                                        <div className={`space-y-2 text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                                            <div className="flex items-start space-x-2">
+                                                <Filter className={`h-4 w-4 mt-0.5 ${darkMode ? 'text-gray-400' : 'text-gray-400'}`} />
+                                                <span><strong>Type filter:</strong> Filter op entiteiten of attributen</span>
+                                            </div>
+                                            <div className="flex items-start space-x-2">
+                                                <Database className={`h-4 w-4 mt-0.5 ${darkMode ? 'text-gray-400' : 'text-gray-400'}`} />
+                                                <span><strong>Entiteit filter:</strong> Toon alleen attributen van een specifieke entiteit</span>
+                                            </div>
+                                            <div className="flex items-start space-x-2">
+                                                <Search className={`h-4 w-4 mt-0.5 ${darkMode ? 'text-gray-400' : 'text-gray-400'}`} />
+                                                <span><strong>Searchable dropdowns:</strong> Type in alle dropdowns om snel te zoeken</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <h3 className={`text-lg font-semibold mb-3 ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
+                                            🏷️ Labels & Info
+                                        </h3>
+                                        <div className={`space-y-2 text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                                            <div className="flex flex-wrap gap-2">
+                                                <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium text-blue-600 bg-blue-100">
+                                                    Ja/Nee
+                                                </span>
+                                                <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium text-green-600 bg-gray-100">
+                                                    Alfanumeriek
+                                                </span>
+                                                <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium text-purple-600 bg-gray-100">
+                                                    Datum
+                                                </span>
+                                                <span className={`${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>← Datatypes</span>
+                                            </div>
+                                            <div className="flex flex-wrap gap-2 items-center">
+                                                <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-yellow-200 text-yellow-800">
+                                                    🔑 Primaire sleutel
+                                                </span>
+                                                <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                                                    🔗 Vreemde sleutel
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className={`text-xs border-t pt-4 ${darkMode ? 'text-gray-400 border-gray-700' : 'text-gray-500 border-gray-200'}`}>
+                                        <p><strong>AFD 1.0 Datacatalogus</strong> • {stats.total.toLocaleString()} items • {stats.entities} entiteiten • {stats.attributes.toLocaleString()} attributen</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Codelist Modal */}
+                    {selectedCodelist && (
+                        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                            <div className={`${darkMode ? 'bg-gray-800 text-gray-100' : 'bg-white'} rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col`}>
+                                <div className="flex-shrink-0 p-6 border-b ${darkMode ? 'border-gray-700' : 'border-gray-200'}">
+                                    <div className="flex items-start justify-between">
+                                        <div className="flex-1 min-w-0">
+                                            <h2 className={`text-xl font-bold ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
+                                                Codelijst: {selectedCodelist.codelijst}
+                                            </h2>
+                                            {window.codelistDescriptions?.[selectedCodelist.codelijst] && (
+                                                <p className={`text-sm mt-1 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                                                    {window.codelistDescriptions[selectedCodelist.codelijst]}
+                                                </p>
+                                            )}
+                                            <p className={`text-sm mt-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                                {codelistItems.length} van {codelistData[selectedCodelist.codelijst]?.length || 0} items
+                                            </p>
+                                        </div>
+                                        <button
+                                            onClick={() => {
+                                                setSelectedCodelist(null);
+                                                setCodelistSearch('');
+                                            }}
+                                            className={`ml-4 p-2 rounded-lg flex-shrink-0 ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'}`}
+                                        >
+                                            <X className="h-5 w-5" />
+                                        </button>
+                                    </div>
+                                    <div className="mt-4">
+                                        <div className="relative">
+                                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+                                            <input
+                                                type="text"
+                                                value={codelistSearch}
+                                                onChange={(e) => setCodelistSearch(e.target.value)}
+                                                placeholder="Zoek in codelijst..."
+                                                className={`w-full pl-10 pr-10 py-2 border rounded-lg ${
+                                                    darkMode ? 'bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
+                                                } focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
+                                                autoFocus
+                                            />
+                                            {codelistSearch && (
+                                                <button
+                                                    onClick={() => setCodelistSearch('')}
+                                                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                                                >
+                                                    <X className="h-4 w-4" />
+                                                </button>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div className="flex-1 overflow-y-auto min-h-0 p-4">
+                                    {codelistItems.length === 0 ? (
+                                        <div className="text-center py-8">
+                                            <p className="text-gray-500">
+                                                {codelistSearch ? 'Geen items gevonden voor deze zoekopdracht' : 'Geen items in deze codelijst'}
+                                            </p>
+                                        </div>
+                                    ) : (
+                                        <div className="space-y-2">
+                                            {codelistItems.map((item, index) => (
+                                                <div 
+                                                    key={index}
+                                                    className={`flex items-start justify-between p-3 rounded-lg hover:shadow-sm transition-shadow ${
+                                                        darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-50 hover:bg-gray-100'
+                                                    }`}
+                                                >
+                                                    <div className="flex-1 min-w-0 pr-3">
+                                                        <div className="flex items-center space-x-2 mb-1">
+                                                            <code className={`font-mono text-sm font-semibold px-2 py-1 rounded ${
+                                                                darkMode ? 'bg-gray-800 text-blue-400' : 'bg-blue-50 text-blue-600'
+                                                            }`}>
+                                                                {highlightText(String(item.code), codelistSearch)}
+                                                            </code>
+                                                        </div>
+                                                        <p className={`text-sm break-words ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                                            {highlightText(String(item.omschrijving), codelistSearch)}
+                                                        </p>
+                                                    </div>
+                                                    <button
+                                                        onClick={() => copyToClipboard(String(item.code), `cl-${index}`)}
+                                                        className={`flex-shrink-0 p-2 rounded transition-colors ${
+                                                            darkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-200'
+                                                        }`}
+                                                        title="Kopieer code"
+                                                    >
+                                                        {copiedItem === `cl-${index}` ? 
+                                                            <Check className="h-4 w-4 text-green-500" /> : 
+                                                            <Copy className="h-4 w-4 text-gray-400" />
+                                                        }
+                                                    </button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<AFDSearchTool />);
+    </script>
 </body>
 </html>
