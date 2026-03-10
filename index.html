@@ -4,542 +4,378 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AFD 1.0 Datacatalogus</title>
-    
-    <!-- Favicon -->
     <link rel="icon" type="image/png" href="favicon.png">
-    <link rel="icon" type="image/x-icon" href="favicon.ico">
-    
-    <!-- React -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    
-    <!-- Babel voor JSX -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    
-    <!-- XLSX voor Excel bestanden -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    
-    <!-- PapaParse voor CSV -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
-    
-    <!-- Inline CSS styling (geen externe dependencies) -->
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg-primary: #f8fafc;
+            --bg-card: #ffffff;
+            --bg-input: #ffffff;
+            --bg-hover: #f1f5f9;
+            --bg-badge: #f1f5f9;
+            --bg-header: #ffffff;
+            --bg-selected: #dbeafe;
+            --border: #e2e8f0;
+            --border-input: #cbd5e1;
+            --border-selected: #3b82f6;
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --text-muted: #94a3b8;
+            --text-placeholder: #94a3b8;
+            --accent: #2563eb;
+            --accent-hover: #1d4ed8;
+            --accent-light: #eff6ff;
+            --mark-bg: #fef08a;
+            --mark-text: inherit;
+            --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.06);
+            --shadow-lg: 0 12px 24px rgba(0,0,0,0.08);
+            --entity-color: #2563eb;
+            --attr-color: #059669;
+            --type-jn: #2563eb;
+            --type-an: #059669;
+            --type-dat: #7c3aed;
+            --type-bed: #d97706;
+            --type-tijd: #4f46e5;
+            --type-perc: #ea580c;
+            --type-memo: #64748b;
+            --type-num: #0891b2;
+        }
+
+        .dark {
+            --bg-primary: #0f172a;
+            --bg-card: #1e293b;
+            --bg-input: #1e293b;
+            --bg-hover: #334155;
+            --bg-badge: #334155;
+            --bg-header: #1e293b;
+            --bg-selected: #1e3a5f;
+            --border: #334155;
+            --border-input: #475569;
+            --border-selected: #60a5fa;
+            --text-primary: #f1f5f9;
+            --text-secondary: #cbd5e1;
+            --text-muted: #64748b;
+            --text-placeholder: #64748b;
+            --accent: #3b82f6;
+            --accent-hover: #60a5fa;
+            --accent-light: #1e3a5f;
+            --mark-bg: #854d0e;
+            --mark-text: #fef3c7;
+            --shadow-sm: 0 1px 2px rgba(0,0,0,0.2);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.3);
+            --shadow-lg: 0 12px 24px rgba(0,0,0,0.4);
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
             line-height: 1.6;
-            color: #374151;
+            color: var(--text-primary);
+            background: var(--bg-primary);
         }
 
-        .bg-gray-50 { background-color: #f9fafb; }
-        .bg-white { background-color: #ffffff; }
-        .bg-gray-100 { background-color: #f3f4f6; }
-        .bg-gray-200 { background-color: #e5e7eb; }
-        .bg-gray-700 { background-color: #374151; }
-        .bg-gray-800 { background-color: #1f2937; }
-        .bg-gray-900 { background-color: #111827; }
-        .bg-blue-500 { background-color: #3b82f6; }
-        .bg-blue-600 { background-color: #2563eb; }
-        .bg-blue-700 { background-color: #1d4ed8; }
-        .bg-blue-100 { background-color: #dbeafe; }
-        .bg-blue-50 { background-color: #eff6ff; }
-        .bg-green-100 { background-color: #dcfce7; }
-        .bg-yellow-200 { background-color: #fef08a; }
-        .bg-yellow-800 { background-color: #92400e; }
-        .bg-red-100 { background-color: #fee2e2; }
-        .bg-red-600 { background-color: #dc2626; }
-        .bg-red-800 { background-color: #991b1b; }
+        mark { background: var(--mark-bg); color: var(--mark-text); padding: 1px 2px; border-radius: 2px; }
+        code { font-family: 'SF Mono', 'Cascadia Code', 'Fira Code', Consolas, monospace; font-size: 0.85em; background: var(--bg-badge); padding: 2px 6px; border-radius: 4px; }
 
-        .text-white { color: #ffffff; }
-        .text-gray-100 { color: #f3f4f6; }
-        .text-gray-200 { color: #e5e7eb; }
-        .text-gray-300 { color: #d1d5db; }
-        .text-gray-400 { color: #9ca3af; }
-        .text-gray-500 { color: #6b7280; }
-        .text-gray-600 { color: #4b5563; }
-        .text-gray-700 { color: #374151; }
-        .text-gray-800 { color: #1f2937; }
-        .text-gray-900 { color: #111827; }
-        .text-blue-400 { color: #60a5fa; }
-        .text-blue-500 { color: #3b82f6; }
-        .text-blue-600 { color: #2563eb; }
-        .text-blue-700 { color: #1d4ed8; }
-        .text-blue-800 { color: #1e40af; }
-        .text-green-500 { color: #22c55e; }
-        .text-green-600 { color: #16a34a; }
-        .text-green-800 { color: #166534; }
-        .text-purple-600 { color: #9333ea; }
-        .text-yellow-600 { color: #ca8a04; }
-        .text-yellow-800 { color: #92400e; }
-        .text-indigo-600 { color: #4f46e5; }
-        .text-orange-600 { color: #ea580c; }
-        .text-red-600 { color: #dc2626; }
-        .text-red-800 { color: #991b1b; }
-
-        .border { border: 1px solid #e5e7eb; }
-        .border-gray-200 { border-color: #e5e7eb; }
-        .border-gray-300 { border-color: #d1d5db; }
-        .border-gray-500 { border-color: #6b7280; }
-        .border-gray-600 { border-color: #4b5563; }
-        .border-gray-700 { border-color: #374151; }
-        .border-blue-500 { border-color: #3b82f6; }
-        .border-b { border-bottom: 1px solid #e5e7eb; }
-        .border-t { border-top: 1px solid #e5e7eb; }
-
-        .rounded { border-radius: 0.25rem; }
-        .rounded-lg { border-radius: 0.5rem; }
-        .rounded-full { border-radius: 9999px; }
-
-        .shadow-sm { box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); }
-        .shadow-md { box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
-        .shadow-xl { box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); }
-        .shadow-lg { box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
-
-        .p-1 { padding: 0.25rem; }
-        .p-2 { padding: 0.5rem; }
-        .p-3 { padding: 0.75rem; }
-        .p-4 { padding: 1rem; }
-        .p-6 { padding: 1.5rem; }
-        .p-8 { padding: 2rem; }
-        .p-12 { padding: 3rem; }
-        .px-1 { padding-left: 0.25rem; padding-right: 0.25rem; }
-        .px-2 { padding-left: 0.5rem; padding-right: 0.5rem; }
-        .px-3 { padding-left: 0.75rem; padding-right: 0.75rem; }
-        .px-4 { padding-left: 1rem; padding-right: 1rem; }
-        .py-1 { padding-top: 0.25rem; padding-bottom: 0.25rem; }
-        .py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
-        .py-3 { padding-top: 0.75rem; padding-bottom: 0.75rem; }
-        .py-4 { padding-top: 1rem; padding-bottom: 1rem; }
-        .py-6 { padding-top: 1.5rem; padding-bottom: 1.5rem; }
-        .py-8 { padding-top: 2rem; padding-bottom: 2rem; }
-        .py-12 { padding-top: 3rem; padding-bottom: 3rem; }
-        .pl-10 { padding-left: 2.5rem; }
-        .pr-4 { padding-right: 1rem; }
-        .pr-3 { padding-right: 0.75rem; }
-        .pt-3 { padding-top: 0.75rem; }
-        .pt-4 { padding-top: 1rem; }
-        .mt-1 { margin-top: 0.25rem; }
-        .mt-2 { margin-top: 0.5rem; }
-        .mt-3 { margin-top: 0.75rem; }
-        .mt-4 { margin-top: 1rem; }
-        .mt-6 { margin-top: 1.5rem; }
-        .mb-1 { margin-bottom: 0.25rem; }
-        .mb-2 { margin-bottom: 0.5rem; }
-        .mb-3 { margin-bottom: 0.75rem; }
-        .mb-4 { margin-bottom: 1rem; }
-        .mb-6 { margin-bottom: 1.5rem; }
-        .ml-2 { margin-left: 0.5rem; }
-        .ml-4 { margin-left: 1rem; }
-        .mx-auto { margin-left: auto; margin-right: auto; }
-
-        .w-full { width: 100%; }
-        .w-2 { width: 0.5rem; }
-        .w-3 { width: 0.75rem; }
-        .h-2 { height: 0.5rem; }
-        .h-3 { height: 0.75rem; }
-        .h-4 { height: 1rem; }
-        .h-5 { height: 1.25rem; }
-        .h-6 { height: 1.5rem; }
-        .h-8 { height: 2rem; }
-        .h-12 { height: 3rem; }
-        .h-16 { height: 4rem; }
-        .h-screen { height: 100vh; }
-        .min-h-screen { min-height: 100vh; }
-        .min-h-0 { min-height: 0; }
-        .max-w-2xl { max-width: 42rem; }
-        .max-w-7xl { max-width: 80rem; }
-        .max-w-lg { max-width: 32rem; }
-        .max-h-\[90vh\] { max-height: 90vh; }
-        .max-h-60 { max-height: 15rem; }
-        .max-h-48 { max-height: 12rem; }
-
-        .flex { display: flex; }
-        .inline-flex { display: inline-flex; }
-        .items-center { align-items: center; }
-        .items-start { align-items: flex-start; }
-        .justify-center { justify-content: center; }
-        .justify-between { justify-content: space-between; }
-        .flex-1 { flex: 1 1 0%; }
-        .flex-shrink-0 { flex-shrink: 0; }
-        .flex-wrap { flex-wrap: wrap; }
-        .flex-col { flex-direction: column; }
-
-        .space-x-1 > * + * { margin-left: 0.25rem; }
-        .space-x-2 > * + * { margin-left: 0.5rem; }
-        .space-x-3 > * + * { margin-left: 0.75rem; }
-        .space-x-4 > * + * { margin-left: 1rem; }
-        .space-y-1 > * + * { margin-top: 0.25rem; }
-        .space-y-2 > * + * { margin-top: 0.5rem; }
-        .space-y-3 > * + * { margin-top: 0.75rem; }
-        .space-y-4 > * + * { margin-top: 1rem; }
-        .space-y-6 > * + * { margin-top: 1.5rem; }
-
-        .gap-2 { gap: 0.5rem; }
-        .gap-3 { gap: 0.75rem; }
-        .gap-4 { gap: 1rem; }
-
-        .text-xs { font-size: 0.75rem; }
-        .text-sm { font-size: 0.875rem; }
-        .text-lg { font-size: 1.125rem; }
-        .text-xl { font-size: 1.25rem; }
-        .text-2xl { font-size: 1.5rem; }
-        .text-6xl { font-size: 3.75rem; }
-
-        .font-mono { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; }
-        .font-medium { font-weight: 500; }
-        .font-semibold { font-weight: 600; }
-        .font-bold { font-weight: 700; }
-
-        .text-center { text-align: center; }
-        .text-left { text-align: left; }
-
-        .list-disc { list-style-type: disc; }
-        .list-inside { list-style-position: inside; }
-
-        .underline { text-decoration: underline; }
-        .break-words { word-wrap: break-word; }
-        .truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-
-        .cursor-not-allowed { cursor: not-allowed; }
-        .cursor-pointer { cursor: pointer; }
-
-        .transform { transform: translateZ(0); }
-        .translate-y-1\/2 { transform: translateY(-50%); }
-        .-translate-y-1\/2 { transform: translateY(-50%); }
-        .rotate-180 { transform: rotate(180deg); }
-
-        .transition-colors { transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out; }
-        .transition-shadow { transition: box-shadow 0.15s ease-in-out; }
-        .transition-transform { transition: transform 0.15s ease-in-out; }
-
-        .absolute { position: absolute; }
-        .relative { position: relative; }
-        .fixed { position: fixed; }
-        .sticky { position: sticky; }
-        .top-0 { top: 0; }
-        .top-1\/2 { top: 50%; }
-        .left-3 { left: 0.75rem; }
-        .right-3 { right: 0.75rem; }
-        .inset-0 { top: 0; right: 0; bottom: 0; left: 0; }
-
-        .z-10 { z-index: 10; }
-        .z-50 { z-index: 50; }
-
-        .overflow-hidden { overflow: hidden; }
-        .overflow-y-auto { overflow-y: auto; }
-        .min-w-0 { min-width: 0; }
-
-        .hover\:bg-gray-50:hover { background-color: #f9fafb; }
-        .hover\:bg-gray-100:hover { background-color: #f3f4f6; }
-        .hover\:bg-gray-200:hover { background-color: #e5e7eb; }
-        .hover\:bg-gray-600:hover { background-color: #4b5563; }
-        .hover\:bg-gray-700:hover { background-color: #374151; }
-        .hover\:bg-gray-800:hover { background-color: #1f2937; }
-        .hover\:bg-blue-700:hover { background-color: #1d4ed8; }
-        .hover\:text-gray-300:hover { color: #d1d5db; }
-        .hover\:text-gray-600:hover { color: #4b5563; }
-        .hover\:text-gray-700:hover { color: #374151; }
-        .hover\:text-blue-800:hover { color: #1e40af; }
-        .hover\:shadow-md:hover { box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
-        .hover\:shadow-sm:hover { box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); }
-
-        .focus\:ring-2:focus { 
-            outline: none;
-            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5); 
-        }
-        .focus\:border-transparent:focus { border-color: transparent; }
-
-        .disabled\:bg-gray-100:disabled { background-color: #f3f4f6; }
-        .disabled\:text-gray-400:disabled { color: #9ca3af; }
-        .bg-opacity-50 { background-color: rgba(0, 0, 0, 0.5); }
-
-        .animate-spin {
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        /* Dark mode styles */
-        .dark .bg-gray-50 { background-color: #111827; }
-        .dark .bg-white { background-color: #1f2937; }
-        .dark .bg-gray-100 { background-color: #374151; }
-        .dark .bg-gray-700 { background-color: #4b5563; }
-        .dark .bg-gray-800 { background-color: #1f2937; }
-        .dark .bg-gray-900 { background-color: #111827; }
-        .dark .text-gray-100 { color: #f3f4f6; }
-        .dark .text-gray-200 { color: #e5e7eb; }
-        .dark .text-gray-300 { color: #d1d5db; }
-        .dark .text-gray-400 { color: #9ca3af; }
-        .dark .text-gray-500 { color: #6b7280; }
-        .dark .border-gray-200 { border-color: #374151; }
-        .dark .border-gray-600 { border-color: #4b5563; }
-        .dark .border-gray-700 { border-color: #374151; }
-        .dark .placeholder-gray-400::placeholder { color: #9ca3af; }
-        .dark .hover\:bg-gray-600:hover { background-color: #4b5563; }
-        .dark .hover\:bg-gray-700:hover { background-color: #374151; }
-        .dark .bg-yellow-800 { background-color: #92400e; }
-
-        /* Input styling */
         input, select {
             appearance: none;
-            background-color: white;
-            border: 1px solid #d1d5db;
-            border-radius: 0.5rem;
-            padding: 0.5rem 0.75rem;
-            font-size: 1rem;
-            line-height: 1.5;
-            color: #111827;
+            background: var(--bg-input);
+            border: 1px solid var(--border-input);
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-size: 0.95rem;
+            color: var(--text-primary);
+            outline: none;
+            transition: border-color 0.15s, box-shadow 0.15s;
         }
-
-        .dark input, .dark select {
-            background-color: #374151;
-            border-color: #4b5563;
-            color: #f3f4f6;
+        input:focus, select:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(37,99,235,0.15);
         }
+        input::placeholder { color: var(--text-placeholder); }
 
-        button {
-            background: none;
-            border: none;
-            cursor: pointer;
-            font-family: inherit;
-        }
+        button { background: none; border: none; cursor: pointer; font-family: inherit; }
+        button:disabled { cursor: not-allowed; opacity: 0.5; }
 
-        button:disabled {
-            cursor: not-allowed;
-            opacity: 0.6;
-        }
-
-        /* Mark styling */
-        mark {
-            background-color: #fef08a;
-            padding: 0.125rem;
-            border-radius: 0.125rem;
-        }
-
-        .dark mark {
-            background-color: #92400e;
-            color: #fef3c7;
-        }
-
-        /* Code styling */
-        code {
-            font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
-            font-size: 0.875rem;
-            background-color: #f3f4f6;
-            padding: 0.125rem 0.25rem;
-            border-radius: 0.25rem;
-        }
-
-        .dark code {
-            background-color: #374151;
-        }
-
-        /* Selection highlight for keyboard navigation */
         .selected-item {
-            background-color: #dbeafe !important;
-            border: 2px solid #3b82f6 !important;
-            box-shadow: 0 0 0 1px #3b82f6;
+            outline: 2px solid var(--border-selected) !important;
+            outline-offset: -1px;
+            background: var(--bg-selected) !important;
         }
 
-        .dark .selected-item {
-            background-color: #1e3a8a !important;
-            border: 2px solid #60a5fa !important;
-            box-shadow: 0 0 0 1px #60a5fa;
-        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+        .animate-spin { animation: spin 1s linear infinite; }
+        .fade-in { animation: fadeIn 0.2s ease-out; }
 
-        /* Grid layout */
-        .grid { display: grid; }
-        .grid-cols-1 { grid-template-columns: repeat(1, minmax(0, 1fr)); }
-        .grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-
-        /* Responsive */
-        @media (min-width: 640px) {
-            .sm\:px-6 { padding-left: 1.5rem; padding-right: 1.5rem; }
-            .sm\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-            .sm\:col-span-2 { grid-column: span 2 / span 2; }
-        }
-
-        @media (min-width: 1024px) {
-            .lg\:px-8 { padding-left: 2rem; padding-right: 2rem; }
-        }
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
     </style>
 </head>
 <body>
     <div id="root"></div>
-
     <script type="text/babel">
         const { useState, useEffect, useMemo, useCallback, useRef } = React;
-        // Helper: bepaal of OAI '1' is (ondersteunt 1/'1'/true/J/Y)
-        const isOAI1 = (v) => {
-          if (v === undefined || v === null) return false;
-          if (v === 1 || v === '1' || v === true) return true;
-          const s = String(v).trim().toUpperCase();
-          return s === 'J' || s === 'Y';
-        };
 
+        // ═══════════════════════════════════════════════════════
+        //  AFM PARSER — parses raw SIVI AFD 1.0 fixed-width files
+        // ═══════════════════════════════════════════════════════
 
-        // SVG Icons als React componenten
-        const Search = ({ className }) => (
-            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="m21 21-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-        );
+        function parseDatacatAFM(text) {
+            const lines = text.split(/\r?\n/).filter(l => l.length >= 64);
+            const items = [];
 
-        const ChevronDown = ({ className }) => (
-            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-            </svg>
-        );
+            for (const line of lines) {
+                const type = line[0]; // E or A
+                if (type !== 'E' && type !== 'A') continue;
 
-        const ChevronUp = ({ className }) => (
-            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
-            </svg>
-        );
+                const entiteitcode = line.substring(1, 3).trim();
+                const naam = line.substring(28, 64).trim();
+                const omschrijving = line.substring(64).trim();
 
-        // Searchable Select Component
-        const SearchableSelect = ({ options, value, onChange, placeholder, className, darkMode }) => {
-            const [isOpen, setIsOpen] = useState(false);
-            const [searchTerm, setSearchTerm] = useState('');
-            const [selectedIndex, setSelectedIndex] = useState(-1);
-            const dropdownRef = useRef(null);
-            const inputRef = useRef(null);
+                if (type === 'E') {
+                    items.push({
+                        'Entiteit/Attribuut': 'E',
+                        Entiteitcode: entiteitcode,
+                        Attribuutcode: '',
+                        Naam: naam,
+                        Omschrijving: omschrijving,
+                        Datatype: '',
+                        Formaat: '',
+                        Codelijst: ''
+                    });
+                } else {
+                    const attribuutcode = line.substring(5, 12).trim();
+                    const primaryDt = line.substring(12, 14).trim();
+                    const format = line.substring(14, 19).trim();
+                    const secondaryDt = line.substring(19, 21).trim();
+                    const codelijst = line.substring(21, 28).trim();
 
-            const filteredOptions = useMemo(() => {
-                if (!searchTerm) return options;
-                return options.filter(option => 
-                    option.label.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                    option.value.toLowerCase().includes(searchTerm.toLowerCase())
-                );
-            }, [options, searchTerm]);
+                    // Effective datatype: secondary overrides primary when present
+                    const datatype = secondaryDt || primaryDt;
 
-            const selectedOption = options.find(opt => opt.value === value);
-
-            useEffect(() => {
-                const handleClickOutside = (event) => {
-                    if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-                        setIsOpen(false);
-                        setSearchTerm('');
-                        setSelectedIndex(-1);
+                    // Build format string
+                    let formaat = '';
+                    if (format) {
+                        formaat = primaryDt + format;
+                    } else if (primaryDt) {
+                        formaat = primaryDt;
                     }
+
+                    items.push({
+                        'Entiteit/Attribuut': 'A',
+                        Entiteitcode: entiteitcode,
+                        Attribuutcode: attribuutcode,
+                        Naam: naam,
+                        Omschrijving: omschrijving,
+                        Datatype: datatype,
+                        Formaat: formaat,
+                        Codelijst: codelijst
+                    });
+                }
+            }
+            return items;
+        }
+
+        function parseCodelistAFM(text) {
+            const lines = text.split(/\r?\n/).filter(l => l.length >= 8);
+            const groups = {};
+            const descriptions = {};
+
+            for (const line of lines) {
+                const type = line[0]; // L or C
+                const listName = line.substring(1, 7).trim();
+                if (!listName) continue;
+
+                if (type === 'L') {
+                    const rest = line.substring(7).trim();
+                    // Last char is actief flag (J/N)
+                    const desc = rest.length > 1 ? rest.substring(0, rest.length - 1).trim() : '';
+                    descriptions[listName] = desc;
+                    if (!groups[listName]) groups[listName] = [];
+                } else if (type === 'C') {
+                    if (!groups[listName]) groups[listName] = [];
+                    const rawField = line.substring(7);
+
+                    let code, omschrijving;
+                    // Check if pos 11 (index 4 in rawField) is a space → 4-char code
+                    if (rawField.length > 4 && rawField[4] === ' ') {
+                        code = rawField.substring(0, 4).trim();
+                        omschrijving = rawField.substring(5).trim();
+                    } else {
+                        // Overflow: code is the leading digit/alphanum sequence, rest is description
+                        // Split at first space
+                        const spaceIdx = rawField.indexOf(' ');
+                        if (spaceIdx > 0) {
+                            code = rawField.substring(0, spaceIdx).trim();
+                            omschrijving = rawField.substring(spaceIdx + 1).trim();
+                        } else {
+                            code = rawField.trim();
+                            omschrijving = '';
+                        }
+                    }
+
+                    if (code) {
+                        groups[listName].push({ code, omschrijving });
+                    }
+                }
+            }
+            return { groups, descriptions };
+        }
+
+        function parseAnvaExcel(arrayBuffer) {
+            const wb = XLSX.read(arrayBuffer, { type: 'array' });
+            // Try 'CSV-labels' sheet first, then first sheet
+            const sheetName = wb.SheetNames.includes('CSV-labels') ? 'CSV-labels' : wb.SheetNames[0];
+            const rows = XLSX.utils.sheet_to_json(wb.Sheets[sheetName]);
+
+            // Group by AFD code, pick OAI=1 when duplicates
+            const byAfd = new Map();
+            for (const row of rows) {
+                const afd = String(row.AFD || '').trim();
+                const anva = String(row.ANVA || '').trim();
+                if (!afd || !anva) continue;
+
+                const entry = {
+                    afd,
+                    anva,
+                    omschrijving: String(row['ANVA Omschrijving'] || ''),
+                    afwijkend: String(row['Afwijkend niet toegestaan'] || ''),
+                    oai: row.OAI
                 };
 
-                document.addEventListener('mousedown', handleClickOutside);
-                return () => document.removeEventListener('mousedown', handleClickOutside);
+                if (!byAfd.has(afd)) byAfd.set(afd, []);
+                byAfd.get(afd).push(entry);
+            }
+
+            const mapping = {};
+            for (const [afd, entries] of byAfd) {
+                const chosen = entries.length > 1
+                    ? (entries.find(e => e.oai === 1 || e.oai === '1') || entries[0])
+                    : entries[0];
+
+                mapping[afd] = {
+                    code: chosen.anva,
+                    omschrijving: chosen.omschrijving,
+                    afwijkendNietToegestaan: chosen.afwijkend
+                };
+            }
+            return mapping;
+        }
+
+        // ═══════════════════════════════════════════════════════
+        //  SVG ICONS
+        // ═══════════════════════════════════════════════════════
+
+        const Icon = ({ d, className, viewBox = "0 0 24 24", fill = "none", strokeWidth = 2 }) => (
+            <svg className={className} fill={fill} stroke="currentColor" viewBox={viewBox} width="1em" height="1em" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round">
+                {Array.isArray(d) ? d.map((p, i) => <path key={i} d={p} />) : <path d={d} />}
+            </svg>
+        );
+
+        const Icons = {
+            Search: ({ className }) => <Icon className={className} d="m21 21-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />,
+            Database: ({ className }) => (
+                <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" width="1em" height="1em" strokeWidth={2}>
+                    <ellipse cx="12" cy="5" rx="9" ry="3"/><path d="m21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
+                </svg>
+            ),
+            Package: ({ className }) => <Icon className={className} d={["m7.5 4.27 9 5.15","M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z","m3.3 7 8.7 5 8.7-5","M12 22V12"]} />,
+            Filter: ({ className }) => (
+                <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" width="1em" height="1em" strokeWidth={2}>
+                    <polygon points="22,3 2,3 10,12.46 10,19 14,21 14,12.46"/>
+                </svg>
+            ),
+            Copy: ({ className }) => <Icon className={className} d={["M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2","M15 2H9a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1z"]} />,
+            Check: ({ className }) => <Icon className={className} d="M20 6 9 17l-5-5" />,
+            Sun: ({ className }) => (
+                <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" width="1em" height="1em" strokeWidth={2}>
+                    <circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+                </svg>
+            ),
+            Moon: ({ className }) => <Icon className={className} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />,
+            BookOpen: ({ className }) => <Icon className={className} d={["M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z","M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"]} />,
+            X: ({ className }) => <Icon className={className} d={["M18 6 6 18","M6 6l12 12"]} />,
+            ClipboardList: ({ className }) => <Icon className={className} d={["M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2","M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"]} />,
+            Info: ({ className }) => (
+                <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" width="1em" height="1em" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="12" cy="12" r="10"/><path d="m12 16v-4"/><path d="m12 8h.01"/>
+                </svg>
+            ),
+            ChevronDown: ({ className }) => <Icon className={className} d="M19 9l-7 7-7-7" />,
+        };
+
+        // ═══════════════════════════════════════════════════════
+        //  SEARCHABLE SELECT
+        // ═══════════════════════════════════════════════════════
+
+        const SearchableSelect = ({ options, value, onChange, placeholder, darkMode }) => {
+            const [isOpen, setIsOpen] = useState(false);
+            const [term, setTerm] = useState('');
+            const [selIdx, setSelIdx] = useState(-1);
+            const ref = useRef(null);
+            const inputRef = useRef(null);
+
+            const filtered = useMemo(() => {
+                if (!term) return options;
+                const t = term.toLowerCase();
+                return options.filter(o => o.label.toLowerCase().includes(t) || o.value.toLowerCase().includes(t));
+            }, [options, term]);
+
+            const selected = options.find(o => o.value === value);
+
+            useEffect(() => {
+                const handler = (e) => {
+                    if (ref.current && !ref.current.contains(e.target)) {
+                        setIsOpen(false); setTerm(''); setSelIdx(-1);
+                    }
+                };
+                document.addEventListener('mousedown', handler);
+                return () => document.removeEventListener('mousedown', handler);
             }, []);
 
-            const handleKeyDown = (e) => {
+            const handleKey = (e) => {
                 if (!isOpen) {
-                    if (e.key === 'Enter' || e.key === ' ' || e.key === 'ArrowDown') {
-                        e.preventDefault();
-                        setIsOpen(true);
-                        setSelectedIndex(0);
-                    }
+                    if (['Enter',' ','ArrowDown'].includes(e.key)) { e.preventDefault(); setIsOpen(true); setSelIdx(0); }
                     return;
                 }
-
-                switch (e.key) {
-                    case 'ArrowDown':
-                        e.preventDefault();
-                        setSelectedIndex(prev => 
-                            prev < filteredOptions.length - 1 ? prev + 1 : 0
-                        );
-                        break;
-                    case 'ArrowUp':
-                        e.preventDefault();
-                        setSelectedIndex(prev => 
-                            prev > 0 ? prev - 1 : filteredOptions.length - 1
-                        );
-                        break;
-                    case 'Enter':
-                        e.preventDefault();
-                        if (selectedIndex >= 0 && filteredOptions[selectedIndex]) {
-                            onChange(filteredOptions[selectedIndex].value);
-                            setIsOpen(false);
-                            setSearchTerm('');
-                            setSelectedIndex(-1);
-                        }
-                        break;
-                    case 'Escape':
-                        setIsOpen(false);
-                        setSearchTerm('');
-                        setSelectedIndex(-1);
-                        break;
-                }
-            };
-
-            const handleOptionClick = (optionValue) => {
-                onChange(optionValue);
-                setIsOpen(false);
-                setSearchTerm('');
-                setSelectedIndex(-1);
+                if (e.key === 'ArrowDown') { e.preventDefault(); setSelIdx(i => i < filtered.length - 1 ? i + 1 : 0); }
+                else if (e.key === 'ArrowUp') { e.preventDefault(); setSelIdx(i => i > 0 ? i - 1 : filtered.length - 1); }
+                else if (e.key === 'Enter') { e.preventDefault(); if (selIdx >= 0 && filtered[selIdx]) { onChange(filtered[selIdx].value); setIsOpen(false); setTerm(''); setSelIdx(-1); } }
+                else if (e.key === 'Escape') { setIsOpen(false); setTerm(''); setSelIdx(-1); }
             };
 
             return (
-                <div className="relative" ref={dropdownRef}>
-                    <button
-                        type="button"
-                        className={`${className} w-full text-left flex items-center justify-between`}
-                        onClick={() => {
-                            setIsOpen(!isOpen);
-                            if (!isOpen) {
-                                setTimeout(() => inputRef.current?.focus(), 50);
-                            }
-                        }}
-                        onKeyDown={handleKeyDown}
-                    >
-                        <span className={selectedOption ? '' : (darkMode ? 'text-gray-400' : 'text-gray-500')}>
-                            {selectedOption ? selectedOption.label : placeholder}
-                        </span>
-                        <ChevronDown className={`h-4 w-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+                <div style={{ position: 'relative' }} ref={ref}>
+                    <button type="button" onClick={() => { setIsOpen(!isOpen); if (!isOpen) setTimeout(() => inputRef.current?.focus(), 50); }} onKeyDown={handleKey}
+                        style={{ width: '100%', textAlign: 'left', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, padding: '8px 12px', border: `1px solid var(--border-input)`, borderRadius: 8, background: 'var(--bg-input)', color: selected ? 'var(--text-primary)' : 'var(--text-placeholder)', fontSize: '0.9rem', minWidth: 140 }}>
+                        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{selected ? selected.label : placeholder}</span>
+                        <Icons.ChevronDown className="" style={{ width: 14, height: 14, flexShrink: 0, transform: isOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.15s' }} />
                     </button>
-
                     {isOpen && (
-                        <div className={`absolute z-50 w-full mt-1 rounded-lg shadow-lg border ${
-                            darkMode ? 'bg-gray-800 border-gray-600' : 'bg-white border-gray-300'
-                        } max-h-60 overflow-hidden`} style={{ minWidth: '280px' }}>
-                            <div className="p-2 border-b border-gray-200">
-                                <input
-                                    ref={inputRef}
-                                    type="text"
-                                    value={searchTerm}
-                                    onChange={(e) => {
-                                        setSearchTerm(e.target.value);
-                                        setSelectedIndex(-1);
-                                    }}
-                                    placeholder="Type om te zoeken..."
-                                    className={`w-full px-3 py-2 border rounded text-sm ${
-                                        darkMode ? 'bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
-                                    } focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
-                                    onKeyDown={handleKeyDown}
-                                />
+                        <div style={{ position: 'absolute', zIndex: 50, width: '100%', marginTop: 4, borderRadius: 8, boxShadow: 'var(--shadow-lg)', border: `1px solid var(--border)`, background: 'var(--bg-card)', maxHeight: 260, overflow: 'hidden', minWidth: 240 }}>
+                            <div style={{ padding: 8, borderBottom: `1px solid var(--border)` }}>
+                                <input ref={inputRef} type="text" value={term} onChange={e => { setTerm(e.target.value); setSelIdx(-1); }} placeholder="Type om te zoeken..." onKeyDown={handleKey}
+                                    style={{ width: '100%', fontSize: '0.85rem', padding: '6px 10px' }} />
                             </div>
-                            <div className="max-h-48 overflow-y-auto">
-                                {filteredOptions.length === 0 ? (
-                                    <div className="px-3 py-2 text-sm text-gray-500">
-                                        Geen resultaten gevonden
-                                    </div>
-                                ) : (
-                                    filteredOptions.map((option, index) => (
-                                        <button
-                                            key={option.value}
-                                            className={`w-full px-3 py-2 text-left text-sm hover:bg-gray-100 transition-colors ${
-                                                index === selectedIndex ? (darkMode ? 'bg-gray-700' : 'bg-gray-100') : ''
-                                            } ${option.value === value ? 'font-medium' : ''}`}
-                                            onClick={() => handleOptionClick(option.value)}
-                                            style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}
-                                        >
-                                            {option.label}
-                                        </button>
-                                    ))
-                                )}
+                            <div style={{ maxHeight: 200, overflowY: 'auto' }}>
+                                {filtered.length === 0 ? (
+                                    <div style={{ padding: '8px 12px', fontSize: '0.85rem', color: 'var(--text-muted)' }}>Geen resultaten</div>
+                                ) : filtered.map((o, i) => (
+                                    <button key={o.value} onClick={() => { onChange(o.value); setIsOpen(false); setTerm(''); setSelIdx(-1); }}
+                                        style={{ width: '100%', textAlign: 'left', padding: '6px 12px', fontSize: '0.85rem', background: i === selIdx ? 'var(--bg-hover)' : 'transparent', fontWeight: o.value === value ? 600 : 400, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: 'var(--text-primary)' }}
+                                        onMouseEnter={() => setSelIdx(i)}>
+                                        {o.label}
+                                    </button>
+                                ))}
                             </div>
                         </div>
                     )}
@@ -547,138 +383,49 @@
             );
         };
 
-        const Database = ({ className }) => (
-            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <ellipse cx="12" cy="5" rx="9" ry="3"/>
-                <path d="m21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/>
-                <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
-            </svg>
-        );
+        // ═══════════════════════════════════════════════════════
+        //  DATATYPE INFO
+        // ═══════════════════════════════════════════════════════
 
-        const Package = ({ className }) => (
-            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path d="m7.5 4.27 9 5.15"/>
-                <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/>
-                <path d="m3.3 7 8.7 5 8.7-5"/>
-                <path d="M12 22V12"/>
-            </svg>
-        );
-
-        const Filter = ({ className }) => (
-            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <polygon points="22,3 2,3 10,12.46 10,19 14,21 14,12.46"/>
-            </svg>
-        );
-
-        const Copy = ({ className }) => (
-            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <rect width="14" height="14" x="8" y="8" rx="2" ry="2"/>
-                <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>
-            </svg>
-        );
-
-        const Check = ({ className }) => (
-            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <polyline points="20,6 9,17 4,12"/>
-            </svg>
-        );
-
-        const Sun = ({ className }) => (
-            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <circle cx="12" cy="12" r="5"/>
-                <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
-            </svg>
-        );
-
-        const Moon = ({ className }) => (
-            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-            </svg>
-        );
-
-        const BookOpen = ({ className }) => (
-            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
-                <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
-            </svg>
-        );
-
-        const X = ({ className }) => (
-            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-        );
-
-        const ClipboardList = ({ className }) => (
-            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
-            </svg>
-        );
-
-        const Info = ({ className }) => (
-            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <circle cx="12" cy="12" r="10"/>
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="m12 16v-4"/>
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="m12 8h.01"/>
-            </svg>
-        );
-
-        const Upload = ({ className }) => (
-            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4m4-5l5-5m0 0l5 5m-5-5v12" />
-            </svg>
-        );
-
-        const Download = ({ className }) => (
-            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4m4-5l5 5m0 0l5-5m-5 5V3" />
-            </svg>
-        );
-
-        const FileText = ({ className }) => (
-            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                <polyline points="14,2 14,8 20,8"/>
-                <line x1="16" y1="13" x2="8" y2="13"/>
-                <line x1="16" y1="17" x2="8" y2="17"/>
-                <polyline points="10,9 9,9 8,9"/>
-            </svg>
-        );
-
-        // Mock file system voor GitHub Pages
-        window.fs = {
-            readFile: async (filename, options = {}) => {
-                try {
-                    console.log(`Attempting to load: ${filename}`);
-                    const response = await fetch(filename);
-                    if (!response.ok) {
-                        throw new Error(`Bestand niet gevonden: ${filename} (Status: ${response.status})`);
-                    }
-                    
-                    if (options.encoding === 'utf8') {
-                        const text = await response.text();
-                        console.log(`Successfully loaded: ${filename} (${text.length} characters)`);
-                        return text;
-                    }
-                    
-                    const arrayBuffer = await response.arrayBuffer();
-                    return new Uint8Array(arrayBuffer);
-                } catch (error) {
-                    console.error('Error reading file:', filename, error);
-                    throw error;
-                }
-            }
+        const DATATYPE_INFO = {
+            'JN': { label: 'Ja/Nee', color: 'var(--type-jn)' },
+            'A0': { label: 'Alfanumeriek', color: 'var(--type-an)' },
+            'A1': { label: 'Alfanumeriek', color: 'var(--type-an)' },
+            'A2': { label: 'Alfanumeriek', color: 'var(--type-an)' },
+            'A3': { label: 'Alfanumeriek', color: 'var(--type-an)' },
+            'A6': { label: 'Alfanumeriek', color: 'var(--type-an)' },
+            'AN': { label: 'Alfanumeriek', color: 'var(--type-an)' },
+            'D1': { label: 'Datum', color: 'var(--type-dat)' },
+            'D3': { label: 'Datum', color: 'var(--type-dat)' },
+            'D6': { label: 'Datum', color: 'var(--type-dat)' },
+            'B2': { label: 'Bedrag', color: 'var(--type-bed)' },
+            'B5': { label: 'Bedrag', color: 'var(--type-bed)' },
+            'BY': { label: 'Bedrag', color: 'var(--type-bed)' },
+            'T1': { label: 'Tijd', color: 'var(--type-tijd)' },
+            'P3': { label: 'Percentage', color: 'var(--type-perc)' },
+            'P5': { label: 'Percentage', color: 'var(--type-perc)' },
+            'P6': { label: 'Percentage', color: 'var(--type-perc)' },
+            'ME': { label: 'Memo', color: 'var(--type-memo)' },
+            'N.': { label: 'Numeriek', color: 'var(--type-num)' },
+            'RA': { label: 'Ratio', color: 'var(--type-num)' },
+            'RK': { label: 'Rekeningnr', color: 'var(--type-num)' },
         };
+
+        // ═══════════════════════════════════════════════════════
+        //  MAIN APP
+        // ═══════════════════════════════════════════════════════
 
         function AFDSearchTool() {
             const [data, setData] = useState([]);
             const [codelistData, setCodelistData] = useState({});
+            const [codelistDescriptions, setCodelistDescriptions] = useState({});
             const [anvaData, setAnvaData] = useState({});
             const [searchTerm, setSearchTerm] = useState('');
-            const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
+            const [debouncedSearch, setDebouncedSearch] = useState('');
             const [typeFilter, setTypeFilter] = useState('all');
             const [entityFilter, setEntityFilter] = useState('all');
             const [loading, setLoading] = useState(true);
+            const [loadStatus, setLoadStatus] = useState('Datacatalogus laden...');
             const [error, setError] = useState(null);
             const [stats, setStats] = useState({ total: 0, entities: 0, attributes: 0 });
             const [darkMode, setDarkMode] = useState(false);
@@ -686,666 +433,242 @@
             const [currentPage, setCurrentPage] = useState(1);
             const [selectedCodelist, setSelectedCodelist] = useState(null);
             const [codelistSearch, setCodelistSearch] = useState('');
-            const [selectedItemIndex, setSelectedItemIndex] = useState(-1);
-            const [keyboardActive, setKeyboardActive] = useState(false);
+            const [selectedIdx, setSelectedIdx] = useState(-1);
+            const [kbActive, setKbActive] = useState(false);
             const [showInfo, setShowInfo] = useState(false);
-            const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
-            const [advancedSearch, setAdvancedSearch] = useState({
-                searchWords: '',
-                entiteitFilter: 'all',
-                datatypeFilter: 'all',
-                codelistFilter: '',
-                anvaCodeFilter: ''
-            });
-            const searchInputRef = useRef(null);
+            const [showAdvanced, setShowAdvanced] = useState(false);
+            const [advanced, setAdvanced] = useState({ words: '', entiteit: 'all', datatype: 'all', codelist: '', anva: '' });
+            const searchRef = useRef(null);
             const itemRefs = useRef([]);
-            
+
             const ITEMS_PER_PAGE = 25;
 
-            // Datatype info
-            const datatypeInfo = {
-                'JN': { label: 'Ja/Nee', color: 'text-blue-600' },
-                'A0': { label: 'Alfanumeriek', color: 'text-green-600' },
-                'A1': { label: 'Alfanumeriek', color: 'text-green-600' },
-                'A2': { label: 'Alfanumeriek', color: 'text-green-600' },
-                'D1': { label: 'Datum', color: 'text-purple-600' },
-                'D3': { label: 'Datum', color: 'text-purple-600' },
-                'B2': { label: 'Bedrag', color: 'text-yellow-600' },
-                'T1': { label: 'Tijd', color: 'text-indigo-600' },
-                'P3': { label: 'Percentage', color: 'text-orange-600' },
-                'ME': { label: 'Memo', color: 'text-gray-600' }
-            };
-
-            // Simple keyboard navigation
+            // ── Dark mode persistence ──
             useEffect(() => {
-                const handleKeyDown = (e) => {
-                    // Don't interfere with modals or inputs
-                    if (selectedCodelist || showInfo || showAdvancedSearch || e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') {
-                        return;
-                    }
-
-                    if (e.key === '/') {
-                        e.preventDefault();
-                        searchInputRef.current?.focus();
-                        return;
-                    }
-
-                    if (e.key === 'Escape') {
-                        setSelectedItemIndex(-1);
-                        setKeyboardActive(false);
-                        setSearchTerm('');
-                        return;
-                    }
-
-                    if (paginatedData.length > 0) {
-                        if (e.key === 'ArrowDown') {
-                            e.preventDefault();
-                            setKeyboardActive(true);
-                            setSelectedItemIndex(prev => {
-                                const newIndex = prev >= paginatedData.length - 1 ? 0 : prev + 1;
-                                return newIndex;
-                            });
-                        }
-
-                        if (e.key === 'ArrowUp') {
-                            e.preventDefault();
-                            setKeyboardActive(true);
-                            setSelectedItemIndex(prev => {
-                                const newIndex = prev <= 0 ? paginatedData.length - 1 : prev - 1;
-                                return newIndex;
-                            });
-                        }
-
-                        if (e.key === 'Enter' && selectedItemIndex >= 0) {
-                            e.preventDefault();
-                            const item = paginatedData[selectedItemIndex];
-                            if (item) {
-                                const isEntity = item['Entiteit/Attribuut'] === 'E';
-                                
-                                if (e.shiftKey && !isEntity) {
-                                    // Shift+Enter: Copy full attribute info
-                                    copyFullAttributeInfo(item, `full-${item.Entiteitcode}_${item.Attribuutcode}`);
-                                } else {
-                                    // Regular Enter: Copy just the code
-                                    const itemId = isEntity ? item.Entiteitcode : `${item.Entiteitcode}_${item.Attribuutcode}`;
-                                    copyToClipboard(itemId, itemId);
-                                }
-                            }
-                        }
-                    }
-                };
-
-                document.addEventListener('keydown', handleKeyDown);
-                return () => document.removeEventListener('keydown', handleKeyDown);
-            }, [paginatedData, selectedItemIndex, selectedCodelist, showInfo, showAdvancedSearch]);
-
-            // Scroll to selected item
-            useEffect(() => {
-                if (selectedItemIndex >= 0 && keyboardActive && itemRefs.current[selectedItemIndex]) {
-                    itemRefs.current[selectedItemIndex].scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'center'
-                    });
-                }
-            }, [selectedItemIndex, keyboardActive]);
-
-            // Debounce search term
-            useEffect(() => {
-                const timer = setTimeout(() => {
-                    setDebouncedSearchTerm(searchTerm);
-                    setCurrentPage(1);
-                    setSelectedItemIndex(-1);
-                    setKeyboardActive(false);
-                }, 300);
-                return () => clearTimeout(timer);
-            }, [searchTerm]);
-
-            // Reset page when filters change
-            useEffect(() => {
-                setCurrentPage(1);
-                setSelectedItemIndex(-1);
-                setKeyboardActive(false);
-            }, [typeFilter, entityFilter]);
-
-            // Reset selected item when page changes
-            useEffect(() => {
-                setSelectedItemIndex(-1);
-                setKeyboardActive(false);
-                itemRefs.current = [];
-            }, [currentPage]);
-
-            // Load preferences
-            useEffect(() => {
-                try {
-                    const savedDarkMode = localStorage.getItem('afd-darkmode') === 'true';
-                    setDarkMode(savedDarkMode);
-                } catch (e) {
-                    console.warn('LocalStorage not available');
-                }
+                try { setDarkMode(localStorage.getItem('afd-darkmode') === 'true'); } catch(e) {}
             }, []);
-
-            // Save preferences
             useEffect(() => {
-                try {
-                    localStorage.setItem('afd-darkmode', darkMode);
-                    document.documentElement.classList.toggle('dark', darkMode);
-                } catch (e) {
-                    console.warn('LocalStorage not available');
-                }
+                try { localStorage.setItem('afd-darkmode', darkMode); } catch(e) {}
+                document.documentElement.classList.toggle('dark', darkMode);
             }, [darkMode]);
 
-            // Load data
+            // ── Load data ──
             useEffect(() => {
-                const loadData = async () => {
+                const load = async () => {
                     try {
-                        console.log('🔄 Starting to load AFD data...');
-                        const csvContent = await window.fs.readFile('data.csv', { encoding: 'utf8' });
-                        console.log('✅ CSV loaded successfully, parsing...');
-                        
-                        const parsed = Papa.parse(csvContent, {
-                            header: true,
-                            dynamicTyping: true,
-                            skipEmptyLines: true,
-                            delimitersToGuess: [',', '\t', '|', ';']
-                        });
+                        // 1. Load Datacat.afm
+                        setLoadStatus('Datacatalogus laden...');
+                        const dcResp = await fetch('Datacat.afm');
+                        if (!dcResp.ok) throw new Error(`Datacat.afm niet gevonden (${dcResp.status})`);
+                        const dcText = await dcResp.text();
+                        const items = parseDatacatAFM(dcText);
+                        console.log(`✅ Datacatalogus: ${items.length} items geparsed`);
 
-                        console.log(`📊 Parsed ${parsed.data.length} rows`);
+                        setData(items);
+                        const ents = items.filter(r => r['Entiteit/Attribuut'] === 'E').length;
+                        const attrs = items.filter(r => r['Entiteit/Attribuut'] === 'A').length;
+                        setStats({ total: items.length, entities: ents, attributes: attrs });
 
-                        const cleanedData = parsed.data.map(row => {
-                            const cleanRow = {};
-                            Object.keys(row).forEach(key => {
-                                cleanRow[key.trim()] = row[key];
-                            });
-                            return cleanRow;
-                        });
-
-                        // Load codelist data (optional)
+                        // 2. Load Codelist.afm (optional)
                         try {
-                            console.log('🔄 Attempting to load codelist data...');
-                            const codelistContent = await window.fs.readFile('Codelist.afm.csv', { encoding: 'utf8' });
-                            console.log('✅ Codelist loaded, parsing...');
-                            
-                            const parsedCodelist = Papa.parse(codelistContent, {
-                                header: false,
-                                dynamicTyping: true,
-                                skipEmptyLines: true,
-                                delimitersToGuess: [',', ';', '\t', '|']
-                            });
+                            setLoadStatus('Codelijsten laden...');
+                            const clResp = await fetch('Codelist.afm');
+                            if (clResp.ok) {
+                                const clText = await clResp.text();
+                                const { groups, descriptions } = parseCodelistAFM(clText);
+                                setCodelistData(groups);
+                                setCodelistDescriptions(descriptions);
+                                console.log(`✅ Codelijsten: ${Object.keys(groups).length} lijsten`);
+                            }
+                        } catch (e) { console.warn('⚠️ Codelist niet geladen:', e.message); }
 
-                            const codelistGroups = {};
-                            const codelistDescriptions = {};
-                            let codelistCount = 0;
-                            
-                            console.log('📊 Codelist raw data sample:', parsedCodelist.data.slice(0, 5));
-                            console.log('📊 Detected delimiter:', parsedCodelist.meta.delimiter);
-                            
-                            parsedCodelist.data.slice(1).forEach((row, index) => {
-                                // Check of we 3 of 4 kolommen hebben
-                                let type, codelijst, code, omschrijving;
-                                
-                                if (row.length === 3) {
-                                    // Format: codelijst, code, omschrijving (oude format)
-                                    [codelijst, code, omschrijving] = row;
-                                    type = code && String(code).trim() !== '' ? 'C' : 'L';
-                                } else if (row.length === 4) {
-                                    // Format: type, codelijst, code, omschrijving (nieuwe format)
-                                    [type, codelijst, code, omschrijving] = row;
-                                } else {
-                                    // Onbekend format, skip
-                                    return;
+                        // 3. Load ANVA Excel (optional)
+                        try {
+                            setLoadStatus('ANVA mapping laden...');
+                            // Try multiple filenames
+                            let anvaResp = await fetch('ANVA_AFD.xlsx').catch(() => null);
+                            if (!anvaResp || !anvaResp.ok) {
+                                // Try pattern matching
+                                const names = ['ANVA_AFD_46B_2026_02.xlsx', 'ANVA_AFD.xlsx', 'anva.xlsx'];
+                                for (const name of names) {
+                                    anvaResp = await fetch(name).catch(() => null);
+                                    if (anvaResp && anvaResp.ok) break;
                                 }
-                                
-                                // Debug eerste paar rijen
-                                if (index < 5) {
-                                    console.log(`📋 Row ${index} (${row.length} cols):`, { type, codelijst, code, omschrijving, raw: row });
-                                }
-                                
-                                if (codelijst) {
-                                    if (!codelistGroups[codelijst]) {
-                                        codelistGroups[codelijst] = [];
-                                    }
-                                    
-                                    // Als type 'L' is, dan is dit de lijstomschrijving
-                                    if (type === 'L') {
-                                        codelistDescriptions[codelijst] = String(omschrijving || '');
-                                        console.log(`📝 Found description for ${codelijst}: ${omschrijving}`);
-                                    } else if (type === 'C') {
-                                        // Type 'C' is een normale codelijst item
-                                        codelistGroups[codelijst].push({
-                                            code: String(code || ''),
-                                            omschrijving: String(omschrijving || ''),
-                                            actief: 'J' // Standaard actief sinds kolom niet meer aanwezig
-                                        });
-                                        codelistCount++;
-                                    }
-                                }
-                            });
+                            }
+                            if (anvaResp && anvaResp.ok) {
+                                const buf = await anvaResp.arrayBuffer();
+                                const mapping = parseAnvaExcel(buf);
+                                setAnvaData(mapping);
+                                console.log(`✅ ANVA: ${Object.keys(mapping).length} mappings`);
+                            }
+                        } catch (e) { console.warn('⚠️ ANVA niet geladen:', e.message); }
 
-                            setCodelistData(codelistGroups);
-                            console.log(`📚 Codelist loaded: ${Object.keys(codelistGroups).length} lists, ${codelistCount} total items`);
-                            
-                            // Store codelist descriptions in a separate state or combine with codelistData
-                            window.codelistDescriptions = codelistDescriptions;
-                        } catch (err) {
-                            console.warn('⚠️ Codelist data not found or could not be loaded:', err.message);
-                        }
-
-// Load ANVA mapping data (optional) - MET OAI FILTERING
-try {
-    console.log('📄 Attempting to load ANVA mapping data...');
-    const anvaResponse = await window.fs.readFile('ANVA_AFD.xlsx');
-    console.log('✅ ANVA Excel loaded, parsing...');
-    
-    if (typeof XLSX === 'undefined') {
-        console.error('❌ XLSX library not available');
-        throw new Error('XLSX library not loaded');
-    }
-    
-    const anvaWorkbook = XLSX.read(anvaResponse, {
-        type: 'array',
-        cellStyles: false,
-        cellFormulas: false,
-        cellDates: true
-    });
-    
-    const anvaSheet = anvaWorkbook.Sheets[anvaWorkbook.SheetNames[0]];
-    const rawData = XLSX.utils.sheet_to_json(anvaSheet, {
-        header: 1,
-        defval: '',
-        blankrows: false
-    });
-    
-    console.log('📊 Raw ANVA data rows:', rawData.length);
-    
-    // Find header row
-    let headerRowIndex = -1;
-    for (let i = 0; i < Math.min(5, rawData.length); i++) {
-        if (rawData[i].some(cell => String(cell).includes('AFD'))) {
-            headerRowIndex = i;
-            break;
-        }
-    }
-    
-    if (headerRowIndex === -1) {
-        console.warn('⚠️ No AFD header found, trying standard JSON conversion');
-        const anvaJsonData = XLSX.utils.sheet_to_json(anvaSheet);
-
-// Groepeer per AFD
-const rowsByAfd = new Map();
-anvaJsonData.forEach(row => {
-  if (!row.AFD || !row.ANVA) return;
-  const afd = String(row.AFD);
-  const arr = rowsByAfd.get(afd) || [];
-  arr.push({
-    afd,
-    anva: String(row.ANVA || ''),
-    oms: String(row['ANVA Omschrijving'] || ''),
-    afwijkend: String(row['Afwijkend niet toegestaan'] || ''),
-    oai: row.OAI ?? row.oai
-  });
-  rowsByAfd.set(afd, arr);
-});
-
-// Selectie per AFD
-const anvaMapping = {};
-let used = 0, skipped = 0;
-for (const [afd, rows] of rowsByAfd.entries()) {
-  let chosen;
-  if (rows.length > 1) {
-    chosen = rows.find(r => isOAI1(r.oai)) ?? rows[0];
-    skipped += (rows.length - 1);
-  } else {
-    chosen = rows[0];
-  }
-  anvaMapping[afd] = {
-    code: chosen.anva,
-    omschrijving: chosen.oms,
-    afwijkendNietToegestaan: chosen.afwijkend
-  };
-  used++;
-}
-
-setAnvaData(anvaMapping);
-        console.log(`📋 ANVA mapping loaded (fallback): ${Object.keys(anvaMapping).length} mappings (${skippedCount} skipped without OAI=1)`);
-    } else {
-        const headers = rawData[headerRowIndex];
-        console.log('📊 ANVA headers:', headers);
-        
-        const afdCol = headers.findIndex(h => String(h).includes('AFD'));
-        const anvaCol = headers.findIndex(h => String(h).includes('ANVA') && !String(h).includes('Omschrijving'));
-        const omschrijvingCol = headers.findIndex(h => String(h).includes('Omschrijving'));
-        const afwijkendCol = headers.findIndex(h => String(h).includes('Afwijkend') || String(h).includes('toegestaan'));
-        const oaiCol = headers.findIndex(h => String(h).toUpperCase().includes('OAI'));
-        
-        console.log('📊 Column indices - AFD:', afdCol, 'ANVA:', anvaCol, 'Omschrijving:', omschrijvingCol, 'OAI:', oaiCol);
-        
-        const dataRows = rawData.slice(headerRowIndex + 1);
-
-// Bouw nette rijobjecten
-const rows = [];
-dataRows.forEach((row) => {
-  const afd = row[afdCol];
-  const anva = row[anvaCol];
-  if (!afd || !anva) return;
-  rows.push({
-    afd: String(afd),
-    anva: String(anva),
-    oms: String((omschrijvingCol >= 0 ? row[omschrijvingCol] : '') || ''),
-    afwijkend: String((afwijkendCol >= 0 ? row[afwijkendCol] : '') || ''),
-    oai: (oaiCol >= 0 ? row[oaiCol] : undefined)
-  });
-});
-
-// Groepeer per AFD
-const rowsByAfd = new Map();
-for (const r of rows) {
-  const arr = rowsByAfd.get(r.afd) || [];
-  arr.push(r);
-  rowsByAfd.set(r.afd, arr);
-}
-
-// Selectie-regel met OAI alleen bij duplicaten
-const anvaMapping = {};
-let validCount = 0;
-let extraRowsSkipped = 0;
-
-for (const [afd, arr] of rowsByAfd.entries()) {
-  let chosen;
-  if (arr.length > 1) {
-    chosen = arr.find(r => isOAI1(r.oai)) ?? arr[0];
-    extraRowsSkipped += (arr.length - 1);
-  } else {
-    chosen = arr[0];
-  }
-  anvaMapping[afd] = {
-    code: chosen.anva,
-    omschrijving: chosen.oms,
-    afwijkendNietToegestaan: chosen.afwijkend
-  };
-  validCount++;
-}
-
-setAnvaData(anvaMapping);
-        console.log(`📋 ANVA mapping loaded: ${validCount} mappings from ${dataRows.length} rows (${skippedCount} skipped without OAI=1)`);
-    }
-} catch (err) {
-    console.warn('⚠️ ANVA mapping data not found or could not be loaded:', err.message);
-}
-
-                        setData(cleanedData);
-                        
-                        const entities = cleanedData.filter(row => row['Entiteit/Attribuut'] === 'E').length;
-                        const attributes = cleanedData.filter(row => row['Entiteit/Attribuut'] === 'A').length;
-                        setStats({
-                            total: cleanedData.length,
-                            entities,
-                            attributes
-                        });
-                        
-                        console.log(`🎉 Data loaded: ${cleanedData.length} total, ${entities} entities, ${attributes} attributes`);
                         setLoading(false);
                     } catch (err) {
-                        console.error('❌ Error loading data:', err);
+                        console.error('❌ Fout:', err);
                         setError(err.message);
                         setLoading(false);
                     }
                 };
-
-                loadData();
+                load();
             }, []);
 
-            // Enhanced search filter with advanced search support
-            const searchFilter = useCallback((row, term, isAdvanced = false) => {
-                if (!term && !isAdvanced) return true;
+            // ── Debounce search ──
+            useEffect(() => {
+                const t = setTimeout(() => { setDebouncedSearch(searchTerm); setCurrentPage(1); setSelectedIdx(-1); setKbActive(false); }, 250);
+                return () => clearTimeout(t);
+            }, [searchTerm]);
 
-                const basicFields = [
-                    row.Naam,
-                    row.Omschrijving,
-                    row.Entiteitcode,
-                    row.Attribuutcode,
-                    row.Entiteitcode && row.Attribuutcode ? `${row.Entiteitcode}_${row.Attribuutcode}` : null,
-                    row.Codelijst
-                ];
+            // Reset on filter change
+            useEffect(() => { setCurrentPage(1); setSelectedIdx(-1); setKbActive(false); }, [typeFilter, entityFilter]);
+            useEffect(() => { setSelectedIdx(-1); setKbActive(false); itemRefs.current = []; }, [currentPage]);
 
-                // Add ANVA information if available
-                const fullCode = row.Entiteitcode && row.Attribuutcode ? `${row.Entiteitcode}_${row.Attribuutcode}` : null;
-                const anvaInfo = fullCode ? anvaData[fullCode] : null;
-                if (anvaInfo) {
-                    basicFields.push(anvaInfo.code);
-                    basicFields.push(anvaInfo.omschrijving);  
-                }
-
-                const searchFields = basicFields.filter(Boolean).join(' ').toLowerCase();
-
-                // Advanced search logic
-                if (isAdvanced) {
-                    const { searchWords, entiteitFilter, datatypeFilter, codelistFilter, anvaCodeFilter } = advancedSearch;
-                    
-                    // Entity filter
-                    if (entiteitFilter !== 'all' && row.Entiteitcode !== entiteitFilter) {
-                        return false;
-                    }
-                    
-                    // Datatype filter
-                    if (datatypeFilter !== 'all' && row.Datatype !== datatypeFilter) {
-                        return false;
-                    }
-                    
-                    // Codelist filter
-                    if (codelistFilter && row.Codelijst !== codelistFilter) {
-                        return false;
-                    }
-                    
-                    // ANVA code filter
-                    if (anvaCodeFilter && (!anvaInfo || !anvaInfo.code.toLowerCase().includes(anvaCodeFilter.toLowerCase()))) {
-                        return false;
-                    }
-                    
-                    // Search words filter (all words must be present)
-                    if (searchWords) {
-                        const words = searchWords.toLowerCase().split(/\s+/).filter(w => w.length > 0);
-                        if (!words.every(word => searchFields.includes(word))) {
-                            return false;
+            // ── Keyboard nav ──
+            useEffect(() => {
+                const handler = (e) => {
+                    if (selectedCodelist || showInfo || showAdvanced || e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
+                    if (e.key === '/') { e.preventDefault(); searchRef.current?.focus(); return; }
+                    if (e.key === 'Escape') { setSelectedIdx(-1); setKbActive(false); setSearchTerm(''); return; }
+                    if (paginatedData.length > 0) {
+                        if (e.key === 'ArrowDown') { e.preventDefault(); setKbActive(true); setSelectedIdx(i => i >= paginatedData.length - 1 ? 0 : i + 1); }
+                        if (e.key === 'ArrowUp') { e.preventDefault(); setKbActive(true); setSelectedIdx(i => i <= 0 ? paginatedData.length - 1 : i - 1); }
+                        if (e.key === 'Enter' && selectedIdx >= 0) {
+                            e.preventDefault();
+                            const item = paginatedData[selectedIdx];
+                            if (item) {
+                                if (e.shiftKey && item['Entiteit/Attribuut'] !== 'E') copyFullInfo(item, `full-${item.Entiteitcode}_${item.Attribuutcode}`);
+                                else { const id = item['Entiteit/Attribuut'] === 'E' ? item.Entiteitcode : `${item.Entiteitcode}_${item.Attribuutcode}`; copyText(id, id); }
+                            }
                         }
                     }
-                    
+                };
+                document.addEventListener('keydown', handler);
+                return () => document.removeEventListener('keydown', handler);
+            }, [paginatedData, selectedIdx, selectedCodelist, showInfo, showAdvanced]);
+
+            // Scroll to selected
+            useEffect(() => {
+                if (selectedIdx >= 0 && kbActive && itemRefs.current[selectedIdx]) {
+                    itemRefs.current[selectedIdx].scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }, [selectedIdx, kbActive]);
+
+            // ── Search filter ──
+            const searchFilter = useCallback((row, term, isAdv) => {
+                const fullCode = row.Entiteitcode && row.Attribuutcode ? `${row.Entiteitcode}_${row.Attribuutcode}` : null;
+                const anvaInfo = fullCode ? anvaData[fullCode] : null;
+                const fields = [row.Entiteitcode, row.Attribuutcode, fullCode, row.Naam, row.Omschrijving, row.Codelijst, anvaInfo?.code, anvaInfo?.omschrijving].filter(Boolean).join(' ').toLowerCase();
+
+                if (isAdv) {
+                    const { words, entiteit, datatype, codelist, anva } = advanced;
+                    if (entiteit !== 'all' && row.Entiteitcode !== entiteit) return false;
+                    if (datatype !== 'all' && row.Datatype !== datatype) return false;
+                    if (codelist && row.Codelijst !== codelist) return false;
+                    if (anva && (!anvaInfo || !anvaInfo.code.toLowerCase().includes(anva.toLowerCase()))) return false;
+                    if (words) {
+                        const ws = words.toLowerCase().split(/\s+/).filter(w => w.length > 0);
+                        if (!ws.every(w => fields.includes(w))) return false;
+                    }
                     return true;
                 }
+                return fields.includes(term.toLowerCase());
+            }, [anvaData, advanced]);
 
-                // Basic search
-                return searchFields.includes(term.toLowerCase());
-            }, [anvaData, advancedSearch]);
+            const isAdvActive = useMemo(() => {
+                const { words, entiteit, datatype, codelist, anva } = advanced;
+                return words || entiteit !== 'all' || datatype !== 'all' || codelist || anva;
+            }, [advanced]);
 
-            // Check if advanced search is active
-            const isAdvancedSearchActive = useMemo(() => {
-                const { searchWords, entiteitFilter, datatypeFilter, codelistFilter, anvaCodeFilter } = advancedSearch;
-                return searchWords || entiteitFilter !== 'all' || datatypeFilter !== 'all' || codelistFilter || anvaCodeFilter;
-            }, [advancedSearch]);
+            // ── Filtered + paginated data ──
+            const filteredData = useMemo(() => {
+                let f = data;
+                if (typeFilter !== 'all') f = f.filter(r => r['Entiteit/Attribuut'] === typeFilter);
+                if (entityFilter !== 'all') f = f.filter(r => r.Entiteitcode === entityFilter);
+                if (isAdvActive) f = f.filter(r => searchFilter(r, null, true));
+                else if (debouncedSearch) f = f.filter(r => searchFilter(r, debouncedSearch));
+                return f;
+            }, [data, debouncedSearch, typeFilter, entityFilter, searchFilter, isAdvActive]);
+
+            const paginatedData = useMemo(() => {
+                const start = (currentPage - 1) * ITEMS_PER_PAGE;
+                return filteredData.slice(start, start + ITEMS_PER_PAGE);
+            }, [filteredData, currentPage]);
+
+            const totalPages = Math.ceil(filteredData.length / ITEMS_PER_PAGE);
+
+            // Available entities
+            const availableEntities = useMemo(() => {
+                const m = new Map();
+                filteredData.forEach(r => {
+                    if (r.Entiteitcode && !m.has(r.Entiteitcode)) {
+                        const ent = data.find(d => d.Entiteitcode === r.Entiteitcode && d['Entiteit/Attribuut'] === 'E');
+                        m.set(r.Entiteitcode, { code: r.Entiteitcode, naam: ent ? ent.Naam : r.Entiteitcode });
+                    }
+                });
+                return Array.from(m.values()).sort((a, b) => a.code.localeCompare(b.code));
+            }, [filteredData, data]);
 
             // Available datatypes
             const availableDatatypes = useMemo(() => {
-                const datatypes = new Set();
-                data.forEach(row => {
-                    if (row.Datatype) {
-                        datatypes.add(row.Datatype);
-                    }
-                });
-                return Array.from(datatypes).sort();
+                const s = new Set();
+                data.forEach(r => { if (r.Datatype) s.add(r.Datatype); });
+                return Array.from(s).sort();
             }, [data]);
 
             // Available codelists
             const availableCodelists = useMemo(() => {
-                const codelistSet = new Set();
-                data.forEach(row => {
-                    if (row.Codelijst) {
-                        codelistSet.add(row.Codelijst);
-                    }
-                });
-                return Array.from(codelistSet).sort();
+                const s = new Set();
+                data.forEach(r => { if (r.Codelijst) s.add(r.Codelijst); });
+                return Array.from(s).sort();
             }, [data]);
 
-            // Clear advanced search
-            const clearAdvancedSearch = useCallback(() => {
-                setAdvancedSearch({
-                    searchWords: '',
-                    entiteitFilter: 'all',
-                    datatypeFilter: 'all',
-                    codelistFilter: '',
-                    anvaCodeFilter: ''
-                });
-            }, []);
-
-            // Apply advanced search
-            const applyAdvancedSearch = useCallback(() => {
-                setCurrentPage(1);
-                setSelectedItemIndex(-1);
-                setKeyboardActive(false);
-                // The search will be applied automatically through the filteredData useMemo
-            }, []);
-
-            // Filtered data
-            const filteredData = useMemo(() => {
-                let filtered = data;
-
-                if (typeFilter !== 'all') {
-                    filtered = filtered.filter(row => row['Entiteit/Attribuut'] === typeFilter);
-                }
-
-                if (entityFilter !== 'all') {
-                    filtered = filtered.filter(row => row.Entiteitcode === entityFilter);
-                }
-
-                if (isAdvancedSearchActive) {
-                    filtered = filtered.filter(row => searchFilter(row, null, true));
-                } else if (debouncedSearchTerm) {
-                    filtered = filtered.filter(row => searchFilter(row, debouncedSearchTerm));
-                }
-
-                return filtered;
-            }, [data, debouncedSearchTerm, typeFilter, entityFilter, searchFilter, isAdvancedSearchActive]);
-
-            // Available entities with descriptions
-            const availableEntities = useMemo(() => {
-                const entityMap = new Map();
-                filteredData.forEach(row => {
-                    if (row.Entiteitcode && !entityMap.has(row.Entiteitcode)) {
-                        const entityRecord = data.find(r => 
-                            r.Entiteitcode === row.Entiteitcode && 
-                            r['Entiteit/Attribuut'] === 'E'
-                        );
-                        entityMap.set(row.Entiteitcode, {
-                            code: row.Entiteitcode,
-                            naam: entityRecord ? entityRecord.Naam : row.Entiteitcode
-                        });
-                    }
-                });
-                return Array.from(entityMap.values()).sort((a, b) => a.code.localeCompare(b.code));
-            }, [filteredData, data]);
-
-            // Paginated data
-            const paginatedData = useMemo(() => {
-                const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;  
-                const endIndex = startIndex + ITEMS_PER_PAGE;
-                return filteredData.slice(startIndex, endIndex);
-            }, [filteredData, currentPage]);
-
-            // Filtered codelist items
+            // Codelist items
             const codelistItems = useMemo(() => {
                 if (!selectedCodelist || !codelistData[selectedCodelist.codelijst]) return [];
-                
-                let items = codelistData[selectedCodelist.codelijst];
-                
-                items = items.filter(item => {
-                    const code = String(item.code || '').trim();
-                    return code !== '' && code.toLowerCase() !== 'code';
+                let items = codelistData[selectedCodelist.codelijst].filter(it => {
+                    const c = String(it.code || '').trim();
+                    return c !== '' && c.toLowerCase() !== 'code';
                 });
-                
                 if (!codelistSearch) return items;
-                
-                const searchLower = codelistSearch.toLowerCase();
-                return items.filter(item => {
-                    const code = String(item.code || '').toLowerCase();
-                    const omschrijving = String(item.omschrijving || '').toLowerCase();
-                    
-                    return code.includes(searchLower) || omschrijving.includes(searchLower);
-                });
+                const s = codelistSearch.toLowerCase();
+                return items.filter(it => String(it.code).toLowerCase().includes(s) || String(it.omschrijving).toLowerCase().includes(s));
             }, [selectedCodelist, codelistData, codelistSearch]);
 
-            const totalPages = Math.ceil(filteredData.length / ITEMS_PER_PAGE);
-
-            const openCodelist = useCallback((codelijst, naam) => {
-                setSelectedCodelist({ codelijst, naam });
-                setCodelistSearch('');
-            }, []);
-
-            const copyToClipboard = useCallback((text, id) => {
-                if (navigator.clipboard) {
-                    navigator.clipboard.writeText(text);
-                } else {
-                    const textArea = document.createElement('textarea');
-                    textArea.value = text;
-                    document.body.appendChild(textArea);
-                    textArea.select();
-                    document.execCommand('copy');
-                    document.body.removeChild(textArea);
-                }
+            // ── Utility ──
+            const copyText = useCallback((text, id) => {
+                navigator.clipboard?.writeText(text) || (() => { const ta = document.createElement('textarea'); ta.value = text; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); })();
                 setCopiedItem(id);
                 setTimeout(() => setCopiedItem(null), 2000);
             }, []);
 
-            // Copy full attribute info
-            const copyFullAttributeInfo = useCallback((item, id) => {
-                let entiteit = item.Entiteitcode || '';
-                
-                // Specifieke regels voor entiteit prefix
-                if (entiteit === 'WH') {
-                    // WH krijgt altijd PP/OG/ prefix
-                    entiteit = `PP/OG/${entiteit}`;
-                } else if (!['XG', 'XM', 'PP', 'AL'].includes(entiteit)) {
-                    // Alle andere entiteiten (behalve XG, XM, PP, AL) krijgen PP/ prefix
-                    entiteit = `PP/${entiteit}`;
-                }
-                // XG, XM, PP, AL blijven ongewijzigd
-                
-                const volledigAttribuut = item.Entiteitcode && item.Attribuutcode ? `${item.Entiteitcode}_${item.Attribuutcode}` : item.Entiteitcode || '';
-                const omschrijving = item.Naam || '';
-                const codelijst = item.Codelijst || '';
-                
-                const fullInfo = `${entiteit}\t${volledigAttribuut}\t${omschrijving}\t${codelijst}`;
-                
-                if (navigator.clipboard) {
-                    navigator.clipboard.writeText(fullInfo);
-                } else {
-                    const textArea = document.createElement('textarea');
-                    textArea.value = fullInfo;
-                    document.body.appendChild(textArea);
-                    textArea.select();
-                    document.execCommand('copy');
-                    document.body.removeChild(textArea);
-                }
-                setCopiedItem(id);
-                setTimeout(() => setCopiedItem(null), 2000);
-            }, []);
+            const copyFullInfo = useCallback((item, id) => {
+                let ent = item.Entiteitcode || '';
+                if (ent === 'WH') ent = `PP/OG/${ent}`;
+                else if (!['XG','XM','PP','AL'].includes(ent)) ent = `PP/${ent}`;
+                const code = item.Entiteitcode && item.Attribuutcode ? `${item.Entiteitcode}_${item.Attribuutcode}` : item.Entiteitcode || '';
+                copyText(`${ent}\t${code}\t${item.Naam || ''}\t${item.Codelijst || ''}`, id);
+            }, [copyText]);
 
-            const highlightText = (text, term) => {
+            const escapeRegex = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+            const highlight = (text, term) => {
                 if (!text || !term) return text;
-                
-                const parts = text.split(new RegExp(`(${term})`, 'gi'));
-                return parts.map((part, i) => 
-                    part.toLowerCase() === term.toLowerCase() 
-                        ? <mark key={i}>{part}</mark>
-                        : part
-                );
+                try {
+                    const parts = text.split(new RegExp(`(${escapeRegex(term)})`, 'gi'));
+                    return parts.map((p, i) => p.toLowerCase() === term.toLowerCase() ? <mark key={i}>{p}</mark> : p);
+                } catch { return text; }
             };
+
+            // ═══════════════════════════════════════════════════
+            //  RENDER
+            // ═══════════════════════════════════════════════════
 
             if (loading) {
                 return (
-                    <div className={`flex items-center justify-center h-screen ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
-                        <div className="text-center">
-                            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
-                            <p className={`mt-4 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                                AFD datacatalogus laden...
-                            </p>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', background: 'var(--bg-primary)' }}>
+                        <div style={{ textAlign: 'center' }}>
+                            <div className="animate-spin" style={{ width: 40, height: 40, border: '3px solid var(--border)', borderTopColor: 'var(--accent)', borderRadius: '50%', margin: '0 auto' }} />
+                            <p style={{ marginTop: 16, color: 'var(--text-secondary)', fontSize: '0.95rem' }}>{loadStatus}</p>
                         </div>
                     </div>
                 );
@@ -1353,49 +676,35 @@ setAnvaData(anvaMapping);
 
             if (error) {
                 return (
-                    <div className={`flex items-center justify-center h-screen ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
-                        <div className="text-center max-w-lg mx-auto p-6">
-                            <div className="text-red-600 mb-4">
-                                <div className="text-6xl mb-4">⚠️</div>
-                                <h2 className="text-xl font-bold mb-2">Fout bij laden</h2>
-                                <p className="text-sm mb-4">{error}</p>
-                            </div>
-                            <div className="text-sm text-gray-600 space-y-2">
-                                <p><strong>Controleer het volgende:</strong></p>
-                                <ul className="list-disc list-inside space-y-1 text-left">
-                                    <li>Het bestand <code>data.csv</code> staat in de root van je repository</li>
-                                    <li>Het bestand heeft exact de naam <code>data.csv</code> (let op hoofdletters)</li>
-                                    <li>Het CSV bestand is geldig en UTF-8 encoded</li>
-                                    <li>GitHub Pages is correct ingesteld</li>
-                                </ul>
-                                <p className="mt-4">
-                                    <strong>Test:</strong> <a 
-                                        href="data.csv" 
-                                        target="_blank" 
-                                        className="text-blue-600 underline"
-                                    >
-                                        Probeer data.csv direct te openen
-                                    </a>
-                                </p>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', background: 'var(--bg-primary)' }}>
+                        <div style={{ textAlign: 'center', maxWidth: 480, padding: 32 }}>
+                            <div style={{ fontSize: 48, marginBottom: 16 }}>⚠️</div>
+                            <h2 style={{ fontSize: '1.25rem', fontWeight: 700, color: '#dc2626', marginBottom: 8 }}>Fout bij laden</h2>
+                            <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: 16 }}>{error}</p>
+                            <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem', textAlign: 'left' }}>
+                                <p style={{ fontWeight: 600, marginBottom: 8 }}>Controleer:</p>
+                                <p>• <code>Datacat.afm</code> staat in de root van je repository</p>
+                                <p>• Optioneel: <code>Codelist.afm</code> en <code>ANVA_AFD.xlsx</code></p>
+                                <p style={{ marginTop: 12 }}><a href="Datacat.afm" target="_blank" style={{ color: 'var(--accent)' }}>Test: Datacat.afm openen →</a></p>
                             </div>
                         </div>
                     </div>
                 );
             }
 
+            const activeSearch = debouncedSearch || (isAdvActive ? advanced.words : '');
+
             return (
-                <div className={`min-h-screen ${darkMode ? 'dark bg-gray-900 text-gray-100' : 'bg-gray-50'}`}>
-                    {/* Header */}
-                    <div className={`${darkMode ? 'bg-gray-800 text-gray-100' : 'bg-white'} shadow-sm border-b ${darkMode ? 'border-gray-700' : ''}`}>
-                        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-                            <div className="flex items-center justify-between">
-                                <div className="flex items-center space-x-3">
-                                    <Database className="h-8 w-8 text-blue-600" />
+                <div style={{ minHeight: '100vh', background: 'var(--bg-primary)' }}>
+                    {/* ── Header ── */}
+                    <div style={{ background: 'var(--bg-header)', borderBottom: `1px solid var(--border)`, boxShadow: 'var(--shadow-sm)' }}>
+                        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '14px 20px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                                    <span style={{ fontSize: 28, color: 'var(--entity-color)' }}><Icons.Database /></span>
                                     <div>
-                                        <h1 className={`text-2xl font-bold ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
-                                            AFD 1.0 Datacatalogus
-                                        </h1>
-                                        <div className={`flex items-center space-x-4 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                        <h1 style={{ fontSize: '1.35rem', fontWeight: 700 }}>AFD 1.0 Datacatalogus</h1>
+                                        <div style={{ display: 'flex', gap: 12, fontSize: '0.8rem', color: 'var(--text-muted)' }}>
                                             <span>{stats.total.toLocaleString()} items</span>
                                             <span>•</span>
                                             <span>{stats.entities} entiteiten</span>
@@ -1404,487 +713,196 @@ setAnvaData(anvaMapping);
                                         </div>
                                     </div>
                                 </div>
-                                <div className="flex items-center space-x-2">
-                                    <button
-                                        onClick={() => setShowInfo(true)}
-                                        className={`p-2 rounded-lg ${darkMode ? 'hover:bg-gray-700 text-gray-300' : 'hover:bg-gray-100 text-gray-600'}`}
-                                        title="Help & Instructies"
-                                    >
-                                        <Info className="h-5 w-5" />
-                                    </button>
-                                    <button
-                                        onClick={() => setDarkMode(!darkMode)}
-                                        className={`p-2 rounded-lg ${darkMode ? 'hover:bg-gray-700 text-gray-300' : 'hover:bg-gray-100 text-gray-600'}`}
-                                        title={darkMode ? 'Light mode' : 'Dark mode'}
-                                    >
-                                        {darkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+                                <div style={{ display: 'flex', gap: 4 }}>
+                                    <button onClick={() => setShowInfo(true)} title="Help" style={{ padding: 8, borderRadius: 8, color: 'var(--text-muted)', fontSize: 20 }}><Icons.Info /></button>
+                                    <button onClick={() => setDarkMode(!darkMode)} title="Thema" style={{ padding: 8, borderRadius: 8, color: 'var(--text-muted)', fontSize: 20 }}>
+                                        {darkMode ? <Icons.Sun /> : <Icons.Moon />}
                                     </button>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    {/* Search section */}
-                    <div className={`${darkMode ? 'bg-gray-800 text-gray-100' : 'bg-white'} border-b ${darkMode ? 'border-gray-700' : ''} sticky top-0 z-10`}>
-                        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-                            <div className="space-y-4">
-                                <div className="flex items-center space-x-2">
-                                    <div className="relative flex-1">
-                                        <Search className={`absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 ${darkMode ? 'text-gray-300' : 'text-gray-400'}`} />
-                                        <input
-                                            ref={searchInputRef}
-                                            type="text"
-                                            value={searchTerm}
-                                            onChange={(e) => setSearchTerm(e.target.value)}
-                                            placeholder="Zoek op naam, omschrijving, AFD code, ANVA code of codelijst... (druk / voor focus)"
-                                            className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 text-lg ${
-                                                darkMode ? 'bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
-                                            }`}
-                                        />
-                                        {searchTerm && (
-                                            <button
-                                                onClick={() => setSearchTerm('')}
-                                                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                                            >
-                                                ✕
-                                            </button>
-                                        )}
-                                    </div>
-                                    <button
-                                        onClick={() => setShowAdvancedSearch(!showAdvancedSearch)}
-                                        className={`flex items-center space-x-2 px-4 py-3 rounded-lg border transition-colors ${
-                                            showAdvancedSearch || isAdvancedSearchActive
-                                                ? (darkMode ? 'bg-blue-600 border-blue-500 text-white' : 'bg-blue-600 border-blue-500 text-white')
-                                                : (darkMode ? 'bg-gray-700 border-gray-600 text-gray-300 hover:bg-gray-600' : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50')
-                                        }`}
-                                        title="Geavanceerd zoeken"
-                                    >
-                                        <span className="text-sm font-medium">Geavanceerd</span>
-                                        {showAdvancedSearch ? 
-                                            <ChevronUp className="h-4 w-4" /> : 
-                                            <ChevronDown className="h-4 w-4" />
-                                        }
-                                        {isAdvancedSearchActive && (
-                                            <div className="w-2 h-2 bg-current rounded-full" />
-                                        )}
-                                    </button>
-                                </div>
-                                
-                                {/* Advanced Search Panel */}
-                                {showAdvancedSearch && (
-                                    <div className={`border rounded-lg p-4 space-y-4 ${
-                                        darkMode ? 'bg-gray-700 border-gray-600' : 'bg-gray-50 border-gray-200'
-                                    }`}>
-                                        <div className="flex items-center space-x-2 mb-3">
-                                            <Search className={`h-5 w-5 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`} />
-                                            <h3 className={`font-medium ${darkMode ? 'text-gray-200' : 'text-gray-900'}`}>
-                                                Geavanceerd zoeken
-                                            </h3>
-                                        </div>
-                                        
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                            <div className="sm:col-span-2">
-                                                <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                                                    Zoekwoorden
-                                                </label>
-                                                <input
-                                                    type="text"
-                                                    value={advancedSearch.searchWords}
-                                                    onChange={(e) => setAdvancedSearch(prev => ({ ...prev, searchWords: e.target.value }))}
-                                                    placeholder="Typ meerdere woorden - alle woorden moeten voorkomen"
-                                                    className={`w-full px-3 py-2 border rounded-lg text-sm ${
-                                                        darkMode ? 'bg-gray-800 border-gray-600 text-gray-100 placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
-                                                    }`}
-                                                />
-                                                <p className={`text-xs mt-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                                                    Bijvoorbeeld: "naam verzekering" vindt records die beide woorden bevatten
-                                                </p>
-                                            </div>
-                                            
-                                            <div>
-                                                <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                                                    Entiteit
-                                                </label>
-                                                <SearchableSelect
-                                                    options={[
-                                                        { value: 'all', label: 'Alle entiteiten' },
-                                                        ...availableEntities.map(entity => ({
-                                                            value: entity.code,
-                                                            label: `${entity.code} - ${entity.naam}`
-                                                        }))
-                                                    ]}
-                                                    value={advancedSearch.entiteitFilter}
-                                                    onChange={(value) => setAdvancedSearch(prev => ({ ...prev, entiteitFilter: value }))}
-                                                    placeholder="Selecteer entiteit"
-                                                    className={`px-3 py-2 border rounded-lg text-sm ${
-                                                        darkMode ? 'bg-gray-800 border-gray-600 text-gray-100' : 'bg-white border-gray-300 text-gray-900'
-                                                    }`}
-                                                    darkMode={darkMode}
-                                                />
-                                            </div>
-                                            
-                                            <div>
-                                                <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                                                    Datatype
-                                                </label>
-                                                <SearchableSelect
-                                                    options={[
-                                                        { value: 'all', label: 'Alle datatypes' },
-                                                        ...availableDatatypes.map(datatype => ({
-                                                            value: datatype,
-                                                            label: `${datatype} - ${datatypeInfo[datatype]?.label || datatype}`
-                                                        }))
-                                                    ]}
-                                                    value={advancedSearch.datatypeFilter}
-                                                    onChange={(value) => setAdvancedSearch(prev => ({ ...prev, datatypeFilter: value }))}
-                                                    placeholder="Selecteer datatype"
-                                                    className={`px-3 py-2 border rounded-lg text-sm ${
-                                                        darkMode ? 'bg-gray-800 border-gray-600 text-gray-100' : 'bg-white border-gray-300 text-gray-900'
-                                                    }`}
-                                                    darkMode={darkMode}
-                                                />
-                                            </div>
-                                            
-                                            <div>
-                                                <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                                                    Codelijst
-                                                </label>
-                                                <SearchableSelect
-                                                    options={[
-                                                        { value: '', label: 'Alle codelijsten' },
-                                                        ...availableCodelists.map(codelist => {
-                                                            const description = window.codelistDescriptions?.[codelist];
-                                                            return {
-                                                                value: codelist,
-                                                                label: description ? `${codelist} - ${description}` : codelist
-                                                            };
-                                                        })
-                                                    ]}
-                                                    value={advancedSearch.codelistFilter}
-                                                    onChange={(value) => setAdvancedSearch(prev => ({ ...prev, codelistFilter: value }))}
-                                                    placeholder="Selecteer codelijst"
-                                                    className={`px-3 py-2 border rounded-lg text-sm ${
-                                                        darkMode ? 'bg-gray-800 border-gray-600 text-gray-100' : 'bg-white border-gray-300 text-gray-900'
-                                                    }`}
-                                                    darkMode={darkMode}
-                                                />
-                                            </div>
-                                            
-                                            <div>
-                                                <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                                                    ANVA code
-                                                </label>
-                                                <input
-                                                    type="text"
-                                                    value={advancedSearch.anvaCodeFilter}
-                                                    onChange={(e) => setAdvancedSearch(prev => ({ ...prev, anvaCodeFilter: e.target.value }))}
-                                                    placeholder="bijv. 13689"
-                                                    className={`w-full px-3 py-2 border rounded-lg text-sm ${
-                                                        darkMode ? 'bg-gray-800 border-gray-600 text-gray-100 placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
-                                                    }`}
-                                                />
-                                            </div>
-                                        </div>
-                                        
-                                        <div className="flex items-center justify-between pt-3 border-t border-gray-200">
-                                            <div className="flex items-center space-x-2">
-                                                <button
-                                                    onClick={clearAdvancedSearch}
-                                                    className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                                                        darkMode ? 'text-gray-300 hover:bg-gray-600' : 'text-gray-600 hover:bg-gray-200'
-                                                    }`}
-                                                >
-                                                    Wis filters
-                                                </button>
-                                                <button
-                                                    onClick={applyAdvancedSearch}
-                                                    className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
-                                                >
-                                                    Zoeken
-                                                </button>
-                                            </div>
-                                            <button
-                                                onClick={() => setShowAdvancedSearch(false)}
-                                                className={`text-sm ${darkMode ? 'text-gray-400 hover:text-gray-300' : 'text-gray-500 hover:text-gray-700'}`}
-                                            >
-                                                Sluiten
-                                            </button>
-                                        </div>
-                                    </div>
-                                )}
-                                
-                                <div className="flex flex-wrap gap-4">
-                                    <div className="flex items-center space-x-2 min-w-0">
-                                        <Filter className={`h-5 w-5 ${darkMode ? 'text-gray-300' : 'text-gray-400'} flex-shrink-0`} />
-                                        <div className="min-w-[140px]">
-                                            <SearchableSelect
-                                                options={[
-                                                    { value: 'all', label: 'Alle types' },
-                                                    { value: 'E', label: 'Alleen entiteiten' },
-                                                    { value: 'A', label: 'Alleen attributen' }
-                                                ]}
-                                                value={typeFilter}
-                                                onChange={setTypeFilter}
-                                                placeholder="Type selecteren"
-                                                className={`border rounded-lg px-3 py-2 ${
-                                                    darkMode ? 'bg-gray-700 border-gray-600 text-gray-100' : 'bg-white border-gray-300 text-gray-900'
-                                                }`}
-                                                darkMode={darkMode}
-                                            />
-                                        </div>
-                                    </div>
-                                    {availableEntities.length > 0 && (
-                                        <div className="flex items-center space-x-2 min-w-0">
-                                            <Database className={`h-5 w-5 ${darkMode ? 'text-gray-300' : 'text-gray-400'} flex-shrink-0`} />
-                                            <div className="min-w-[200px]">
-                                                <SearchableSelect
-                                                    options={[
-                                                        { value: 'all', label: `Alle entiteiten (${availableEntities.length})` },
-                                                        ...availableEntities.map(entity => ({
-                                                            value: entity.code,
-                                                            label: `${entity.code} - ${entity.naam}`
-                                                        }))
-                                                    ]}
-                                                    value={entityFilter}
-                                                    onChange={setEntityFilter}
-                                                    placeholder="Entiteit selecteren"
-                                                    className={`border rounded-lg px-3 py-2 ${
-                                                        darkMode ? 'bg-gray-700 border-gray-600 text-gray-100' : 'bg-white border-gray-300 text-gray-900'
-                                                    }`}
-                                                    darkMode={darkMode}
-                                                />
-                                            </div>
-                                        </div>
+                    {/* ── Search bar ── */}
+                    <div style={{ background: 'var(--bg-header)', borderBottom: `1px solid var(--border)` }}>
+                        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '12px 20px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+                            <div style={{ display: 'flex', gap: 8 }}>
+                                <div style={{ position: 'relative', flex: 1 }}>
+                                    <span style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)', fontSize: 18, pointerEvents: 'none' }}><Icons.Search /></span>
+                                    <input ref={searchRef} type="text" value={searchTerm} onChange={e => setSearchTerm(e.target.value)}
+                                        placeholder="Zoek op naam, code, ANVA, codelijst..."
+                                        style={{ width: '100%', paddingLeft: 38, paddingRight: searchTerm ? 36 : 12 }} />
+                                    {searchTerm && (
+                                        <button onClick={() => setSearchTerm('')} style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)', fontSize: 16 }}>
+                                            <Icons.X />
+                                        </button>
                                     )}
                                 </div>
-                                {paginatedData.length > 0 && (
-                                    <div className={`text-xs space-y-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                <button onClick={() => setShowAdvanced(!showAdvanced)}
+                                    style={{ padding: '8px 14px', borderRadius: 8, fontSize: '0.85rem', fontWeight: 500, background: isAdvActive ? 'var(--accent)' : 'var(--bg-badge)', color: isAdvActive ? '#fff' : 'var(--text-secondary)', border: `1px solid ${isAdvActive ? 'var(--accent)' : 'var(--border)'}`, whiteSpace: 'nowrap' }}>
+                                    <span style={{ fontSize: 14, marginRight: 4 }}><Icons.Filter /></span> Geavanceerd
+                                </button>
+                            </div>
+
+                            {/* Advanced search panel */}
+                            {showAdvanced && (
+                                <div className="fade-in" style={{ background: 'var(--bg-card)', border: `1px solid var(--border)`, borderRadius: 10, padding: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
+                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12 }}>
                                         <div>
-                                            <strong>Sneltoetsen:</strong> ↑↓ navigeren • Enter kopieer code • Shift+Enter kopieer volledige info • / zoeken • Esc wissen
+                                            <label style={{ fontSize: '0.8rem', fontWeight: 500, color: 'var(--text-muted)', display: 'block', marginBottom: 4 }}>Zoekwoorden</label>
+                                            <input type="text" value={advanced.words} onChange={e => setAdvanced(a => ({ ...a, words: e.target.value }))} placeholder="Alle woorden moeten voorkomen" style={{ width: '100%', fontSize: '0.85rem' }} />
                                         </div>
-                                        {keyboardActive && selectedItemIndex >= 0 && (
-                                            <div className="text-blue-400 font-medium">
-                                                <strong>📍 Geselecteerd:</strong> Item {selectedItemIndex + 1} van {paginatedData.length} • Enter = code • Shift+Enter = volledige info
-                                            </div>
-                                        )}
+                                        <div>
+                                            <label style={{ fontSize: '0.8rem', fontWeight: 500, color: 'var(--text-muted)', display: 'block', marginBottom: 4 }}>Entiteit</label>
+                                            <SearchableSelect options={[{ value: 'all', label: 'Alle entiteiten' }, ...availableEntities.map(e => ({ value: e.code, label: `${e.code} - ${e.naam}` }))]} value={advanced.entiteit} onChange={v => setAdvanced(a => ({ ...a, entiteit: v }))} placeholder="Selecteer" darkMode={darkMode} />
+                                        </div>
+                                        <div>
+                                            <label style={{ fontSize: '0.8rem', fontWeight: 500, color: 'var(--text-muted)', display: 'block', marginBottom: 4 }}>Datatype</label>
+                                            <SearchableSelect options={[{ value: 'all', label: 'Alle datatypes' }, ...availableDatatypes.map(d => ({ value: d, label: `${d}${DATATYPE_INFO[d] ? ` - ${DATATYPE_INFO[d].label}` : ''}` }))]} value={advanced.datatype} onChange={v => setAdvanced(a => ({ ...a, datatype: v }))} placeholder="Selecteer" darkMode={darkMode} />
+                                        </div>
+                                        <div>
+                                            <label style={{ fontSize: '0.8rem', fontWeight: 500, color: 'var(--text-muted)', display: 'block', marginBottom: 4 }}>Codelijst</label>
+                                            <SearchableSelect options={[{ value: '', label: 'Alle codelijsten' }, ...availableCodelists.map(c => ({ value: c, label: c }))]} value={advanced.codelist} onChange={v => setAdvanced(a => ({ ...a, codelist: v }))} placeholder="Selecteer" darkMode={darkMode} />
+                                        </div>
+                                        <div>
+                                            <label style={{ fontSize: '0.8rem', fontWeight: 500, color: 'var(--text-muted)', display: 'block', marginBottom: 4 }}>ANVA code</label>
+                                            <input type="text" value={advanced.anva} onChange={e => setAdvanced(a => ({ ...a, anva: e.target.value }))} placeholder="Bijv. 13689" style={{ width: '100%', fontSize: '0.85rem' }} />
+                                        </div>
+                                    </div>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: `1px solid var(--border)`, paddingTop: 12 }}>
+                                        <button onClick={() => setAdvanced({ words: '', entiteit: 'all', datatype: 'all', codelist: '', anva: '' })} style={{ fontSize: '0.85rem', color: 'var(--text-muted)', padding: '6px 12px' }}>Wis filters</button>
+                                        <button onClick={() => { setCurrentPage(1); setSelectedIdx(-1); }} style={{ fontSize: '0.85rem', fontWeight: 600, color: '#fff', background: 'var(--accent)', padding: '8px 20px', borderRadius: 8 }}>Zoeken</button>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Filters */}
+                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'center' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                                    <span style={{ color: 'var(--text-muted)', fontSize: 16 }}><Icons.Filter /></span>
+                                    <SearchableSelect
+                                        options={[{ value: 'all', label: 'Alle types' }, { value: 'E', label: 'Entiteiten' }, { value: 'A', label: 'Attributen' }]}
+                                        value={typeFilter} onChange={setTypeFilter} placeholder="Type" darkMode={darkMode} />
+                                </div>
+                                {availableEntities.length > 0 && (
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                                        <span style={{ color: 'var(--text-muted)', fontSize: 16 }}><Icons.Database /></span>
+                                        <SearchableSelect
+                                            options={[{ value: 'all', label: `Alle entiteiten (${availableEntities.length})` }, ...availableEntities.map(e => ({ value: e.code, label: `${e.code} - ${e.naam}` }))]}
+                                            value={entityFilter} onChange={setEntityFilter} placeholder="Entiteit" darkMode={darkMode} />
                                     </div>
                                 )}
                             </div>
+
+                            {/* Keyboard hints */}
+                            {paginatedData.length > 0 && (
+                                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                                    <strong>Sneltoetsen:</strong> ↑↓ navigeren • Enter kopieer code • Shift+Enter volledige info • / zoeken • Esc wissen
+                                    {kbActive && selectedIdx >= 0 && (
+                                        <span style={{ color: 'var(--accent)', fontWeight: 600, marginLeft: 12 }}>📍 Item {selectedIdx + 1}/{paginatedData.length}</span>
+                                    )}
+                                </div>
+                            )}
                         </div>
                     </div>
 
-                    {/* Results */}
-                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-                        {!searchTerm && typeFilter === 'all' && entityFilter === 'all' && !isAdvancedSearchActive ? (
-                            <div className="text-center py-12">
-                                <div className={`${darkMode ? 'bg-gray-800 text-gray-100' : 'bg-white'} rounded-lg shadow-sm p-12 max-w-2xl mx-auto`}>
-                                    <Search className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                                    <h2 className={`text-2xl font-semibold mb-2 ${darkMode ? 'text-gray-200' : 'text-gray-700'}`}>
-                                        Begin met zoeken
-                                    </h2>
-                                    <p className={`${darkMode ? 'text-gray-300' : 'text-gray-500'} mb-6`}>
-                                        Gebruik de zoekbalk hierboven om te zoeken in de AFD 1.0 datacatalogus met {stats.total.toLocaleString()} items
+                    {/* ── Results ── */}
+                    <div style={{ maxWidth: 1200, margin: '0 auto', padding: '20px 20px 40px' }}>
+                        {!searchTerm && typeFilter === 'all' && entityFilter === 'all' && !isAdvActive ? (
+                            /* Empty state */
+                            <div style={{ textAlign: 'center', padding: '60px 20px' }}>
+                                <div style={{ background: 'var(--bg-card)', borderRadius: 12, padding: 48, maxWidth: 560, margin: '0 auto', boxShadow: 'var(--shadow-sm)', border: `1px solid var(--border)` }}>
+                                    <span style={{ fontSize: 48, color: 'var(--text-muted)', display: 'block', marginBottom: 16 }}><Icons.Search /></span>
+                                    <h2 style={{ fontSize: '1.3rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 8 }}>Begin met zoeken</h2>
+                                    <p style={{ color: 'var(--text-muted)', marginBottom: 20, fontSize: '0.9rem' }}>
+                                        Doorzoek de AFD 1.0 datacatalogus met {stats.total.toLocaleString()} items
                                     </p>
-                                    <div className={`space-y-2 text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                                        <p>Je kunt zoeken op:</p>
-                                        <ul className="list-disc list-inside space-y-1">
-                                            <li>Naam van een entiteit of attribuut</li>
-                                            <li>Omschrijving</li>
-                                            <li>Entiteitcode (bijv. OB, XA, RI)</li>
-                                            <li>Attribuutcode of volledige codes (bijv. DA_VERZSOM)</li>
-                                            <li>ANVA code (bijv. 13689)</li>
-                                            <li>Codelijst naam (bijv. ADNABS, SECTCOD)</li>
-                                        </ul>
+                                    <div style={{ textAlign: 'left', color: 'var(--text-muted)', fontSize: '0.85rem', lineHeight: 2 }}>
+                                        <p>Zoek op: naam, omschrijving, entiteitcode (bijv. OB, XA), attribuutcode (bijv. DA_VERZSOM), ANVA code (bijv. 13689), codelijst (bijv. ADNABS)</p>
                                     </div>
-                                    <div className="mt-6 flex justify-center space-x-4">
-                                        <kbd className={`px-3 py-1 rounded text-sm ${
-                                            darkMode ? 'bg-gray-700 text-gray-200 border border-gray-600' : 'bg-gray-200 text-gray-800'
-                                        }`}>
-                                            Druk op / om te beginnen met typen
-                                        </kbd>
-                                        <button
-                                            onClick={() => setShowAdvancedSearch(true)}
-                                            className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
-                                                darkMode ? 'bg-blue-600 text-white hover:bg-blue-700' : 'bg-blue-600 text-white hover:bg-blue-700'
-                                            }`}
-                                        >
-                                            Geavanceerd zoeken
-                                        </button>
+                                    <div style={{ marginTop: 20, display: 'flex', justifyContent: 'center', gap: 12 }}>
+                                        <kbd style={{ padding: '4px 12px', borderRadius: 6, fontSize: '0.8rem', background: 'var(--bg-badge)', border: `1px solid var(--border)` }}>Druk op / om te typen</kbd>
                                     </div>
                                 </div>
                             </div>
                         ) : filteredData.length === 0 ? (
-                            <div className="text-center py-12">
-                                <p className="text-gray-500 text-lg">Geen resultaten gevonden</p>
-                                <p className="text-gray-400 mt-2">Probeer een andere zoekterm of pas de filters aan</p>
+                            <div style={{ textAlign: 'center', padding: '60px 20px' }}>
+                                <p style={{ color: 'var(--text-muted)', fontSize: '1.1rem' }}>Geen resultaten gevonden</p>
+                                <p style={{ color: 'var(--text-muted)', marginTop: 8, fontSize: '0.9rem' }}>Probeer een andere zoekterm of pas de filters aan</p>
                             </div>
                         ) : (
                             <div>
-                                <div className="flex justify-between items-center mb-4">
-                                    <p className="text-gray-600">
-                                        {filteredData.length} {filteredData.length === 1 ? "resultaat" : "resultaten"}
-                                    </p>
-                                    {totalPages > 1 && (
-                                        <p className="text-sm text-gray-500">
-                                            Pagina {currentPage} van {totalPages}
-                                        </p>
-                                    )}
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                                    <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>{filteredData.length.toLocaleString()} {filteredData.length === 1 ? "resultaat" : "resultaten"}</p>
+                                    {totalPages > 1 && <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>Pagina {currentPage} van {totalPages}</p>}
                                 </div>
-                                <div className="space-y-3">
+
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                                     {paginatedData.map((item, index) => {
                                         const isEntity = item['Entiteit/Attribuut'] === 'E';
                                         const itemId = isEntity ? item.Entiteitcode : `${item.Entiteitcode}_${item.Attribuutcode}`;
-                                        const isSelected = keyboardActive && selectedItemIndex === index;
-                                        
+                                        const isSelected = kbActive && selectedIdx === index;
+                                        const dtInfo = DATATYPE_INFO[item.Datatype];
+                                        const fullCode = `${item.Entiteitcode}_${item.Attribuutcode}`;
+                                        const anvaInfo = !isEntity ? anvaData[fullCode] : null;
+
                                         return (
-                                            <div 
-                                                key={index}
-                                                ref={el => itemRefs.current[index] = el}
-                                                className={`${darkMode ? 'bg-gray-800 text-gray-100' : 'bg-white'} rounded-lg shadow-sm p-4 hover:shadow-md transition-shadow ${
-                                                    isSelected ? 'selected-item' : ''
-                                                }`}
-                                            >
-                                                <div className="flex items-start justify-between">
-                                                    <div className="flex items-start space-x-3 flex-1">
-                                                        {isEntity ? (
-                                                            <Database className="h-5 w-5 text-blue-600 mt-1 flex-shrink-0" />
-                                                        ) : (
-                                                            <Package className="h-5 w-5 text-green-600 mt-1 flex-shrink-0" />
-                                                        )}
-                                                        <div className="flex-1 min-w-0">
-                                                            <div className="flex items-center space-x-2 flex-wrap mb-1">
-                                                                <span className="text-sm font-mono text-gray-500">
-                                                                    {itemId}
-                                                                </span>
-                                                                {item.Datatype && datatypeInfo[item.Datatype] && (
-                                                                    <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium ${datatypeInfo[item.Datatype].color} bg-gray-100`}>
-                                                                        {datatypeInfo[item.Datatype].label}
+                                            <div key={index} ref={el => itemRefs.current[index] = el}
+                                                className={isSelected ? 'selected-item fade-in' : 'fade-in'}
+                                                style={{ background: 'var(--bg-card)', borderRadius: 10, padding: '14px 16px', boxShadow: 'var(--shadow-sm)', border: `1px solid var(--border)`, transition: 'box-shadow 0.15s', cursor: 'default' }}
+                                                onMouseEnter={e => e.currentTarget.style.boxShadow = 'var(--shadow-md)'}
+                                                onMouseLeave={e => e.currentTarget.style.boxShadow = 'var(--shadow-sm)'}>
+                                                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+                                                    <div style={{ display: 'flex', gap: 10, flex: 1, minWidth: 0 }}>
+                                                        <span style={{ fontSize: 18, marginTop: 2, flexShrink: 0, color: isEntity ? 'var(--entity-color)' : 'var(--attr-color)' }}>
+                                                            {isEntity ? <Icons.Database /> : <Icons.Package />}
+                                                        </span>
+                                                        <div style={{ flex: 1, minWidth: 0 }}>
+                                                            {/* Badges row */}
+                                                            <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', marginBottom: 4 }}>
+                                                                <code style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{itemId}</code>
+                                                                {dtInfo && (
+                                                                    <span style={{ display: 'inline-flex', alignItems: 'center', padding: '1px 8px', borderRadius: 4, fontSize: '0.72rem', fontWeight: 500, color: dtInfo.color, background: 'var(--bg-badge)' }}>
+                                                                        {dtInfo.label}
                                                                     </span>
                                                                 )}
                                                                 {item.Codelijst && codelistData[item.Codelijst] && (
-                                                                    <button
-                                                                        onClick={() => {
-                                                                            const description = window.codelistDescriptions?.[item.Codelijst];
-                                                                            openCodelist(item.Codelijst, description || item.Codelijst);
-                                                                        }}
-                                                                        className="inline-flex items-center space-x-1 text-xs text-blue-600 hover:text-blue-800 underline"
-                                                                        title={`Bekijk codelijst ${item.Codelijst}${window.codelistDescriptions?.[item.Codelijst] ? ` - ${window.codelistDescriptions[item.Codelijst]}` : ''} (${codelistData[item.Codelijst].length} items)`}
-                                                                    >
-                                                                        <BookOpen className="h-3 w-3" />
-                                                                        <span>{highlightText(item.Codelijst, searchTerm)}</span>
+                                                                    <button onClick={() => { setSelectedCodelist({ codelijst: item.Codelijst }); setCodelistSearch(''); }}
+                                                                        style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: '0.75rem', color: 'var(--accent)', textDecoration: 'underline', padding: 0 }}
+                                                                        title={`Codelijst ${item.Codelijst} (${codelistData[item.Codelijst].length} items)`}>
+                                                                        <span style={{ fontSize: 12 }}><Icons.BookOpen /></span>
+                                                                        {highlight(item.Codelijst, activeSearch)}
                                                                     </button>
                                                                 )}
                                                             </div>
-                                                            <h3 className={`font-semibold ${darkMode ? 'text-gray-100' : 'text-gray-900'} mb-1`}>
-                                                                {highlightText(item.Naam, searchTerm)}
-                                                            </h3>
-                                                            {item.Omschrijving && (
-                                                                <p className={`${darkMode ? 'text-gray-300' : 'text-gray-600'} text-sm mb-2`}>
-                                                                    {highlightText(item.Omschrijving, searchTerm)}
-                                                                </p>
-                                                            )}
-                                                            
-                                                            {/* Extra attribuut informatie */}
+                                                            {/* Name */}
+                                                            <h3 style={{ fontWeight: 600, fontSize: '0.95rem', marginBottom: 2 }}>{highlight(item.Naam, activeSearch)}</h3>
+                                                            {/* Description */}
+                                                            {item.Omschrijving && <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: 4 }}>{highlight(item.Omschrijving, activeSearch)}</p>}
+                                                            {/* Attribute details */}
                                                             {!isEntity && (
-                                                                <div className="space-y-1 text-xs text-gray-500">
-                                                                    {item.Formaat && (
-                                                                        <div className="flex items-center space-x-2">
-                                                                            <span className="font-medium">Formaat:</span>
-                                                                            <code className={`px-1 py-0.5 rounded ${darkMode ? 'bg-gray-700' : 'bg-gray-100'}`}>
-                                                                                {item.Formaat}
-                                                                            </code>
-                                                                        </div>
-                                                                    )}
-                                                                    {(() => {
-                                                                        // ANVA code opzoeken
-                                                                        const fullCode = `${item.Entiteitcode}_${item.Attribuutcode}`;
-                                                                        const anvaInfo = anvaData[fullCode];
-                                                                        if (anvaInfo && anvaInfo.code) {
-                                                                            return (
-                                                                                <div className="flex items-center space-x-2">
-                                                                                    <span className="font-medium">ANVA:</span>
-                                                                                    <code className={`px-1 py-0.5 rounded ${darkMode ? 'bg-gray-700' : 'bg-gray-100'}`}>
-                                                                                        {highlightText(anvaInfo.code, searchTerm)}
-                                                                                    </code>
-                                                                                    {anvaInfo.afwijkendNietToegestaan === 'J' && (
-                                                                                        <span className="inline-flex items-center px-1 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">
-                                                                                            ⚠️
-                                                                                        </span>
-                                                                                    )}
-                                                                                </div>
-                                                                            );
-                                                                        }
-                                                                        return null;
-                                                                    })()}
-                                                                    {item.Lengte && (
-                                                                        <div className="flex items-center space-x-2">
-                                                                            <span className="font-medium">Lengte:</span>
-                                                                            <span>{item.Lengte}</span>
-                                                                        </div>
-                                                                    )}
-                                                                    {item.Decimalen && (
-                                                                        <div className="flex items-center space-x-2">
-                                                                            <span className="font-medium">Decimalen:</span>
-                                                                            <span>{item.Decimalen}</span>
-                                                                        </div>
-                                                                    )}
-                                                                    {item.Verplicht && (
-                                                                        <div className="flex items-center space-x-2">
-                                                                            <span className="font-medium">Verplicht:</span>
-                                                                            <span className={item.Verplicht === 'J' ? 'text-red-600' : 'text-green-600'}>
-                                                                                {item.Verplicht === 'J' ? 'Ja' : 'Nee'}
-                                                                            </span>
-                                                                        </div>
-                                                                    )}
-                                                                    {item.Primairesleutel && item.Primairesleutel === 'J' && (
-                                                                        <div className="flex items-center space-x-2">
-                                                                            <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-yellow-200 text-yellow-800">
-                                                                                🔑 Primaire sleutel
-                                                                            </span>
-                                                                        </div>
-                                                                    )}
-                                                                    {item.Vreemdessleutel && item.Vreemdessleutel === 'J' && (
-                                                                        <div className="flex items-center space-x-2">
-                                                                            <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-blue-100 text-blue-800">
-                                                                                🔗 Vreemde sleutel
-                                                                            </span>
-                                                                        </div>
-                                                                    )}
-                                                                    {item.Defaultwaarde && (
-                                                                        <div className="flex items-center space-x-2">
-                                                                            <span className="font-medium">Default:</span>
-                                                                            <code className={`px-1 py-0.5 rounded ${darkMode ? 'bg-gray-700' : 'bg-gray-100'}`}>
-                                                                                {item.Defaultwaarde}
-                                                                            </code>
-                                                                        </div>
+                                                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px 16px', fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+                                                                    {item.Formaat && <span><strong>Formaat:</strong> <code>{item.Formaat}</code></span>}
+                                                                    {anvaInfo?.code && (
+                                                                        <span>
+                                                                            <strong>ANVA:</strong> <code>{highlight(anvaInfo.code, activeSearch)}</code>
+                                                                            {anvaInfo.afwijkendNietToegestaan === 'J' && <span style={{ color: '#dc2626', marginLeft: 4 }}>⚠️</span>}
+                                                                        </span>
                                                                     )}
                                                                 </div>
                                                             )}
                                                         </div>
                                                     </div>
-                                                    <div className="flex items-center space-x-1 ml-2">
-                                                        <button
-                                                            onClick={() => copyToClipboard(itemId, itemId)}
-                                                            className="p-1 hover:bg-gray-100 rounded"
-                                                            title="Kopieer code"
-                                                        >
-                                                            {copiedItem === itemId ? (
-                                                                <Check className="h-4 w-4 text-green-500" />
-                                                            ) : (
-                                                                <Copy className="h-4 w-4 text-gray-400" />
-                                                            )}
+                                                    {/* Copy buttons */}
+                                                    <div style={{ display: 'flex', gap: 2, marginLeft: 8, flexShrink: 0 }}>
+                                                        <button onClick={() => copyText(itemId, itemId)} title="Kopieer code"
+                                                            style={{ padding: 6, borderRadius: 6, color: copiedItem === itemId ? '#22c55e' : 'var(--text-muted)', fontSize: 15 }}>
+                                                            {copiedItem === itemId ? <Icons.Check /> : <Icons.Copy />}
                                                         </button>
                                                         {!isEntity && (
-                                                            <button
-                                                                onClick={() => copyFullAttributeInfo(item, `full-${itemId}`)}
-                                                                className="p-1 hover:bg-gray-100 rounded"
-                                                                title="Kopieer volledige attribuut info (Entiteit, Code, Omschrijving, Codelijst)"
-                                                            >
-                                                                {copiedItem === `full-${itemId}` ? (
-                                                                    <Check className="h-4 w-4 text-green-500" />
-                                                                ) : (
-                                                                    <ClipboardList className="h-4 w-4 text-gray-400" />
-                                                                )}
+                                                            <button onClick={() => copyFullInfo(item, `full-${itemId}`)} title="Kopieer volledige info"
+                                                                style={{ padding: 6, borderRadius: 6, color: copiedItem === `full-${itemId}` ? '#22c55e' : 'var(--text-muted)', fontSize: 15 }}>
+                                                                {copiedItem === `full-${itemId}` ? <Icons.Check /> : <Icons.ClipboardList />}
                                                             </button>
                                                         )}
                                                     </div>
@@ -1893,308 +911,97 @@ setAnvaData(anvaMapping);
                                         );
                                     })}
                                 </div>
+
                                 {/* Pagination */}
                                 {totalPages > 1 && (
-                                    <div className="flex items-center justify-center space-x-2 mt-6">
-                                        <button
-                                            onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                                            disabled={currentPage === 1}
-                                            className={`px-3 py-1 rounded border ${
-                                                currentPage === 1
-                                                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                                                    : 'bg-white text-gray-700 hover:bg-gray-50'
-                                            }`}
-                                        >
-                                            Vorige
-                                        </button>
-                                        <span className="px-3 py-1">
-                                            {currentPage} / {totalPages}
-                                        </span>
-                                        <button
-                                            onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                                            disabled={currentPage === totalPages}
-                                            className={`px-3 py-1 rounded border ${
-                                                currentPage === totalPages
-                                                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                                                    : 'bg-white text-gray-700 hover:bg-gray-50'
-                                            }`}
-                                        >
-                                            Volgende
-                                        </button>
+                                    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 8, marginTop: 24 }}>
+                                        <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}
+                                            style={{ padding: '6px 14px', borderRadius: 6, border: `1px solid var(--border)`, background: 'var(--bg-card)', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Vorige</button>
+                                        <span style={{ padding: '6px 12px', fontSize: '0.85rem', color: 'var(--text-muted)' }}>{currentPage} / {totalPages}</span>
+                                        <button onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}
+                                            style={{ padding: '6px 14px', borderRadius: 6, border: `1px solid var(--border)`, background: 'var(--bg-card)', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Volgende</button>
                                     </div>
                                 )}
                             </div>
                         )}
-                        
+
                         {/* Copyright */}
-                        <div className="mt-8 pt-4 border-t border-gray-200 text-center">
-                            <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                                © 2025 Martin Hoogerbrugge • AFD 1.0 Datacatalogus
-                            </p>
+                        <div style={{ marginTop: 40, paddingTop: 16, borderTop: `1px solid var(--border)`, textAlign: 'center' }}>
+                            <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>© 2025 Martin Hoogerbrugge • AFD 1.0 Datacatalogus</p>
                         </div>
                     </div>
 
-                    {/* Info Modal */}
+                    {/* ── Info Modal ── */}
                     {showInfo && (
-                        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                            <div className={`${darkMode ? 'bg-gray-800 text-gray-100' : 'bg-white'} rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col`}>
-                                <div className="flex-shrink-0 p-6 border-b ${darkMode ? 'border-gray-700' : 'border-gray-200'}">
-                                    <div className="flex items-start justify-between">
-                                        <div className="flex items-center space-x-3">
-                                            <Info className="h-6 w-6 text-blue-600" />
-                                            <h2 className={`text-xl font-bold ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
-                                                Help & Instructies
-                                            </h2>
-                                        </div>
-                                        <button
-                                            onClick={() => setShowInfo(false)}
-                                            className={`p-2 rounded-lg flex-shrink-0 ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'}`}
-                                        >
-                                            <X className="h-5 w-5" />
-                                        </button>
+                        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50, padding: 16 }} onClick={() => setShowInfo(false)}>
+                            <div onClick={e => e.stopPropagation()} style={{ background: 'var(--bg-card)', borderRadius: 12, boxShadow: 'var(--shadow-lg)', width: '100%', maxWidth: 560, maxHeight: '90vh', display: 'flex', flexDirection: 'column' }}>
+                                <div style={{ padding: '20px 24px', borderBottom: `1px solid var(--border)`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                                        <span style={{ fontSize: 22, color: 'var(--accent)' }}><Icons.Info /></span>
+                                        <h2 style={{ fontSize: '1.15rem', fontWeight: 700 }}>Help & Instructies</h2>
                                     </div>
+                                    <button onClick={() => setShowInfo(false)} style={{ padding: 6, borderRadius: 6, fontSize: 18, color: 'var(--text-muted)' }}><Icons.X /></button>
                                 </div>
-                                
-                                <div className="flex-1 overflow-y-auto p-6 space-y-6">
-                                    <div>
-                                        <h3 className={`text-lg font-semibold mb-3 ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
-                                            🔍 Zoeken
-                                        </h3>
-                                        <div className={`space-y-2 text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                                            <p>Je kunt zoeken op:</p>
-                                            <ul className="list-disc list-inside space-y-1 ml-4">
-                                                <li>Naam van een entiteit of attribuut</li>
-                                                <li>Omschrijving</li>
-                                                <li>Entiteitcode (bijv. OB, XA, RI)</li>
-                                                <li>Attribuutcode of volledige codes (bijv. DA_VERZSOM)</li>
-                                                <li>ANVA code (bijv. 13689)</li>
-                                                <li>Codelijst naam (bijv. ADNABS, SECTCOD)</li>
-                                            </ul>
-                                        </div>
-                                    </div>
-                                    
-                                    <div>
-                                        <h3 className={`text-lg font-semibold mb-3 ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
-                                            🎯 Geavanceerd zoeken
-                                        </h3>
-                                        <div className={`space-y-2 text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                                            <p>Voor complexe zoekopdrachten kun je geavanceerd zoeken gebruiken:</p>
-                                            <ul className="list-disc list-inside space-y-1 ml-4">
-                                                <li><strong>Zoekwoorden:</strong> Zoek records die alle opgegeven woorden bevatten</li>
-                                                <li><strong>Filters:</strong> Filter op entiteit, datatype, codelijst of ANVA code</li>
-                                                <li><strong>Combinaties:</strong> Combineer tekst zoeken met specifieke filters</li>
-                                                <li><strong>Searchable dropdowns:</strong> Type in alle dropdowns om snel te zoeken</li>
-                                            </ul>
-                                        </div>
-                                    </div>
-
-                                    <div>
-                                        <h3 className={`text-lg font-semibold mb-3 ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
-                                            ⌨️ Sneltoetsen
-                                        </h3>
-                                        <div className="space-y-2 text-sm">
-                                            <div className={`flex items-center justify-between p-2 rounded ${darkMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
-                                                <span><kbd className={`px-2 py-1 rounded text-xs ${darkMode ? 'bg-gray-600 text-gray-200' : 'bg-gray-200 text-gray-800'}`}>/</kbd></span>
-                                                <span className={darkMode ? 'text-gray-300' : 'text-gray-700'}>Focus op zoekbalk</span>
-                                            </div>
-                                            <div className={`flex items-center justify-between p-2 rounded ${darkMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
-                                                <span><kbd className={`px-2 py-1 rounded text-xs ${darkMode ? 'bg-gray-600 text-gray-200' : 'bg-gray-200 text-gray-800'}`}>↑ ↓</kbd></span>
-                                                <span className={darkMode ? 'text-gray-300' : 'text-gray-700'}>Navigeer door zoekresultaten</span>
-                                            </div>
-                                            <div className={`flex items-center justify-between p-2 rounded ${darkMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
-                                                <span><kbd className={`px-2 py-1 rounded text-xs ${darkMode ? 'bg-gray-600 text-gray-200' : 'bg-gray-200 text-gray-800'}`}>Enter</kbd></span>
-                                                <span className={darkMode ? 'text-gray-300' : 'text-gray-700'}>Kopieer geselecteerde code</span>
-                                            </div>
-                                            <div className={`flex items-center justify-between p-2 rounded ${darkMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
-                                                <span><kbd className={`px-2 py-1 rounded text-xs ${darkMode ? 'bg-gray-600 text-gray-200' : 'bg-gray-200 text-gray-800'}`}>Shift+Enter</kbd></span>
-                                                <span className={darkMode ? 'text-gray-300' : 'text-gray-700'}>Kopieer volledige attribuut info</span>
-                                            </div>
-                                            <div className={`flex items-center justify-between p-2 rounded ${darkMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
-                                                <span><kbd className={`px-2 py-1 rounded text-xs ${darkMode ? 'bg-gray-600 text-gray-200' : 'bg-gray-200 text-gray-800'}`}>Esc</kbd></span>
-                                                <span className={darkMode ? 'text-gray-300' : 'text-gray-700'}>Wis zoekterm en selectie</span>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div>
-                                        <h3 className={`text-lg font-semibold mb-3 ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
-                                            📋 Kopiëren
-                                        </h3>
-                                        <div className={`space-y-2 text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                                            <div className="flex items-start space-x-2">
-                                                <Copy className={`h-4 w-4 mt-0.5 ${darkMode ? 'text-gray-400' : 'text-gray-400'}`} />
-                                                <span>Kopieer alleen de code (bijv. OB_NAAM)</span>
-                                            </div>
-                                            <div className="flex items-start space-x-2">
-                                                <ClipboardList className={`h-4 w-4 mt-0.5 ${darkMode ? 'text-gray-400' : 'text-gray-400'}`} />
-                                                <span>Kopieer volledige attribuut info (Entiteit, Code, Omschrijving, Codelijst)</span>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div>
-                                        <h3 className={`text-lg font-semibold mb-3 ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
-                                            📚 Codelijsten
-                                        </h3>
-                                        <div className={`space-y-2 text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                                            <p>Klik op een codelijst link (bijv. <BookOpen className="h-3 w-3 inline" /> ADNABS) om alle waarden te bekijken.</p>
-                                            <p>In de codelijst kun je:</p>
-                                            <ul className="list-disc list-inside space-y-1 ml-4">
-                                                <li>Zoeken naar specifieke codes of omschrijvingen</li>
-                                                <li>Codes kopiëren naar het klembord</li>
-                                            </ul>
-                                        </div>
-                                    </div>
-
-                                    <div>
-                                        <h3 className={`text-lg font-semibold mb-3 ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
-                                            🎯 Filters
-                                        </h3>
-                                        <div className={`space-y-2 text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                                            <div className="flex items-start space-x-2">
-                                                <Filter className={`h-4 w-4 mt-0.5 ${darkMode ? 'text-gray-400' : 'text-gray-400'}`} />
-                                                <span><strong>Type filter:</strong> Filter op entiteiten of attributen</span>
-                                            </div>
-                                            <div className="flex items-start space-x-2">
-                                                <Database className={`h-4 w-4 mt-0.5 ${darkMode ? 'text-gray-400' : 'text-gray-400'}`} />
-                                                <span><strong>Entiteit filter:</strong> Toon alleen attributen van een specifieke entiteit</span>
-                                            </div>
-                                            <div className="flex items-start space-x-2">
-                                                <Search className={`h-4 w-4 mt-0.5 ${darkMode ? 'text-gray-400' : 'text-gray-400'}`} />
-                                                <span><strong>Searchable dropdowns:</strong> Type in alle dropdowns om snel te zoeken</span>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div>
-                                        <h3 className={`text-lg font-semibold mb-3 ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
-                                            🏷️ Labels & Info
-                                        </h3>
-                                        <div className={`space-y-2 text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                                            <div className="flex flex-wrap gap-2">
-                                                <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium text-blue-600 bg-blue-100">
-                                                    Ja/Nee
-                                                </span>
-                                                <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium text-green-600 bg-gray-100">
-                                                    Alfanumeriek
-                                                </span>
-                                                <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium text-purple-600 bg-gray-100">
-                                                    Datum
-                                                </span>
-                                                <span className={`${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>← Datatypes</span>
-                                            </div>
-                                            <div className="flex flex-wrap gap-2 items-center">
-                                                <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-yellow-200 text-yellow-800">
-                                                    🔑 Primaire sleutel
-                                                </span>
-                                                <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-blue-100 text-blue-800">
-                                                    🔗 Vreemde sleutel
-                                                </span>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div className={`text-xs border-t pt-4 ${darkMode ? 'text-gray-400 border-gray-700' : 'text-gray-500 border-gray-200'}`}>
-                                        <p><strong>AFD 1.0 Datacatalogus</strong> • {stats.total.toLocaleString()} items • {stats.entities} entiteiten • {stats.attributes.toLocaleString()} attributen</p>
-                                    </div>
+                                <div style={{ flex: 1, overflow: 'auto', padding: 24, fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: 1.8 }}>
+                                    <h3 style={{ fontWeight: 600, color: 'var(--text-primary)', marginBottom: 8 }}>🔍 Zoeken</h3>
+                                    <p>Je kunt zoeken op: naam, omschrijving, entiteitcode (bijv. OB, XA), attribuutcode (bijv. DA_VERZSOM), ANVA code (bijv. 13689), codelijst (bijv. ADNABS)</p>
+                                    <h3 style={{ fontWeight: 600, color: 'var(--text-primary)', marginTop: 20, marginBottom: 8 }}>🎯 Geavanceerd zoeken</h3>
+                                    <p>Filter op combinaties van entiteit, datatype, codelijst en ANVA code. Zoekwoorden moeten alle voorkomen.</p>
+                                    <h3 style={{ fontWeight: 600, color: 'var(--text-primary)', marginTop: 20, marginBottom: 8 }}>⌨️ Sneltoetsen</h3>
+                                    <p><kbd style={{ padding: '2px 8px', borderRadius: 4, background: 'var(--bg-badge)', border: `1px solid var(--border)`, fontSize: '0.8rem' }}>/</kbd> Focus op zoekbalk</p>
+                                    <p><kbd style={{ padding: '2px 8px', borderRadius: 4, background: 'var(--bg-badge)', border: `1px solid var(--border)`, fontSize: '0.8rem' }}>↑↓</kbd> Navigeer resultaten</p>
+                                    <p><kbd style={{ padding: '2px 8px', borderRadius: 4, background: 'var(--bg-badge)', border: `1px solid var(--border)`, fontSize: '0.8rem' }}>Enter</kbd> Kopieer code</p>
+                                    <p><kbd style={{ padding: '2px 8px', borderRadius: 4, background: 'var(--bg-badge)', border: `1px solid var(--border)`, fontSize: '0.8rem' }}>Shift+Enter</kbd> Kopieer volledige info (tab-separated)</p>
+                                    <p><kbd style={{ padding: '2px 8px', borderRadius: 4, background: 'var(--bg-badge)', border: `1px solid var(--border)`, fontSize: '0.8rem' }}>Esc</kbd> Wis zoekopdracht</p>
+                                    <h3 style={{ fontWeight: 600, color: 'var(--text-primary)', marginTop: 20, marginBottom: 8 }}>📁 Databestanden</h3>
+                                    <p>Deze tool leest direct de ruwe AFM-bestanden:</p>
+                                    <p><code>Datacat.afm</code> — Datacatalogus (entiteiten + attributen)</p>
+                                    <p><code>Codelist.afm</code> — Codelijsten met codes en omschrijvingen</p>
+                                    <p><code>ANVA_AFD.xlsx</code> — ANVA-naar-AFD mapping (optioneel)</p>
                                 </div>
                             </div>
                         </div>
                     )}
 
-                    {/* Codelist Modal */}
+                    {/* ── Codelist Modal ── */}
                     {selectedCodelist && (
-                        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                            <div className={`${darkMode ? 'bg-gray-800 text-gray-100' : 'bg-white'} rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col`}>
-                                <div className="flex-shrink-0 p-6 border-b ${darkMode ? 'border-gray-700' : 'border-gray-200'}">
-                                    <div className="flex items-start justify-between">
-                                        <div className="flex-1 min-w-0">
-                                            <h2 className={`text-xl font-bold ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
-                                                Codelijst: {selectedCodelist.codelijst}
-                                            </h2>
-                                            {window.codelistDescriptions?.[selectedCodelist.codelijst] && (
-                                                <p className={`text-sm mt-1 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                                                    {window.codelistDescriptions[selectedCodelist.codelijst]}
-                                                </p>
+                        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50, padding: 16 }} onClick={() => { setSelectedCodelist(null); setCodelistSearch(''); }}>
+                            <div onClick={e => e.stopPropagation()} style={{ background: 'var(--bg-card)', borderRadius: 12, boxShadow: 'var(--shadow-lg)', width: '100%', maxWidth: 600, maxHeight: '90vh', display: 'flex', flexDirection: 'column' }}>
+                                <div style={{ padding: '20px 24px', borderBottom: `1px solid var(--border)` }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                                        <div style={{ flex: 1, minWidth: 0 }}>
+                                            <h2 style={{ fontSize: '1.1rem', fontWeight: 700 }}>Codelijst: {selectedCodelist.codelijst}</h2>
+                                            {codelistDescriptions[selectedCodelist.codelijst] && (
+                                                <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: 2 }}>{codelistDescriptions[selectedCodelist.codelijst]}</p>
                                             )}
-                                            <p className={`text-sm mt-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                            <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: 2 }}>
                                                 {codelistItems.length} van {codelistData[selectedCodelist.codelijst]?.length || 0} items
                                             </p>
                                         </div>
-                                        <button
-                                            onClick={() => {
-                                                setSelectedCodelist(null);
-                                                setCodelistSearch('');
-                                            }}
-                                            className={`ml-4 p-2 rounded-lg flex-shrink-0 ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'}`}
-                                        >
-                                            <X className="h-5 w-5" />
-                                        </button>
+                                        <button onClick={() => { setSelectedCodelist(null); setCodelistSearch(''); }} style={{ padding: 6, borderRadius: 6, fontSize: 18, color: 'var(--text-muted)', marginLeft: 12 }}><Icons.X /></button>
                                     </div>
-                                    <div className="mt-4">
-                                        <div className="relative">
-                                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
-                                            <input
-                                                type="text"
-                                                value={codelistSearch}
-                                                onChange={(e) => setCodelistSearch(e.target.value)}
-                                                placeholder="Zoek in codelijst..."
-                                                className={`w-full pl-10 pr-10 py-2 border rounded-lg ${
-                                                    darkMode ? 'bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
-                                                } focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
-                                                autoFocus
-                                            />
-                                            {codelistSearch && (
-                                                <button
-                                                    onClick={() => setCodelistSearch('')}
-                                                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                                                >
-                                                    <X className="h-4 w-4" />
-                                                </button>
-                                            )}
-                                        </div>
+                                    <div style={{ position: 'relative', marginTop: 12 }}>
+                                        <span style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)', fontSize: 14, pointerEvents: 'none' }}><Icons.Search /></span>
+                                        <input type="text" value={codelistSearch} onChange={e => setCodelistSearch(e.target.value)} placeholder="Zoek in codelijst..." autoFocus
+                                            style={{ width: '100%', paddingLeft: 32, fontSize: '0.9rem' }} />
                                     </div>
                                 </div>
-                                
-                                <div className="flex-1 overflow-y-auto min-h-0 p-4">
+                                <div style={{ flex: 1, overflow: 'auto', padding: 12, minHeight: 0 }}>
                                     {codelistItems.length === 0 ? (
-                                        <div className="text-center py-8">
-                                            <p className="text-gray-500">
-                                                {codelistSearch ? 'Geen items gevonden voor deze zoekopdracht' : 'Geen items in deze codelijst'}
-                                            </p>
+                                        <div style={{ textAlign: 'center', padding: 32, color: 'var(--text-muted)' }}>
+                                            {codelistSearch ? 'Geen items gevonden' : 'Geen items in deze codelijst'}
                                         </div>
                                     ) : (
-                                        <div className="space-y-2">
-                                            {codelistItems.map((item, index) => (
-                                                <div 
-                                                    key={index}
-                                                    className={`flex items-start justify-between p-3 rounded-lg hover:shadow-sm transition-shadow ${
-                                                        darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-50 hover:bg-gray-100'
-                                                    }`}
-                                                >
-                                                    <div className="flex-1 min-w-0 pr-3">
-                                                        <div className="flex items-center space-x-2 mb-1">
-                                                            <code className={`font-mono text-sm font-semibold px-2 py-1 rounded ${
-                                                                darkMode ? 'bg-gray-800 text-blue-400' : 'bg-blue-50 text-blue-600'
-                                                            }`}>
-                                                                {highlightText(String(item.code), codelistSearch)}
-                                                            </code>
-                                                        </div>
-                                                        <p className={`text-sm break-words ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                                                            {highlightText(String(item.omschrijving), codelistSearch)}
-                                                        </p>
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                                            {codelistItems.map((item, i) => (
+                                                <div key={i} style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', padding: '8px 12px', borderRadius: 8, background: 'var(--bg-badge)' }}>
+                                                    <div style={{ flex: 1, minWidth: 0 }}>
+                                                        <code style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--accent)' }}>{highlight(String(item.code), codelistSearch)}</code>
+                                                        <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: 2, wordBreak: 'break-word' }}>{highlight(String(item.omschrijving), codelistSearch)}</p>
                                                     </div>
-                                                    <button
-                                                        onClick={() => copyToClipboard(String(item.code), `cl-${index}`)}
-                                                        className={`flex-shrink-0 p-2 rounded transition-colors ${
-                                                            darkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-200'
-                                                        }`}
-                                                        title="Kopieer code"
-                                                    >
-                                                        {copiedItem === `cl-${index}` ? 
-                                                            <Check className="h-4 w-4 text-green-500" /> : 
-                                                            <Copy className="h-4 w-4 text-gray-400" />
-                                                        }
+                                                    <button onClick={() => copyText(String(item.code), `cl-${i}`)}
+                                                        style={{ padding: 6, borderRadius: 6, color: copiedItem === `cl-${i}` ? '#22c55e' : 'var(--text-muted)', fontSize: 14, flexShrink: 0, marginLeft: 8 }}>
+                                                        {copiedItem === `cl-${i}` ? <Icons.Check /> : <Icons.Copy />}
                                                     </button>
                                                 </div>
                                             ))}
@@ -2208,8 +1015,7 @@ setAnvaData(anvaMapping);
             );
         }
 
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<AFDSearchTool />);
+        ReactDOM.createRoot(document.getElementById('root')).render(<AFDSearchTool />);
     </script>
 </body>
 </html>
