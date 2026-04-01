@@ -29,6 +29,7 @@ CPORMAAA132 O.W.M. DSW Zorgverzekeraar UA
 CPORMAAA136 Avéro Achmea Zorgverzekeringen N.V.                
 CPORMAAA138 Yarden Uitvaartverzekeringen                       
 CPORMAAA204 Anderzorg N.V.                                     
+CPORMAAA205 Aska Levenverzekering N.V.                         
 CPORMAAA300 Avéro-Achmea (Bedrijven)                           
 CPORMAAA515 Coface                                             
 CPORMAAA548 Allianz Benelux N.V.                               
@@ -100,6 +101,8 @@ CPORMAAC039 OVM voor Cothen Langbroek Wijk bij Duurstede e.o.
 CPORMAAC051 Centraal Beheer Achmea                             
 CPORMAAC052 Centraal Beheer Achmea (Bedrijven)                 
 CPORMAAC053 Centraal Beheer Achmea (Nieuw)                     
+CPORMAAC054 Citizens insurance                                 
+CPORMAAC055 CG United Insurance Ltd.                           
 CPORMAAC505 Chubb European Group SE                            
 CPORMAAC507 CNA Insurance Company Limited                      
 CPORMAAC511 Aviva Assurances                                   
@@ -674,6 +677,8 @@ CPORMAAX025 JW Volmacht B.V.
 CPORMAAX026 innoAS GmbH                                        
 CPORMAAX027 Nationale-Nederlanden Retail Schade                
 CPORMAAX028 KBH Assuradeuren B.V.                              
+CPORMAAX029 BOUY Assuradeuren B.V.                             
+CPORMAAX030 Söderberg & Partners Volmacht B.V.                 
 CPORMAAX978 Concordia De Keizer B.V.                           
 CPORMAAY709 Datacombinatie Yacht Verzekeringen B.V.            
 CPORMAAZ030 Zilveren Kruis Achmea                              
@@ -705,7 +710,7 @@ CISOLANAL   Albanië
 CISOLANAM   Armenië                                            
 CISOLANAN   Nederlandse Antillen                               
 CISOLANAO   Angola                                             
-CISOLANAQ   Antartica                                          
+CISOLANAQ   Antarctica                                         
 CISOLANAR   Argentinië                                         
 CISOLANAS   Amerikaans Samoa                                   
 CISOLANAT   Oostenrijk                                         
@@ -1405,6 +1410,7 @@ CADNDEK3414 CAR Eigendommen directie en personeel
 CADNDEK3415 CAR Transport                                      
 CADNDEK3416 CAR Bedrijfsschade                                 
 CADNDEK3417 CAR Maatwerk                                       
+CADNDEK3418 CAR Werkplaats                                     
 CADNDEK3500 Transport (standaard G14)                          
 CADNDEK3501 Transport uitgebreid                               
 CADNDEK3502 Transport extra uitgebreid (all risk G13)          
@@ -1619,6 +1625,7 @@ CADNDEK6015 Bestuurdersaansprakelijkheid
 CADNDEK6016 Aansprakelijkheid cyber                            
 CADNDEK6017 Excedent                                           
 CADNDEK6018 Bedrijfs-/Beroepsaansprakelijkheid                 
+CADNDEK6019 Aansprakelijkheid en schade werknemers             
 CADNDEK6020 Werkgeversaansprakelijkheid motorrijtuigen         
 CADNDEK6021 Werkgeversaansprakelijkheid ongemotoriseerd verv.  
 CADNDEK6022 Werkgeversaansprakelijkheid woon-werkverkeer       
@@ -1667,6 +1674,7 @@ CADNDEK6078 AVB VS/Canada
 CADNDEK6079 AVB Recall/Terugroepactie                          
 CADNDEK6080 AVB gevolgschade data                              
 CADNDEK6081 AVB Gebruik eigen paarden                          
+CADNDEK6082 Ontwerpaansprakelijkheid                           
 CADNDEK6101 Milieuschade                                       
 CADNDEK6102 Milieuschade eigen locatie                         
 CADNDEK6103 Milieuschade inkomend                              
@@ -9815,6 +9823,7 @@ CADNAFM45F  Versie 45F d.d. 20251201
 CADNAFM46A  Versie 46A d.d. 20260101                           
 CADNAFM46B  Versie 46B d.d. 20260201                           
 CADNAFM46C  Versie 46C d.d. 20260301                           
+CADNAFM46D  Versie 46D d.d. 20260401                           
 CADNAFM4A   Versie 4A d.d. 20050201                            
 CADNAFM4B   Versie 4B d.d. 20050401                            
 CADNAFM5A   Versie 5A d.d. 20050801                            
@@ -14645,7 +14654,7 @@ CADNABS1612 Wellness en overige dienstverlening,uitvaartbranch
 CADNABS1613 Reinigen van kleding en textiel                    
 CADNABS1614 Wasserijen en linnenverhuur                        
 CADNABS1615 Chemische wasserijen en ververijen                 
-CADNABS1616 Wassalons en -verzendinrichtingen                  
+CADNABS1616 Wassalons en wasverzendinrichtingen                
 CADNABS1617 Wassalons                                          
 CADNABS1618 Wasverzendinrichtingen                             
 CADNABS1619 Herenkappers                                       
@@ -20794,7 +20803,7 @@ CADNVEI0175 Zijwind assistent
 CADNVEI0176 Aanhanger assistent                                
 LADNOVB     Soort verzekerd bedrag                            N
 CADNOVB01   Per gebeurtenis                                    
-CADNOVB02   Per aanspraak                                      
+CADNOVB02   Per aanspraak/claim                                
 CADNOVB03   Per reis                                           
 CADNOVB04   Per object                                         
 CADNOVB05   Per evenement of per aanspraak                     
@@ -25035,3 +25044,367 @@ CAFDDGSKA   Kater
 CAFDDGSPO   Poes                                               
 CAFDDGSRE   Reu                                                
 CAFDDGSTE   Teef                                               
+LAFDCDW     Categorie dagwaarde                               N
+CAFDCDW1    0 tot 50.000                                       
+CAFDCDW2    50.000 tot 125.000                                 
+CAFDCDW3    125.000 tot 250.000                                
+CAFDCDW4    Meer dan 250.000                                   
+LAFDDGK     Gewichtsklasse dier                               N
+CAFDDGK1    0 tot 1 kilo                                       
+CAFDDGK2    1 tot 2 kilo                                       
+CAFDDGK3    2 tot 5 kilo                                       
+CAFDDGK4    5 tot 10 kilo                                      
+CAFDDGK5    10 tot 20 kilo                                     
+CAFDDGK6    20 tot 30 kilo                                     
+CAFDDGK7    30 tot 40 kilo                                     
+CAFDDGK8    40 tot 50 kilo                                     
+CAFDDGK9    Meer dan 50 kilo                                   
+LAFDRAS     Dierenras                                         N
+CAFDRASA0001Affenpinscher                                      
+CAFDRASA0003Afghaanse Windhond                                 
+CAFDRASA0005Airedale Terriër                                   
+CAFDRASA0007Turkse Herder / Akbash                             
+CAFDRASA0009Akita                                              
+CAFDRASA0011Alaska Malamute                                    
+CAFDRASA0013American Staffordshire Terriër                     
+CAFDRASA0015Zwitserse Witte Herdershond / Witte Herder         
+CAFDRASA0017Amerikaanse Bulldog                                
+CAFDRASA0019Amerikaanse Cocker Spaniël                         
+CAFDRASA0021Amerikaanse Eskimohond                             
+CAFDRASA0023Amerikaanse Waterspaniël                           
+CAFDRASA0025Anatolische Herder / Kangal Köpek / Karabash       
+CAFDRASA0027Anglo-Français de Petite Vénerie                   
+CAFDRASA0029Appenzeller Sennenhond                             
+CAFDRASA0031Argentijnse Dog                                    
+CAFDRASA0033Australian Cattle Dog                              
+CAFDRASA0035Australian Kelpie                                  
+CAFDRASA0037Australian Shepherd                                
+CAFDRASA0039Australian Silky Terriër                           
+CAFDRASA0041Australian Terriër                                 
+CAFDRASA0043Azawakh                                            
+CAFDRASA0045Barbet                                             
+CAFDRASA0047Barsoi                                             
+CAFDRASA0049Basenji                                            
+CAFDRASA0051Basset Artésien Normand                            
+CAFDRASA0053Basset Bleu de Gascogne                            
+CAFDRASA0055Basset Fauve de Bretagne                           
+CAFDRASA0057Grand Basset Griffon Vendéen                       
+CAFDRASA0059Basset Hound                                       
+CAFDRASA0061Beagle                                             
+CAFDRASA0063Bearded Collie                                     
+CAFDRASA0065Beauceron                                          
+CAFDRASA0067Bedlington Terriër                                 
+CAFDRASA0069Beierse Bergzweethond / Bayer. Gebirgsschweisshund 
+CAFDRASA0071Bergamasco                                         
+CAFDRASA0073Berghond van de Maremmen                           
+CAFDRASA0075Berner Laufhund                                    
+CAFDRASA0077Berner Sennenhond                                  
+CAFDRASA0079Bichon Frisé                                       
+CAFDRASA0081Bloedhond / Sint Hubertushond                      
+CAFDRASA0083Bobtail / Old English Sheepdog                     
+CAFDRASA0085Boerboel                                           
+CAFDRASA0087Bolognezer                                         
+CAFDRASA0089Boomer                                             
+CAFDRASA0091Bordeaux Dog                                       
+CAFDRASA0093Border Collie                                      
+CAFDRASA0095Border Terriër                                     
+CAFDRASA0097Boston Terriër                                     
+CAFDRASA0099Bouvier des Flandres / Bouvier                     
+CAFDRASA0101Boxer                                              
+CAFDRASA0103Bracco Italiano                                    
+CAFDRASA0105Brandlbracke / Brandl Brak                         
+CAFDRASA0107Braque d'Auvergne                                  
+CAFDRASA0109Braque du Bourbonnais                              
+CAFDRASA0111Braque Saint Germain                               
+CAFDRASA0113Briard                                             
+CAFDRASA0115Broholmer / Deense Mastiff                         
+CAFDRASA0117Bull Terriër                                       
+CAFDRASA0119Miniature Bull Terriër                             
+CAFDRASA0121Bullmastiff                                        
+CAFDRASA0123Perro de Pastor Mallorquín / Ca de Bestiar         
+CAFDRASA0125Perro Dogo Mallorquín / Ca de Bou                  
+CAFDRASA0127Cairn Terriër                                      
+CAFDRASA0129Canadese Eskimohond / Canadian Eskimo Dog          
+CAFDRASA0131Cane Corso                                         
+CAFDRASA0133Cão da Serra da Estrela                            
+CAFDRASA0135Cão da Serra de Aires                              
+CAFDRASA0137Cavalier King Charles Spaniël                      
+CAFDRASA0139Centraal-Aziatische Ovcharka                       
+CAFDRASA0141Cesky Fousek                                       
+CAFDRASA0143Cesky Terriër / Boheemse Terriër                   
+CAFDRASA0145Golden Doodle, groot                               
+CAFDRASA0147Chesapeake Bay Retriever                           
+CAFDRASA0149Chihuahua                                          
+CAFDRASA0151Chinese Naakthond                                  
+CAFDRASA0153Chow Chow                                          
+CAFDRASA0155Cirneco dell'Etna                                  
+CAFDRASA0157Clumber Spaniël                                    
+CAFDRASA0159Coton de Tuléar                                    
+CAFDRASA0161Curly Coated Retriever                             
+CAFDRASA0163Dalmatische Hond / Dalmatiër                       
+CAFDRASA0165Dandie Dinmont Terriër                             
+CAFDRASA0167Deerhound                                          
+CAFDRASA0169Dobermann                                          
+CAFDRASA0171Presa Canario / Dogo Canario                       
+CAFDRASA0173Drentsche Patrijshond                              
+CAFDRASA0175Duitse Brak                                        
+CAFDRASA0177Duitse Dog / Deense Dog                            
+CAFDRASA0179(Oud) Duitse Herdershond / Duitse Herder           
+CAFDRASA0181Duitse Jachtterriër                                
+CAFDRASA0183Duitse Pinscher                                    
+CAFDRASA0185Duitse Staande Hond, korthaar                      
+CAFDRASA0187Engelse Bulldog / Old English Bulldog              
+CAFDRASA0189Engelse Cocker Spaniël                             
+CAFDRASA0191Engelse Setter                                     
+CAFDRASA0193Engelse Springer Spaniël                           
+CAFDRASA0195Engelse Toy Terriër                                
+CAFDRASA0197Entlebucher Sennenhond                             
+CAFDRASA0199Epagneul Bleu de Picardie                          
+CAFDRASA0201Epagneul Breton                                    
+CAFDRASA0203Epagneul Français                                  
+CAFDRASA0205Epagneul Nain Continental / Papillon               
+CAFDRASA0207Epagneul Nain Continental / Phalène                
+CAFDRASA0209Erdélyi Kopó                                       
+CAFDRASA0211Eurasier                                           
+CAFDRASA0213Field Spaniël                                      
+CAFDRASA0215Fila Brasileiro                                    
+CAFDRASA0217Finse Lappenhond                                   
+CAFDRASA0219Finse Spits                                        
+CAFDRASA0221Flatcoated Retriever                               
+CAFDRASA0223Foxhound (American en English)                     
+CAFDRASA0225Foxterriër, draadhaar en gladhaar                  
+CAFDRASA0227Franse Bulldog                                     
+CAFDRASA0229Friese Stabij / Stabyhound                         
+CAFDRASA0231Galgo Español                                      
+CAFDRASA0233Golden Doodle, middel                              
+CAFDRASA0235Golden Retriever                                   
+CAFDRASA0237Gordon Setter                                      
+CAFDRASA0239Gos d'Atura Català                                 
+CAFDRASA0241American Akita / Great Japanese Dog                
+CAFDRASA0243Greyhound                                          
+CAFDRASA0245Griffon Belge                                      
+CAFDRASA0247Griffon Bruxellois                                 
+CAFDRASA0249Griffon Fauve de Bretagne                          
+CAFDRASA0251Griffon Korthals                                   
+CAFDRASA0253Belgische Herdershond / Groenendaeler              
+CAFDRASA0255Groenlandhond                                      
+CAFDRASA0257Grote Zwitserse Sennenhond                         
+CAFDRASA0259Hamiltonstövare                                    
+CAFDRASA0261Harrier                                            
+CAFDRASA0263Havanezer                                          
+CAFDRASA0265Heidewachtel                                       
+CAFDRASA0267Hollandse Herdershond, langhaar                    
+CAFDRASA0269Hollandse Herdershond, korthaar                    
+CAFDRASA0271Hollandse Herdershond, ruwhaar                     
+CAFDRASA0273Hollandse Smoushond                                
+CAFDRASA0275Hovawart                                           
+CAFDRASA0277Irish Glen of Imaal Terriër                        
+CAFDRASA0279Ierse Setter                                       
+CAFDRASA0281Ierse Terriër                                      
+CAFDRASA0283Ierse Waterspaniël                                 
+CAFDRASA0285Ierse Wolfshond                                    
+CAFDRASA0287IJslandse Hond                                     
+CAFDRASA0289Irish Soft Coated Wheaten Terriër                  
+CAFDRASA0291Italiaans Windhondje                               
+CAFDRASA0293Jack Russell Terriër                               
+CAFDRASA0295Jämthund                                           
+CAFDRASA0297Japanse Spaniël                                    
+CAFDRASA0299Japanse Spits                                      
+CAFDRASA0301Jura Laufhund                                      
+CAFDRASA0303Canaänhond                                         
+CAFDRASA0305Karelische Berenhond                               
+CAFDRASA0307Kaukasische Herder / Kaukasische Ovcharka          
+CAFDRASA0309Keeshond / Wolfspitz, dwerg                        
+CAFDRASA0311Keeshond / Wolfspitz, klein                        
+CAFDRASA0313Keeshond / Wolfspitz, groot                        
+CAFDRASA0315Keeshond / Wolfspitz, middenslag                   
+CAFDRASA0317Kerry Blue Terriër                                 
+CAFDRASA0319King Charles Spaniël                               
+CAFDRASA0321Komondor                                           
+CAFDRASA0323Nederlandse Kooikerhondje                          
+CAFDRASA0325Kromfohrländer                                     
+CAFDRASA0327Kuvasz                                             
+CAFDRASA0329Labradoodle, medium                                
+CAFDRASA0331Labradoodle, miniatuur                             
+CAFDRASA0333Labradoodle, standaard                             
+CAFDRASA0335Labrador Retriever                                 
+CAFDRASA0337Belgische Herdershond / Laekense Herder            
+CAFDRASA0339Lagotto Romagnolo                                  
+CAFDRASA0341Lakeland Terriër                                   
+CAFDRASA0343Lancashire Heeler                                  
+CAFDRASA0345Landseer ECT                                       
+CAFDRASA0347Lapinporokoira                                     
+CAFDRASA0349Laplandse Herdershond / Lapinporokoira             
+CAFDRASA0351Leeuwhondje                                        
+CAFDRASA0353Leonberger                                         
+CAFDRASA0355Lhasa Apso                                         
+CAFDRASA0357Lurcher                                            
+CAFDRASA0359Luzerner Laufhund                                  
+CAFDRASA0361Maltezer                                           
+CAFDRASA0363Manchester Terriër                                 
+CAFDRASA0365Markiesje                                          
+CAFDRASA0367Mastín del Pirineo / Mastín de los Pirineos        
+CAFDRASA0369Mastín Español                                     
+CAFDRASA0371Mastino Napoletano                                 
+CAFDRASA0373Belgische Herdershond / Mechelse Herder            
+CAFDRASA0375Mexicaanse Naakthond                               
+CAFDRASA0377Mopshond                                           
+CAFDRASA0379Mudi                                               
+CAFDRASA0381Newfoundlander                                     
+CAFDRASA0383Noorse Buhund                                      
+CAFDRASA0385Noorse Elandhond                                   
+CAFDRASA0387Norrbottenspets                                    
+CAFDRASA0389Norfolk Terriër                                    
+CAFDRASA0391Norwich Terriër                                    
+CAFDRASA0393Nova Scotia Duck Tolling Retriever                 
+CAFDRASA0395Ogar Polski                                        
+CAFDRASA0397Oostenrijkse Pinscher                              
+CAFDRASA0399Otterhound                                         
+CAFDRASA0401Parson Jack Russell Terriër                        
+CAFDRASA0403Patterdale Terriër                                 
+CAFDRASA0405Pekingees                                          
+CAFDRASA0407Perdigueiro Português                              
+CAFDRASA0409Spaanse Waterhond / Perro de Agua Español          
+CAFDRASA0411Peruaanse Naakthond                                
+CAFDRASA0413Petit Brabançon                                    
+CAFDRASA0415Pharaohond                                         
+CAFDRASA0417Picardische Herdershond / Picardische Herder       
+CAFDRASA0419Pittbull Terriër                                   
+CAFDRASA0421Plott Hound                                        
+CAFDRASA0423Podenco Canario / Podenco                          
+CAFDRASA0425Poedel, dwerg                                      
+CAFDRASA0427Poedel, toy                                        
+CAFDRASA0429Poedel, middenslag                                 
+CAFDRASA0431Grote Poedel / Koningspoedel                       
+CAFDRASA0433Pointer                                            
+CAFDRASA0435Polski Owczarek Nizinny                            
+CAFDRASA0437Porcelaine                                         
+CAFDRASA0439Portugese Waterhond / Cão de Agua Português        
+CAFDRASA0441Puli                                               
+CAFDRASA0443Pumi                                               
+CAFDRASA0445Pyreneese Berghond                                 
+CAFDRASA0447Pyreneese Herder                                   
+CAFDRASA0449Rat Terriër                                        
+CAFDRASA0451Rhodesian Ridgeback / Pronkrug                     
+CAFDRASA0453Riesenschnauzer                                    
+CAFDRASA0455Rottweiler                                         
+CAFDRASA0457Saarlooswolfhond                                   
+CAFDRASA0459Sabueso Español                                    
+CAFDRASA0461Saluki                                             
+CAFDRASA0463Samojeed                                           
+CAFDRASA0465Sarplaninac                                        
+CAFDRASA0467Nederlandse Schapendoes                            
+CAFDRASA0469Schipperke                                         
+CAFDRASA0471Schnauzer, dwerg                                   
+CAFDRASA0473Schnauzer, middenslag                              
+CAFDRASA0475Schotse Herdershond, langhaar                      
+CAFDRASA0477Schotse Herdershond, korthaar                      
+CAFDRASA0479Schotse Terriër                                    
+CAFDRASA0481Schwyzer Laufhund / Schweizer Laufhund             
+CAFDRASA0483Sealyham Terriër                                   
+CAFDRASA0485Segugio Italiano                                   
+CAFDRASA0487Shar-Pei                                           
+CAFDRASA0489Sheltie / Shetland Sheepdog                        
+CAFDRASA0491Shiba                                              
+CAFDRASA0493Shih Tzu                                           
+CAFDRASA0495Shiloh Shepherd                                    
+CAFDRASA0497Siberische Husky                                   
+CAFDRASA0499Silken Windhound / Silky Windhound                 
+CAFDRASA0501Sint Bernard                                       
+CAFDRASA0503Sint Bernard, korthaar                             
+CAFDRASA0505Skye Terriër                                       
+CAFDRASA0507Sloughi                                            
+CAFDRASA0509Slovenský Cuvac                                    
+CAFDRASA0511Spinone Italiano                                   
+CAFDRASA0513Staffordshire Bull Terriër                         
+CAFDRASA0515Sussex Spaniël                                     
+CAFDRASA0517Tatrahond / Tatra                                  
+CAFDRASA0519Teckel (dashond), dwerg                            
+CAFDRASA0521Teckel (dashond), kaninchen                        
+CAFDRASA0523Teckel (dashond), standaard                        
+CAFDRASA0525Belgische Herdershond / Tervuerense Herder         
+CAFDRASA0527Thai Ridgeback                                     
+CAFDRASA0529Tibetaanse Mastiff                                 
+CAFDRASA0531Tibetaanse Spaniël                                 
+CAFDRASA0533Tibetaanse Terriër                                 
+CAFDRASA0535Tosa                                               
+CAFDRASA0537Tsjechoslowaakse Wolfhond                          
+CAFDRASA0539Amerikaanse Toy Terriër / Toy Fox Terriër          
+CAFDRASA0541Västgötaspets / Vallhund                           
+CAFDRASA0543Vizsla, korthaar                                   
+CAFDRASA0545Weimaraner, korthaar                               
+CAFDRASA0547Welsh Corgi (Cardigan en Pembroke)                 
+CAFDRASA0549Welsh Springer Spaniël                             
+CAFDRASA0551Welsh Terriër                                      
+CAFDRASA0553West Highland White Terriër                        
+CAFDRASA0555Westsiberische Laika                               
+CAFDRASA0557Wetterhoun                                         
+CAFDRASA0559Whippet                                            
+CAFDRASA0561Yorkshire Terriër                                  
+CAFDRASA0563Australian Cobberdog, medium                       
+CAFDRASA0565Australian Cobberdog, miniatuur                    
+CAFDRASA0567Australian Cobberdog, standaard                    
+CAFDRASA0569American Bully Pocket                              
+CAFDRASA0571American Bully Standard                            
+CAFDRASA0573American Bully XL                                  
+CAFDRASA0575American Bully Extreme                             
+CAFDRASA0577Pomsky                                             
+CAFDRASB0001Asian                                              
+CAFDRASB0003Balinees                                           
+CAFDRASB0005Bengaal                                            
+CAFDRASB0007Blauwe Rus / Russisch Blauw                        
+CAFDRASB0009Bombay                                             
+CAFDRASB0011Brits Korthaar                                     
+CAFDRASB0013Britse Langhaar                                    
+CAFDRASB0015Burmees                                            
+CAFDRASB0017Burmilla                                           
+CAFDRASB0019California Spangled                                
+CAFDRASB0021Cornish Rex                                        
+CAFDRASB0023Cymric                                             
+CAFDRASB0025Devon Rex                                          
+CAFDRASB0027Egyptische Mau                                     
+CAFDRASB0029Europese Korthaar                                  
+CAFDRASB0031Europese Langhaar                                  
+CAFDRASB0033Exotic                                             
+CAFDRASB0035Foreign White                                      
+CAFDRASB0037German Rex                                         
+CAFDRASB0039Havana Brown                                       
+CAFDRASB0041Heilige Birmaan                                    
+CAFDRASB0043Highland Fold                                      
+CAFDRASB0045Japanse Bobtail                                    
+CAFDRASB0047Karthuizer / Chartreux                             
+CAFDRASB0049Korat                                              
+CAFDRASB0051Kurilian Bobtail / Kurilen Stompstaartkat          
+CAFDRASB0053LaPerm                                             
+CAFDRASB0055Lapjeskat                                          
+CAFDRASB0057Maine Coon                                         
+CAFDRASB0059Manx                                               
+CAFDRASB0061Munchkin                                           
+CAFDRASB0063Nebelung                                           
+CAFDRASB0065Noorse Boskat                                      
+CAFDRASB0067Ocicat                                             
+CAFDRASB0069Oosterse Korthaar                                  
+CAFDRASB0071Oosterse Langhaar / Javanees / Mandarin            
+CAFDRASB0073Perzische Kat / Chinchilla                         
+CAFDRASB0075Pixie-bob                                          
+CAFDRASB0077Poedelkat / Selkirk Rex                            
+CAFDRASB0079Ragdoll                                            
+CAFDRASB0081Scottish Fold                                      
+CAFDRASB0083Siamees                                            
+CAFDRASB0085Siberische Kat                                     
+CAFDRASB0087Singapura                                          
+CAFDRASB0089Snowshoe                                           
+CAFDRASB0091Sokoke                                             
+CAFDRASB0093Somali                                             
+CAFDRASB0095Sphynx / Mexican Hairless                          
+CAFDRASB0097Thai                                               
+CAFDRASB0099Tibetaan                                           
+CAFDRASB0101Tonkanees                                          
+CAFDRASB0103Turkse Angora / Angora                             
+CAFDRASB0105Turkse Van                                         
+CAFDRASZZZZZGeen ras / kruising                                
+LAFDCSM     Certificatiestatus                                N
+CAFDCSM1    Gecertificeerd                                     
+CAFDCSM2    Niet gecertificeerd en geen relevant diploma       
+CAFDCSM3    Niet gecertificeerd en wel relevant diploma        
+CAFDCSM4    Anders                                             
